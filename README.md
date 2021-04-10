@@ -1,1 +1,14 @@
 # webdev
+there are multiple subprojects or whatever you call them in here.
+
+## htmlclass:
+I'm taking a webdev course and that's the website I'm making.
+
+## multiplayer_3d_game:
+my WebGL project.
+
+## tests:
+where I test my stuff, self-explanatory.
+
+## zombiegame:
+its a simple javascript game where you shoot zombies.
