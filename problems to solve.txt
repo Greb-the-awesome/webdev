@@ -1,0 +1,17 @@
+SOLVED:
+
+1. how to use external css
+answer: check following:
+https://stackoverflow.com/questions/13772884/css-problems-with-flask-web-app
+https://flask.palletsprojects.com/en/1.1.x/quickstart/#static-files
+summary: do NOT use render_template() to render any static files(.css, .js), it will always send as 'html'.
+try to use url_for() in html file to create static file path.
+like this:
+<script src="{{ url_for('static', filename='filename') }}"></script>
+
+3. a list of bindings for javascript
+here: https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event
+
+NOT SOLVED:
+
+2. how to make canvas fit to window

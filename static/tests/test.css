@@ -1,0 +1,30 @@
+/* buttons_links.css */
+a:link {
+	color:green;
+	background-color: transparent;
+	text-decoration: bold;
+}
+a:visited {
+	color:violet;
+	background-color: transparent;
+	text-decoration: underline;
+}
+a:hover {
+	color:pink;
+	background-color: black;
+	text-decoration: line-through;
+}
+a:active {
+	color:yellow;
+	background-color: purple;
+	text-decoration: underline;
+}
+.button {
+	background-color: #f5f783; /* bright(ish) yellow */
+	font-size: 16px;
+	margin: 4px 2px;
+	padding: 15px 32px;
+}
+.buttongray {
+	background-color: #999991; /* gray */
+}

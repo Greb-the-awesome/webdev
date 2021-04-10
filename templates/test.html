@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+
+		<title>deez eez a webpage</title>
+		<script src="{{ url_for('static', filename='tests/test.js') }}">
+		</script>
+
+		<link rel="stylesheet" type='text/css' href="{{ url_for('static', filename='tests/test.css') }}">
+		<!-- <link rel="stylesheet" type='text/css' href="/static/buttons_links.css"> -->
+
+	</head>
+	<body onclick="changeColor()" id='BODY'>
+
+		<noscript><h1 style="font-size: 40">sorry, your browser does not support javascript. </h1></noscript>
+
+		<h1>hello people this is my first webpage yahoe</h1>
+		<h3>link</h3>
+		<a href='http://www.google.com' target='_blank'> link</a>
+		<br>
+		<h3>a butone</h3>
+		<button id='btn1' onclick="myFunction()" class='button'>click me</button>
+		<button onclick="func2()" class="buttongray">this is another butone</button>
+		<!--deez eez a comente-->
+		<p>this is a paragraph.</p>
+		<p style="font-family:'Calibri', 'Helvetica'">this is another paragraf.</p>
+		<br>
+		<p style="font-size: 20; background-color: powderblue;">this is another paragraph.</p>
+		<h3 style="font-family:'Calibri'">nowwww..... this is a yt video!</h3>
+		<iframe width="853" height="480" src="https://www.youtube.com/embed/l6oyuw4VCsU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+	</body>
+
+</html>

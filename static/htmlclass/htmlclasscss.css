@@ -1,0 +1,137 @@
+* {
+    margin: 0;
+    padding: 0;
+    cursor: wait;
+}
+
+body {
+    font-family: Calibri, Helvetica, "Times New Roman";
+    background-color: #feffde;
+}
+h1 {
+    text-align: center;
+    color: #52734d;
+    margin: 0.5rem;
+    font-family: Raleway, Calibri;
+}
+h2 {
+    text-align: center;
+    font-family: "Open Sans", sans-serif;
+    color: #52734d;
+    margin: 0.5rem;
+}
+h3 {
+    font-family: Verdana, Calibri, "Times New Roman";
+    text-align: center;
+    color: #52734d;
+    margin: 0.5rem;
+}
+header {
+    background-color: #ddffbc;
+    padding-top: 6rem;
+}
+a:link {
+    color: #42d43f;
+    text-decoration: none;
+}
+a:visited {
+    color: #3ec73c;
+}
+a:hover {
+    color: #69e366;
+}
+a:active {
+    color: #3ec73c;
+}
+.navbar-list-top {
+    display: inline-flex;
+}
+a.navbar-link-top {
+    color: #ddffbc;
+    transition-duration: 0.5s;
+    text-decoration: none;
+    padding: 1.7rem;
+}
+.navbar-link-top:hover {
+    background-color: #7cab74;
+    font-size: 1.2rem;
+}
+.navbar-div-top {
+    position: fixed;
+    width: 100%;
+    background-color: #91c788;
+}
+
+.navbar-list-bottom {
+    display: inline-flex;
+    margin: 1rem;
+}
+.navbar-div-bottom {
+    background-color: #91c788;
+}
+a.navbar-link-bottom {
+    color: #feffde;
+}
+li {
+    list-style-type: none;
+}
+
+p {
+    font-size: 1rem;
+    color: #52734d;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    margin-left: 6rem;
+}
+img {
+    box-shadow: 1rem 1rem 1rem gray;
+    margin-left: 6rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+button {
+    color: #52734d;
+    font-weight: bold;
+    font-family: "Open Sans", Calibri, Helvetica;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    margin-left: 6rem;
+    padding: 1rem;
+    border: none;
+    background-color: #91c788;
+    transition-duration: 0.3s;
+}
+button:hover {
+    background-color: #82b379;
+}
+button:active {
+    padding: 0.8rem;
+    margin-left: 6.2rem;
+    margin-top: 1.2rem;
+    margin-bottom: 1.2rem;
+    margin-right: 1.2rem;
+}
+button:focus {
+    outline: none;
+}
+
+table {
+    margin: auto;
+    width: 80%;
+    border-collapse: collapse;
+    color: #52734d;
+}
+th {
+    background-color: #ddffbc;
+}
+/*tr:nth-child(even) {
+    background-color: #eeeeee;
+}*/
+td {
+    text-align: center;
+}
+td:first-child,
+th:first-child {
+    font-weight: bold;
+}
+.compatibility-table {}

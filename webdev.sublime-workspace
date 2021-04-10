@@ -1,0 +1,1071 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"const",
+				"constructor"
+			],
+			[
+				"can",
+				"canvasWidth"
+			],
+			[
+				"onkey",
+				"onkeypress\tAttr"
+			],
+			[
+				"fo",
+				"for\tfor (…) {…}"
+			],
+			[
+				"section",
+				"section-break-4"
+			],
+			[
+				"rende",
+				"render_template"
+			],
+			[
+				"j",
+				"j.u\tjava.util."
+			],
+			[
+				"ca",
+				"cam_pos"
+			],
+			[
+				"texco",
+				"tex_coords"
+			],
+			[
+				"bk",
+				"blkType"
+			],
+			[
+				"tex_coord",
+				"tex_coord_counter"
+			],
+			[
+				"pla",
+				"playerQuadrat"
+			],
+			[
+				"play",
+				"player_angle_x"
+			],
+			[
+				"player",
+				"player_angle_x"
+			],
+			[
+				"blk",
+				"blkKeys"
+			],
+			[
+				"testing",
+				"testingBlock"
+			],
+			[
+				"def",
+				"defs\tMethod"
+			],
+			[
+				"fulls",
+				"fullscreenState"
+			],
+			[
+				"i",
+				"ifmain\tif __name__ == '__main__'"
+			],
+			[
+				"texcoo",
+				"texCoord2"
+			],
+			[
+				"but",
+				"buttonDemo"
+			],
+			[
+				"w",
+				"what"
+			],
+			[
+				"blc",
+				"blocks"
+			],
+			[
+				"load",
+				"loadTexture"
+			],
+			[
+				"mouse",
+				"mouse_move"
+			],
+			[
+				"displa",
+				"displayCenter"
+			],
+			[
+				"mous",
+				"mouse_move"
+			],
+			[
+				"if",
+				"ifel\tif … else"
+			],
+			[
+				"wh",
+				"with\twithInputStream { … }"
+			],
+			[
+				"o",
+				"Other_car"
+			],
+			[
+				"__",
+				"__init__"
+			],
+			[
+				"gas",
+				"gas_pedal"
+			],
+			[
+				"rand",
+				"randint"
+			],
+			[
+				"coords",
+				"coords_h"
+			],
+			[
+				"gl",
+				"glTranslatef"
+			],
+			[
+				"key",
+				"keypress"
+			],
+			[
+				"view",
+				"viewMatrix"
+			],
+			[
+				"create",
+				"create_one_chunk"
+			],
+			[
+				"font",
+				"font-style\tproperty"
+			],
+			[
+				"button",
+				"buttongray"
+			],
+			[
+				"border",
+				"border-left\tproperty"
+			],
+			[
+				"text",
+				"text-decoration\tproperty"
+			],
+			[
+				"backg",
+				"background-color\tproperty"
+			],
+			[
+				"fu",
+				"func3"
+			],
+			[
+				"get",
+				"getElementById"
+			],
+			[
+				"back",
+				"background-color\tproperty"
+			],
+			[
+				"fun",
+				"func2"
+			],
+			[
+				"h",
+				"h3\tTag"
+			],
+			[
+				"m",
+				"myFunction"
+			],
+			[
+				"co",
+				"column"
+			],
+			[
+				"cap",
+				"capital"
+			],
+			[
+				"bt",
+				"btê"
+			],
+			[
+				"num",
+				"num2"
+			],
+			[
+				"ellips",
+				"ellipseCBId"
+			],
+			[
+				"u",
+				"unbind"
+			],
+			[
+				"e_old",
+				"e_old_y"
+			],
+			[
+				"e_",
+				"e_old_y"
+			],
+			[
+				"e",
+				"e_old_x"
+			],
+			[
+				"menu",
+				"menu_wkspc"
+			],
+			[
+				"img",
+				"imgCBId"
+			],
+			[
+				"crea",
+				"create_window"
+			],
+			[
+				"add",
+				"add_command"
+			],
+			[
+				"arg",
+				"arg2"
+			],
+			[
+				"bull",
+				"bulletX"
+			],
+			[
+				"bu",
+				"bulletY"
+			],
+			[
+				"bullet",
+				"bulletX"
+			],
+			[
+				"cann",
+				"cannonY"
+			],
+			[
+				"S",
+				"Surface"
+			],
+			[
+				"K",
+				"K_RIGHT"
+			],
+			[
+				"SCREEN",
+				"SCREEN_WIDTH"
+			],
+			[
+				"cannon",
+				"cannonX"
+			],
+			[
+				"save",
+				"saveAs"
+			],
+			[
+				"ex",
+				"except"
+			],
+			[
+				"men",
+				"menu_file"
+			],
+			[
+				"file",
+				"filedialog"
+			],
+			[
+				"Button",
+				"Button-1"
+			],
+			[
+				"butt",
+				"buttonEraser"
+			],
+			[
+				"colo",
+				"colorFill"
+			],
+			[
+				"Cli",
+				"Calibri"
+			],
+			[
+				"thickness",
+				"thicknessSlider"
+			],
+			[
+				"thick",
+				"thicknessLabel"
+			],
+			[
+				"pen",
+				"pen_old_y"
+			],
+			[
+				"pen_old",
+				"pen_old_y"
+			],
+			[
+				"pen_",
+				"pen_old_x"
+			],
+			[
+				"brush",
+				"brusholdx"
+			],
+			[
+				"col",
+				"colorFill"
+			],
+			[
+				"color",
+				"colorFill"
+			],
+			[
+				"tr",
+				"True"
+			],
+			[
+				"br",
+				"brush_tool"
+			],
+			[
+				"old",
+				"old_y"
+			],
+			[
+				"oldmo",
+				"oldMouseX"
+			],
+			[
+				"x",
+				"x"
+			],
+			[
+				"oldm",
+				"oldMouseX"
+			],
+			[
+				"mou",
+				"mouseY"
+			],
+			[
+				"str",
+				"strokeEntry"
+			],
+			[
+				"new",
+				"newcurvescreen"
+			],
+			[
+				"c",
+				"curvecanvas"
+			],
+			[
+				"newcur",
+				"newcurvescreen"
+			],
+			[
+				"title",
+				"title2"
+			],
+			[
+				"splash",
+				"splashlabel"
+			],
+			[
+				"poin",
+				"point2Y"
+			],
+			[
+				"point",
+				"point1Y"
+			],
+			[
+				"pos",
+				"pos2y"
+			],
+			[
+				"shape",
+				"shape"
+			],
+			[
+				"left",
+				"leftClick"
+			],
+			[
+				"p",
+				"purge"
+			],
+			[
+				"help",
+				"helpembed"
+			],
+			[
+				"cmd",
+				"cmdbot_CMD"
+			],
+			[
+				"slot",
+				"slot2"
+			],
+			[
+				"nu",
+				"num2"
+			],
+			[
+				"remin",
+				"remindlatr"
+			],
+			[
+				"remind",
+				"remindlater"
+			],
+			[
+				"rem",
+				"reminder"
+			],
+			[
+				"remindla",
+				"remindlater"
+			],
+			[
+				"im",
+				"img"
+			],
+			[
+				"b",
+				"Button"
+			],
+			[
+				"popu",
+				"popupmsg"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "main.py",
+			"settings":
+			{
+				"buffer_size": 613,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "templates/htmlclass.html",
+			"settings":
+			{
+				"buffer_size": 2075,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "templates/test.html",
+			"settings":
+			{
+				"buffer_size": 1346,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "static/canvascss.css",
+			"settings":
+			{
+				"buffer_size": 65,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "templates/canvasexperiments.html",
+			"settings":
+			{
+				"buffer_size": 354,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "static/canvas.js",
+			"settings":
+			{
+				"buffer_size": 1697,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/Python/Python.sublime-build",
+					""
+				],
+				[
+					"Packages/Python/Python.sublime-build",
+					"Syntax Check"
+				]
+			],
+			[
+				"Packages/Python/Python.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"Snippet: ",
+				"Snippet: Lorem ipsum"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 414.0,
+		"history":
+		[
+			"mylist[2]=\"2\"",
+			"mylist=[]",
+			"()",
+			")",
+			"my_dict.keys()",
+			"my_dict={\"e\":\"f\"}",
+			"e",
+			"f",
+			"e=f=1",
+			"math.sin(200)",
+			"math.sin(100)",
+			"import math",
+			"1(2)",
+			"from perlin_noise import PerlinNoise",
+			"help(SyntaxError)",
+			"SyntaxError",
+			"return",
+			"continue",
+			"[\"helo\"] == (\"helo\",)",
+			"[\"hello\"] == (\"hello\")",
+			"type('eee')",
+			"help(keyword)",
+			"keyword.kwlist",
+			"import keyword",
+			"object",
+			"int('21',2)",
+			"int('362', 16)",
+			"int('100', 16)",
+			"help(isinstance)",
+			"isinstance",
+			"isinstance('a string', int)",
+			"isinstance('a string', str)",
+			"_",
+			"_='hi'",
+			"sys.version",
+			"import sys",
+			"False is False",
+			"if 0:print('zeroe')",
+			"None==False",
+			"''",
+			"import this",
+			"help",
+			"True is 1",
+			"True==1",
+			"bytes(3)",
+			"bytes('hi')",
+			"help(this)",
+			"import this",
+			"import tkinter",
+			"from tkinter import Tk",
+			"if False:pass",
+			"if False:",
+			"('')",
+			"{}",
+			"[]",
+			"()",
+			"👁=''",
+			"True",
+			"None",
+			"print(exec('1+1'))",
+			"exec('1+1')",
+			"eval('1+1')",
+			"eval('sin(1)')",
+			"''()",
+			"self",
+			"int",
+			"print",
+			"'%x'%417",
+			"help(enumerate)",
+			"try:raise SyntaxError except:print('')",
+			"try:",
+			"help()",
+			"help",
+			"var1",
+			"var2",
+			"var2='eee'",
+			"var2='eee;",
+			"var2=var1",
+			"var1='var1'",
+			"from copy import copy",
+			"a",
+			"del a",
+			"a",
+			"a='a' if '' is '' else 'nope'",
+			"''==None",
+			"varTrue",
+			"varTrue='e'=='e'",
+			"int(1.0)",
+			"iter(['e', 'f'])",
+			"1.0+1",
+			"exec('print(\"hi\")')",
+			"eval('2+1')",
+			"clear",
+			"print('`'.upper())",
+			"print('3'.upper())",
+			"agh",
+			"if 'e'=='e':",
+			"if True:",
+			"wao",
+			"print('hi')"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/Users/wangh/Documents/Jerry/python/flask/templates",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static"
+	],
+	"file_history":
+	[
+		"/C/Users/wangh/Documents/Jerry/python/flask/templates/test.html",
+		"/C/Users/wangh/Documents/Jerry/python/htmlclass.html",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/docs.txt",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/blockInfo.py",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/e.py",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/voiceover.txt",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/minecraft.py",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/pythtests.py",
+		"/C/Users/wangh/AppData/Local/Programs/Python/Python38/Lib/site-packages/perlin_noise/perlin_noise.py",
+		"/C/Users/wangh/Documents/Jerry/python/pythclass.py",
+		"/C/Users/wangh/Documents/Jerry/python/.html",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/old2.txt",
+		"/C/Users/wangh/Documents/Jerry/python/screenblack.py",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/glut32.dll",
+		"/C/Users/wangh/Documents/Jerry/python/fwoosh/pentool.ai",
+		"/C/Users/wangh/Documents/Jerry/python/e.py",
+		"/C/Users/wangh/AppData/Local/Programs/Python/Python38/Lib/asyncio/__init__.py",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/voic",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/cython_experiments.pyx",
+		"/C/Users/wangh/Documents/Jerry/python/pythtests.py",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/Test.py",
+		"/C/Users/wangh/Documents/Jerry/skool/shoe.ai",
+		"/C/Users/wangh/Documents/Jerry/JAM project/JAM project.aep",
+		"/C/Users/wangh/Documents/Jerry/adobe stuffs/spell.fla",
+		"/C/Users/wangh/Documents/Jerry/python/flask/virt/pyvenv.cfg",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/glut.dll",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/old.txt",
+		"/C/Users/wangh/Documents/Jerry/python/flask/templates/main.js",
+		"/C/Users/wangh/Documents/Jerry/python/flask/templates/js/main.js",
+		"/C/Users/wangh/Documents/Jerry/python/fwoosh/fwooshmain.py",
+		"/C/Users/wangh/Documents/Jerry/python/discord/sound.py",
+		"/C/Users/wangh/Documents/Jerry/python/e.spec",
+		"/C/Users/wangh/Documents/Jerry/python/e",
+		"/C/Users/wangh/Documents/Jerry/python/fwoosh/logo.ico",
+		"/C/Users/wangh/AppData/Local/Programs/Python/Python38/Lib/tkinter/__init__.py",
+		"/C/Users/wangh/Documents/Jerry/python/fwoosh/pentool.png",
+		"/C/Users/wangh/Documents/Jerry/ya lik jaz.mp4",
+		"/C/Users/wangh/Documents/Jerry/python/fwoosh/logo.ai",
+		"/C/Users/wangh/Documents/Jerry/python/error sound.mp3",
+		"/C/Users/wangh/Documents/Jerry/python/tkinter experiments.py",
+		"/C/Users/wangh/AppData/Local/Programs/Python/Python38/pygametest.py",
+		"/C/Users/wangh/Documents/Jerry/python/animation.py",
+		"/C/Users/wangh/Documents/Jerry/python/sublime.py",
+		"/C/Users/wangh/Documents/Jerry/python/macro.py",
+		"/C/Users/wangh/Documents/Secure Checkout - Best Buy Canada_online.pdf",
+		"/C/Users/wangh/Documents/Jerry/python/icon.ico",
+		"/C/Users/wangh/Documents/Jerry/python/ar.jpg",
+		"/C/Users/wangh/Documents/Jerry/python/sound.py",
+		"/C/Users/wangh/AppData/Local/Programs/Python/Python38/Lib/tkinter/__main__.py",
+		"/C/Users/wangh/Documents/Jerry/python/cmdbot_CMD.py",
+		"/C/Users/wangh/Documents/Jerry/python/test.py",
+		"/C/Users/wangh/Documents/Jerry/skool/scireminder.py",
+		"/C/Users/wangh/Documents/Jerry/python/sublime.spec"
+	],
+	"find":
+	{
+		"height": 41.2
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"0.05",
+			"0.02",
+			"0.05",
+			"0.1",
+			"1",
+			"-2",
+			"left",
+			"10",
+			"pygame.mouse.set",
+			"0.7",
+			"1",
+			")",
+			"("
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"0.1",
+			"0.05",
+			"0.02",
+			"0.05",
+			"0.5",
+			"0",
+			"1",
+			"0.7",
+			"]",
+			"["
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 5,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "main.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 613,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								522,
+								522
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "templates/htmlclass.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2075,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								293,
+								293
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 280.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "templates/test.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1346,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1328,
+								1328
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "static/canvascss.css",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 65,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								65,
+								65
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CSS/CSS.sublime-syntax",
+							"tab_size": 4
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "templates/canvasexperiments.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 354,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								292,
+								292
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "static/canvas.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1697,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								771,
+								771
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 140.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 29.0
+	},
+	"input":
+	{
+		"height": 43.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 212.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.unsaved_changes":
+	{
+		"height": 132.0
+	},
+	"pinned_build_system": "Packages/Python/Python.sublime-build",
+	"project": "webdev.sublime-project",
+	"replace":
+	{
+		"height": 54.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"C:\\Users\\wangh\\Documents\\Jerry\\python\\sublime.py"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 136.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
