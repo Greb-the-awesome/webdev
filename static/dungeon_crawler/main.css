@@ -1,3 +1,52 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
 #canv {
 	border: 3px black;
+	background-color: #111111;
 }
+
+
+
+/* regular button presets */
+.regular-button-red {
+	color: #9c958c;
+	background-color: #cf1b1b;
+	font-weight: bolder;
+	border: 0.5% #9c958c;
+	padding: 3%;
+}
+
+/* class chooser buttons */
+.choose-class-button {
+	padding: 10% 8%;
+}
+
+#chooseClassStrongman {
+	position: absolute;
+	left: 13%;
+	top: 30%;
+}
+
+#chooseClassThinman {
+	position: absolute;
+	left: 40%;
+	top: 30%;
+}
+
+#chooseClassThirdclass {
+	position: absolute;
+	left: 67%;
+	top: 30%;
+}
+
+/* start game */
+#startGame {
+	position: absolute;
+	left: 75%;
+	top: 75%;
+}
+
+/*@font-face { font-family: My-Font-Name; src: url('url/to/static/prob'); }*/

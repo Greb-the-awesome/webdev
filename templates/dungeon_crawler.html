@@ -1,11 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html id="html">
 <head>
 	<title>Dungeon Crawler</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='dungeon_crawler/main.js') }}"></script>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dungeon_crawler/main.css') }}">
 </head>
-<body onload="onLoad();" id="body">
+<body id="body">
 	<noscript>srry you cant play yer browser aint support js</noscript>
-	<canvas id="canv" width="400" height="300"></canvas>
+
+	<!-- not sure why we use divs here? -->
+	<div id="canvContainer">
+		<button class="choose-class-button" id="chooseClassStrongman">Strongman</button>
+		<button class="choose-class-button" id="chooseClassThinman">Thinman</button>
+		<button class="choose-class-button" id="chooseClassThirdclass">Third class</button>
+		<button class="regular-button-red" id="startGame">Start Game →</button>
+		<canvas id="canv" width="400" height="300">sry yer browser aint support canvas</canvas>
+	</div>
+<!-- <p id="e">eeeee</p> -->
 </body>
 </html>
