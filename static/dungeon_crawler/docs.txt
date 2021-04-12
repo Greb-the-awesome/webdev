@@ -1,0 +1,9 @@
+default increment for things like player movement speed or walls = widthInc
+only reason heightInc is there is for gui
+
+player:
+	strength is from 1-10
+	size is from 1-10
+
+map:
+	it is 1500 widthIncs wide and 1000 widthIncs high
