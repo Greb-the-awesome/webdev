@@ -50,6 +50,8 @@ a.navbar-link-top {
     transition-duration: 0.5s;
     text-decoration: none;
     padding: 1.7rem;
+    position: relative;
+    top: -0.2rem;
 }
 .navbar-link-top:hover {
     background-color: #7cab74;
@@ -71,6 +73,13 @@ a.navbar-link-top {
 a.navbar-link-bottom {
     color: #feffde;
 }
+.navbar-icon-bottom {
+    font-size: 2rem;
+}
+.mobile-dropdown-button {
+    display: none;
+}
+
 li {
     list-style-type: none;
 }
@@ -134,3 +143,51 @@ th:first-child {
     font-weight: bold;
 }
 .compatibility-table {}
+.blue { color: blue; }
+
+/* media query */
+@media all and (max-width: 656px) {
+    h3 {
+        font-size: 1.3em;
+    }
+    p {
+        font-size: 0.8rem;
+    }
+    table {
+        margin: auto;
+        width: 95%;
+    }
+    p, img, a, button {
+        margin-left: 1rem;
+    }
+    tr {
+        font-size: 0.8rem;
+    }
+    .navbar-list-top {
+        display: none ;
+    }
+    .mobile-dropdown-button-list {
+        display: inline-flex;
+    }
+    .mobile-dropdown-button {
+        background-color: #91c788;
+        padding: 0.5rem;
+        color: #feffde;
+        font-size: 0.8rem;
+        display: inline-flex;
+    }
+    .mobile-dropdown-button:active {
+        font-size: 1rem;
+        margin-left: 1.2rem;
+        background-color: #7cab74;
+    }
+    li.visible {
+        display: flex;
+    }
+    li.unvisible {
+        display:none;
+    }
+    button:active {
+        margin-left: 1rem;
+    }
+}

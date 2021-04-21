@@ -7,3 +7,6 @@ player:
 
 map:
 	it is 1500 widthIncs wide and 1000 widthIncs high
+
+images:
+	bricks.png is 29 * 29 and it is resized to 58 * 58 to give it a pixel art look

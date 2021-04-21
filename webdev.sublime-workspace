@@ -4,12 +4,224 @@
 		"selected_items":
 		[
 			[
-				"const",
-				"constructor"
+				"floo",
+				"flooredImgsWide"
+			],
+			[
+				"floored",
+				"flooredImgsWide"
+			],
+			[
+				"img",
+				"imgHeight"
+			],
+			[
+				"remove",
+				"removeVisibleClasses"
+			],
+			[
+				"numo",
+				"numOfImgsWide"
+			],
+			[
+				"num",
+				"numOfImgsHigh"
+			],
+			[
+				"if",
+				"if\tif"
+			],
+			[
+				"flooredImgs",
+				"flooredImgsWide"
+			],
+			[
+				"let",
+				"let"
+			],
+			[
+				"numof",
+				"numOfImgsHigh"
+			],
+			[
+				"half",
+				"halfWallHeight"
+			],
+			[
+				"fun",
+				"fun\tFunction"
+			],
+			[
+				"halfWall",
+				"halfWallWidth"
+			],
+			[
+				"flor",
+				"flooredImgsHigh"
+			],
+			[
+				"numOf",
+				"numOfImgsHigh"
+			],
+			[
+				"floor",
+				"flooredImgsWide"
+			],
+			[
+				"floore",
+				"flooredImgsHigh"
+			],
+			[
+				"width",
+				"widthInc"
+			],
+			[
+				"fu",
+				"fun\tFunction"
+			],
+			[
+				"navb",
+				"navbar-list-bottom"
+			],
+			[
+				"wallP",
+				"wallPoints"
+			],
+			[
+				"canvas",
+				"canvasHeight"
+			],
+			[
+				"wall",
+				"wallPoint"
+			],
+			[
+				"for",
+				"for\tfor (…) {…}"
+			],
+			[
+				"onk",
+				"onKeyUp"
+			],
+			[
+				"bri",
+				"bricksPattern"
+			],
+			[
+				"canv",
+				"canvasWidth"
+			],
+			[
+				"height",
+				"heightInc"
+			],
+			[
+				"bricks",
+				"bricksImg"
+			],
+			[
+				"wid",
+				"widthInc"
+			],
+			[
+				"back",
+				"backgroundImg"
+			],
+			[
+				"loaded",
+				"loadedImgs"
+			],
+			[
+				"flare",
+				"flareBackground"
+			],
+			[
+				"fil",
+				"fillText"
+			],
+			[
+				"class",
+				"Class"
+			],
+			[
+				"heigh",
+				"heightInc"
 			],
 			[
 				"can",
-				"canvasWidth"
+				"canvasHeight"
+			],
+			[
+				"bordercol",
+				"border-collapse\tproperty"
+			],
+			[
+				"backgrou",
+				"background-color\tproperty"
+			],
+			[
+				"margin",
+				"margin-right\tproperty"
+			],
+			[
+				"padd",
+				"padding\tproperty"
+			],
+			[
+				"m",
+				"margin-top\tproperty"
+			],
+			[
+				"res",
+				"resizeDrawingBuffer"
+			],
+			[
+				"fra",
+				"fragmentShader"
+			],
+			[
+				"vertex",
+				"vertexShader"
+			],
+			[
+				"transitiond",
+				"transition-duration\tproperty"
+			],
+			[
+				"button",
+				"buttonInQuestion"
+			],
+			[
+				"f",
+				"f\tAnonymous Function"
+			],
+			[
+				"zombie",
+				"zombieInQuestion"
+			],
+			[
+				"zom",
+				"zombieInQuestion"
+			],
+			[
+				"fill",
+				"fillStyle"
+			],
+			[
+				"old",
+				"oldWidthIncrement"
+			],
+			[
+				"padding",
+				"padding-left\tproperty"
+			],
+			[
+				"align",
+				"text-align\tproperty"
+			],
+			[
+				"const",
+				"constructor"
 			],
 			[
 				"onkey",
@@ -112,10 +324,6 @@
 				"mouse_move"
 			],
 			[
-				"if",
-				"ifel\tif … else"
-			],
-			[
 				"wh",
 				"with\twithInputStream { … }"
 			],
@@ -160,10 +368,6 @@
 				"font-style\tproperty"
 			],
 			[
-				"button",
-				"buttongray"
-			],
-			[
 				"border",
 				"border-left\tproperty"
 			],
@@ -176,28 +380,12 @@
 				"background-color\tproperty"
 			],
 			[
-				"fu",
-				"func3"
-			],
-			[
 				"get",
 				"getElementById"
 			],
 			[
-				"back",
-				"background-color\tproperty"
-			],
-			[
-				"fun",
-				"func2"
-			],
-			[
 				"h",
 				"h3\tTag"
-			],
-			[
-				"m",
-				"myFunction"
 			],
 			[
 				"co",
@@ -210,10 +398,6 @@
 			[
 				"bt",
 				"btê"
-			],
-			[
-				"num",
-				"num2"
 			],
 			[
 				"ellips",
@@ -238,10 +422,6 @@
 			[
 				"menu",
 				"menu_wkspc"
-			],
-			[
-				"img",
-				"imgCBId"
 			],
 			[
 				"crea",
@@ -334,197 +514,16 @@
 			[
 				"pen_old",
 				"pen_old_y"
-			],
-			[
-				"pen_",
-				"pen_old_x"
-			],
-			[
-				"brush",
-				"brusholdx"
-			],
-			[
-				"col",
-				"colorFill"
-			],
-			[
-				"color",
-				"colorFill"
-			],
-			[
-				"tr",
-				"True"
-			],
-			[
-				"br",
-				"brush_tool"
-			],
-			[
-				"old",
-				"old_y"
-			],
-			[
-				"oldmo",
-				"oldMouseX"
-			],
-			[
-				"x",
-				"x"
-			],
-			[
-				"oldm",
-				"oldMouseX"
-			],
-			[
-				"mou",
-				"mouseY"
-			],
-			[
-				"str",
-				"strokeEntry"
-			],
-			[
-				"new",
-				"newcurvescreen"
-			],
-			[
-				"c",
-				"curvecanvas"
-			],
-			[
-				"newcur",
-				"newcurvescreen"
-			],
-			[
-				"title",
-				"title2"
-			],
-			[
-				"splash",
-				"splashlabel"
-			],
-			[
-				"poin",
-				"point2Y"
-			],
-			[
-				"point",
-				"point1Y"
-			],
-			[
-				"pos",
-				"pos2y"
-			],
-			[
-				"shape",
-				"shape"
-			],
-			[
-				"left",
-				"leftClick"
-			],
-			[
-				"p",
-				"purge"
-			],
-			[
-				"help",
-				"helpembed"
-			],
-			[
-				"cmd",
-				"cmdbot_CMD"
-			],
-			[
-				"slot",
-				"slot2"
-			],
-			[
-				"nu",
-				"num2"
-			],
-			[
-				"remin",
-				"remindlatr"
-			],
-			[
-				"remind",
-				"remindlater"
-			],
-			[
-				"rem",
-				"reminder"
-			],
-			[
-				"remindla",
-				"remindlater"
-			],
-			[
-				"im",
-				"img"
-			],
-			[
-				"b",
-				"Button"
-			],
-			[
-				"popu",
-				"popupmsg"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "main.py",
+			"file": "/C/Users/wangh/Documents/Jerry/python/OpenGL/minecraft.py",
 			"settings":
 			{
-				"buffer_size": 613,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "templates/htmlclass.html",
-			"settings":
-			{
-				"buffer_size": 2075,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "templates/test.html",
-			"settings":
-			{
-				"buffer_size": 1346,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "static/canvascss.css",
-			"settings":
-			{
-				"buffer_size": 65,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "templates/canvasexperiments.html",
-			"settings":
-			{
-				"buffer_size": 354,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "static/canvas.js",
-			"settings":
-			{
-				"buffer_size": 1697,
+				"buffer_size": 11525,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -569,6 +568,8 @@
 		"height": 414.0,
 		"history":
 		[
+			"import this",
+			"e",
 			"mylist[2]=\"2\"",
 			"mylist=[]",
 			"()",
@@ -682,12 +683,43 @@
 	},
 	"expanded_folders":
 	[
-		"/C/Users/wangh/Documents/Jerry/python/flask/templates",
-		"/C/Users/wangh/Documents/Jerry/python/flask/static"
 	],
 	"file_history":
 	[
+		"/C/Users/wangh/Documents/Jerry/python/flask/main.py",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/main.js",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/temp.js",
+		"/C/Users/wangh/Documents/Jerry/python/flask/templates/htmlclass.html",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/htmlclass/htmlclasscss.css",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/htmlclass/htmlclassjs.js",
+		"/C/Users/wangh/Documents/Jerry/python/flask/virt/Lib/site-packages/pip/_vendor/packaging/specifiers.py",
+		"/C/Users/wangh/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/C/Users/wangh/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime-keymap",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/docs.txt",
+		"/C/Users/wangh/Documents/Jerry/python/flask/templates/dungeon_crawler.html",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/wallPoints.js",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/main.css",
+		"/C/Users/wangh/Documents/Jerry/python/flask/commands.txt",
+		"/C/Users/wangh/Documents/Jerry/python/flask/Procfile",
+		"/C/Users/wangh/Documents/Jerry/python/flask/.gitignore",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/zombiegame/zombiegame.js",
+		"/C/Users/wangh/Documents/Jerry/python/flask/.git/MERGE_MSG",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/zombiegame/zombiegame.css",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/multiplayer_3d_game/multiplayer_3d_game.css",
+		"/C/Users/wangh/Documents/Jerry/python/flask/templates/multiplayer_3d_game.html",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/multiplayer_3d_game/multiplayer_3d_game.js",
+		"/C/Users/wangh/Documents/Jerry/python/flask/virt/Lib/site-packages/pip/_vendor/html5lib/html5parser.py",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/multiplayer_3d_game.js",
+		"/C/Users/wangh/Documents/Jerry/python/flask/virt/Lib/site-packages/pip/_internal/utils/logging.py",
+		"/C/Users/wangh/Documents/Jerry/python/flask/templates/zombiegame.html",
 		"/C/Users/wangh/Documents/Jerry/python/flask/templates/test.html",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/zombiegame.js",
+		"/C/Users/wangh/Documents/Jerry/python/fwoosh/ide.py",
+		"/C/Users/wangh/Documents/Jerry/python/flask/templates/canvasexperiments.html",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/canvascss.css",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/canvas.js",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/requests.txt",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/htmlclasscss.css",
 		"/C/Users/wangh/Documents/Jerry/python/htmlclass.html",
 		"/C/Users/wangh/Documents/Jerry/python/OpenGL/docs.txt",
 		"/C/Users/wangh/Documents/Jerry/python/OpenGL/blockInfo.py",
@@ -743,11 +775,11 @@
 	],
 	"find":
 	{
-		"height": 41.2
+		"height": 29.0
 	},
 	"find_in_files":
 	{
-		"height": 0.0,
+		"height": 206.0,
 		"where_history":
 		[
 		]
@@ -757,6 +789,31 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"wallpo",
+			"wallpoints",
+			"b.",
+			"wallpoin",
+			"img",
+			"itemlist",
+			"navbar-list-top",
+			"h3",
+			"bricks",
+			"bricksim",
+			"wall",
+			"'",
+			"\"",
+			"margin",
+			"91c788",
+			"console",
+			"navbarLink",
+			"health",
+			"checkZombieCollideBullet",
+			"checkco",
+			"new Zombie",
+			"new Bullet",
+			"zombie",
+			"increment",
+			"padding-left: 6rem;",
 			"0.05",
 			"0.02",
 			"0.05",
@@ -777,6 +834,10 @@
 		"regex": false,
 		"replace_history":
 		[
+			"\"",
+			"'",
+			"widthIncrement",
+			"margin-left: 6rem;",
 			"0.1",
 			"0.05",
 			"0.02",
@@ -797,175 +858,34 @@
 	"groups":
 	[
 		{
-			"selected": 5,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "main.py",
+					"file": "/C/Users/wangh/Documents/Jerry/python/OpenGL/minecraft.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 613,
+						"buffer_size": 11525,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								522,
-								522
+								0,
+								0
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "templates/htmlclass.html",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2075,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								293,
-								293
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 280.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "templates/test.html",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1346,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1328,
-								1328
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/HTML/HTML.sublime-syntax"
-						},
-						"translation.x": 0.0,
 						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "static/canvascss.css",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 65,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								65,
-								65
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/CSS/CSS.sublime-syntax",
-							"tab_size": 4
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "templates/canvasexperiments.html",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 354,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								292,
-								292
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/HTML/HTML.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "static/canvas.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1697,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								771,
-								771
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 140.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -980,7 +900,7 @@
 	},
 	"input":
 	{
-		"height": 43.0
+		"height": 74.0
 	},
 	"layout":
 	{
@@ -1063,7 +983,7 @@
 	"show_open_files": true,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 136.0,
+	"side_bar_width": 187.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

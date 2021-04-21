@@ -12,14 +12,21 @@
     <!-- raleway -->
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap" rel="stylesheet">
 
+    <!-- font awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
+
     <link rel="stylesheet" href="{{url_for('static', filename='htmlclass/htmlclasscss.css')}}">
+
+    <!-- media queries or smth? -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
     <div class="navbar-div-top">
         <nav>
             <ul>
                 <li style="display: inline-flex;">
-                    <a href="#" style="color: #ddffbc; padding:1rem; font-size: 2rem; font-family: Raleway, 'Open Sans'"
+                    <a href="#" style="color: #ddffbc; padding: 1rem; font-size: 2.5rem;
+                    font-family: Raleway, 'Open Sans'; position: relative; top: 0.2rem;"
                         >Fwoosh</a>
                 </li>
                 <li class="navbar-list-top">
@@ -30,6 +37,9 @@
                 </li>
                 <li class="navbar-list-top">
                     <a href="#" class="navbar-link-top">The Same Page ig?</a>
+                </li>
+                <li class="mobile-dropdown-button-list">
+                    <button class="mobile-dropdown-button" id="dropdown-button"> <i class="fas fa-bars"></i> </button>
                 </li>
             </ul>
         </nav>
@@ -127,11 +137,16 @@
                     <li class="navbar-list-bottom">
                         <a href="https://youtu.be/y7Ye20Wvvso" class="navbar-link-bottom">privacy policy</a>
                     </li>
+                    <li class="navbar-list-bottom">
+                        <a href="https://reddit.com" class="navbar-link-bottom">
+                            <i class="fab fa-reddit navbar-icon-bottom"></i>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             <br>
         </div>
     </footer>
 </body>
+<script type="text/javascript" src="{{url_for('static', filename='htmlclass/htmlclassjs.js')}}"></script>
 </html>
-<!-- this is the new version -->
