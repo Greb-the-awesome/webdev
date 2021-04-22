@@ -6,14 +6,6 @@ const widthIncrement = canvasWidth/100;
 const heightIncrement = canvasHeight/100;
 var bullets = [];
 var zombies = [];
-var difficultyLevels = [
-    "Supa EZ",
-    "Easy",
-    "Normal"
-    "Hard",
-    "Harder",
-    "Really Hard Ok?"
-];
 var frameNumber = 0;
 var score = 0;
 var difficulty = 0;
@@ -100,29 +92,6 @@ class Zombie {
     }
 }
 
-// button class its obvious
-class Button {
-    constructor(width, height, x, y, text, command) {
-        this.width = width;
-        this.height = height;
-        this.command = command;
-    }
-}
-
-// button functions
-function startGame() {
-    intervalHandle = window.setInterval(gameLoop, 10);
-}
-function changeDifficulty() {
-    
-}
-
-var buttons = {
-    "start-game" : new Button(widthIncrement*40, heightIncrement*10,
-        widthIncrement*20, heightIncrement*50, "Start Game", startGame),
-    "difficulty" : new Button(widthIncrement*40, heightIncrement*10,
-        widthIncrement*20, heightIncrement*70, "Difficulty: Normal")
-};
 
 
 let player = new Player();
@@ -138,36 +107,17 @@ function onLoad() {
     // listen
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
-    window.addEventListener("click", onClick);
 
     // keys
-    for(let i=0; i<10; i++) {
-        downKeys[i] = false;
-    }
+    // for(let i=0; i<10; i++) {
+    //     downKeys[i] = false;
+    // }
 
     // canvas settings
     ctx.fillStyle = "#FF0000";
     ctx.font = "30px Helvetica";
-
-    // draw ze buttons
-    for(let i=0; i<buttons.length; i++) {
-        var buttonInQuestion = buttons[i]
-        ctx.fillStyle = "#ABABAB";
-        ctx.fillRect(buttonInQuestion.x, buttonInQuestion.y, buttonInQuestion.width, buttonInQuestion.height);
-        ctx.fillStyle = "#000000";
-        ctx.fillText(buttonInQuestion.text, buttonInQuestion.x/2, buttonInQuestion.y/2);
-    }
-
 }
 
-// get mouse pos relative to canvas I think
-function getMousePos(canvas, event) {
-    var rect = canvas.getBoundingClientRect();
-    return {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
-    };
-}
 
 function onKeyDown(event) {
     var keyCode = event.keyCode;
@@ -182,21 +132,6 @@ function onKeyUp(event) {
     downKeys[keyCode] = false;
 }
 
-function onClick(event) {
-    var mousePos = getMousePos(canvas, evt);
-    // check if clicked on button
-    for(let i=0; i<buttons.length; i++){
-        var buttonInQuestion = buttons[i];
-        if( // mouse in the button's x
-            (Math.abs(buttonInQuestion.x+buttonInQuestion.width/2 - mousePos.x) < buttonInQuestion.width/2) &&
-            // mouse in the button's y
-                (Math.abs(buttonInQuestion.y+buttonInQuestion.height/2 - mousePos.y) < buttonInQuestion.height/2)
-            ){
-            // clicked yoh
-            buttonInQuestion.command();
-        }
-    }
-}
 
 // collison detection function
 function checkCollision(thing1, thing2) {
@@ -249,13 +184,12 @@ function gameLoop() {
 
     // update the bullets and draw them
     for(let i=0; i<bullets.length; i++) {
+        bullets[i].updatePos();
+        bullets[i].draw();
         // despawn bullets
         if(bullets[i].pos > widthIncrement*102 || bullets[i] < widthIncrement*-2) {
             bullets.splice(i, 1);
         }
-
-        bullets[i].updatePos();
-        bullets[i].draw();
     }
 
     // spawn zombies
@@ -303,3 +237,4 @@ function gameLoop() {
 
 
 }
+intervalHandle = window.setInterval(gameLoop, 10);
