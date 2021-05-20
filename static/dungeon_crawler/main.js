@@ -1,18 +1,20 @@
-var canvasWidth , canvasHeight ;
-var widthInc;
-var heightInc;
-var ctx, canvas;
-var chosenClass;
-var playerHealth, playerSpeed, playerStrength;
-var player;
 var loadedImgs = {
 	"background" : false,
-	"bricks" : false
+	"bricks" : false,
+	"player" : false
 };
-var allImgsLoaded = false;
-var backgroundImg, bricksImg, bricksPattern;
+// new version
 var downKeys = {};
-var wallPoints;
+var wallPoints = window.wallPoints;
+var canvasWidth, canvasHeight, widthInc, heightInc, ctx, canvas, player, 
+backgroundImg, bricksImg, playerImg, woodArmorImg;
+
+Math.PIE = Math.PI;
+var itemImgs = {};
+var itemList = [];
+var canMove = {
+	"w" : true, "a" : true, "s" : true, "d" : true
+}
 
 
 class Player {
@@ -23,15 +25,35 @@ class Player {
 		this.strength = strength;
 		this.size = size;
 		this.accesories = null;
-		this.posX = widthInc * 750;
-		this.posY = widthInc * 990;
+		this.posX = widthInc * 20;
+		this.posY = this.posX;
+		this.angle = 0; // R A D I A N S
+		window.addEventListener("mousemove", onMouseMove)
 	}
 
 	draw() {
-
+		ctx.translate(widthInc * 50, heightInc * 50);
+		ctx.rotate(this.angle);
+		/* does not follow DGS-1 standard but w a t e v e r */
+		ctx.translate(widthInc * -50, heightInc * -50);
+		ctx.drawImage(playerImg, widthInc * 47.5, heightInc * 47.5, widthInc * 5, widthInc * 5);
+		ctx.setTransform(1,0,0,1,0,0);
 	}
 }
 
+// idk if we rlly need this but ok...
+class Item {
+	constructor(what, posX, posY) {
+		this.what = what;
+		this.posX = posX;
+		this.posY = posY;
+		this.img = itemImgs[what];
+	}
+
+	draw() {
+		ctx.drawImage(this.img, this.posX - player.posX, this.posY - player.posY, widthInc * 2, widthInc * 2);
+	}
+}
 
 function onLoad() {
 	// resize canvas
@@ -46,7 +68,7 @@ function onLoad() {
 	ctx = canvas.getContext("2d");
 	canvas.width = canvasWidth;
 	canvas.height = canvasHeight;
-	ctx.font = (heightInc * 5) + "px Helvetica";
+	ctx.font = (heightInc * 5) + "px shadows into light";
 
 	// loading screen
 	ctx.textAlign = "center";
@@ -55,33 +77,25 @@ function onLoad() {
 	// hide the buttons so they dont pop up on the loading screen
 	$("button").hide();
 
-	// get images
-	backgroundImg = new Image();
-	backgroundImg.src = "static/dungeon_crawler/flare.png";
-	backgroundImg.onload = function() {
-		loadedImgs["background"] = true;
-	};
-
-	bricksImg = new Image();
-	bricksImg.src = "static/dungeon_crawler/a.png";
-	bricksImg.onload = function() {
-		loadedImgs["bricks"] = true;
-	};
-
 	// listen listen
 	window.addEventListener("keydown", onKeyDown);
 	window.addEventListener("keyup", onKeyUp);
 
-	// wall points
-	wallPoints = [
-		[widthInc * 730, widthInc * 900, widthInc * 45, widthInc * 10]
-	];
+	// load the imgs
+	loadImgs();
+
+	// the big list of items
+	itemImgs = {
+		"wood_armor" : woodArmorImg,
+	}
 
 	// wait until all imgs are loaded
 	var waitLoadIntervalHandler = window.setInterval(function() {
 		if (
 			loadedImgs["background"] &&
-			loadedImgs["bricks"]
+			loadedImgs["bricks"] &&
+			loadedImgs["player"] &&
+			loadedImgs["wood armor"]
 			) {
 			window.clearInterval(waitLoadIntervalHandler);
 			showClassChooser();
@@ -89,14 +103,135 @@ function onLoad() {
 	}, 10);
 }
 
+// load imgs (the list of imgs was getting way too long to be in onLoad)
+function loadImgs() {
+	// background
+	backgroundImg = new Image();
+	backgroundImg.src = "static/dungeon_crawler/images/flare.png";
+	backgroundImg.onload = function() {
+		loadedImgs["background"] = true;
+	};
+
+	// sprites
+	// walls
+	bricksImg = new Image();
+	bricksImg.src = "static/dungeon_crawler/images/bricks.png";
+	bricksImg.onload = function() {
+		loadedImgs["bricks"] = true;
+	};
+
+	// other
+	playerImg = new Image();
+	playerImg.src = "static/dungeon_crawler/images/ploir.png";
+	playerImg.onload = function() {
+		loadedImgs["player"] = true;
+	};
+
+	// items
+	woodArmorImg = new Image();
+	woodArmorImg.src = "static/dungeon_crawler/images/armorWooden.png";
+	woodArmorImg.onload = function() {
+		loadedImgs["wood armor"] = true;
+	};
+}
+
+// event handlers
+
 function onKeyDown(key) {
 	var keyCode = event.keyCode;
 	downKeys[keyCode] = true;
+
+	if (keyCode == 13) {
+		key.preventDefault();
+		processCmd( document.getElementById("frm1").elements[0].value );
+	}
 }
 
 function onKeyUp(key) {
 	var keyCode = event.keyCode;
 	downKeys[keyCode] = false;
+}
+
+function print(a) {
+	console.log(a);
+}
+
+function onMouseMove(e) {
+	var relPosX = e.offsetX - widthInc * 50;
+	var relPosY = e.offsetY - heightInc * 50;
+
+	if (relPosX >= 0 && relPosY >= 0) { // bottom right
+		player.angle = Math.PI / 2 + Math.atan(relPosY / relPosX);
+	}
+	else if (relPosX <= 0 && relPosY >= 0) { // bottom left
+		player.angle = Math.PI + Math.atan(Math.abs(relPosX) / relPosY);
+	}
+	else if (relPosX <= 0 && relPosY <= 0) { // top left
+		player.angle = Math.PI * 1.5 + Math.atan(Math.abs(relPosY) / Math.abs(relPosX));
+	}
+	else { // top right
+		player.angle = Math.atan(relPosX / Math.abs(relPosY));
+	}
+}
+
+// other funcs
+
+function getItemsAfterPoint(list, point) {
+	for (let i = 0; i < list.length - point; i++) {
+		list.shift();
+	}
+	return list;
+}
+
+function processCmd(rawCmd) {
+	cmdList = rawCmd.split(" ");
+	cmd = cmdList[0];
+	cmdArgs = getItemsAfterPoint(cmdList, 1);
+
+	// see wot command
+	if (cmd == "setspeed") {
+		player.speed = parseFloat(cmdArgs[0]) * widthInc;
+	}
+	else if (cmd == "placeitem") {
+		itemList.push(new Item("wood_armor", 100, 100))
+	}
+	else if (cmd == "hitboxes") {
+		if (cmdArgs[0] == "off") {
+			canMove["w"] = true; canMove["a"] = true;
+			canMove["s"] = true; canMove["d"] = true;
+		}
+	}
+	else if (cmd == "java") {
+		console.log("*sniff sniff* is that java I smell?");
+	}
+}
+
+function checkCollision(thing1Pos, thing1Width, thing1Height, thing2Pos, thing2Width, thing2Height) {
+	var correctedPos1 = [thing1Pos[0] + thing1Width, thing1Pos[1] + thing1Height];
+	var correctedPos2 = [thing2Pos[0] + thing2Width, thing2Pos[1] + thing2Height];
+	var distanceX = correctedPos1[0] - correctedPos2[0];
+	var distanceY = correctedPos1[1] - correctedPos2[1];
+	var combinedWidth = thing1Width + thing2Width;
+	var combinedHeight = thing1Height + thing2Height;
+	var collisions = {"w" : false, "a" : false, "s" : false, "d" : false};
+	if (distanceX < 0 && Math.abs(distanceX) < combinedWidth) { // thing1 left of thing2
+		collisions["d"] = true;
+	} else {collisions["d"] = false;}
+	if (distanceX > 0 && combinedWidth < distanceX) { // thing1 right of thing2
+		collisions["a"] = true;
+	} else {collisions["a"] = false;}
+	if (distanceY < 0 && Math.abs(distanceY) < combinedHeight) { // thing1 on top of thing2
+		collisions["s"] = true;
+	} else {collisions["s"] = false;}
+	if (distanceY > 0 && distanceY < combinedHeight) { // thing1 down from thing2
+		collisions["w"] = true;
+	} else {collisions["w"] = false;}
+
+	ctx.fillStyle = "#00FFFF"
+	ctx.fillRect(thing1Pos[0], thing1Pos[1], thing1Width, thing1Height);
+	ctx.fillRect(thing2Pos[0], thing2Pos[1], thing2Width, thing2Height);
+
+	return collisions;
 }
 
 function showBg() {
@@ -160,9 +295,6 @@ function showBackStory() {
 
 	// give start game button a command
 	$("button#startGame").on("click", function(e) {
-		// make all the patterns
-		bricksPattern = ctx.createPattern(bricksImg, "repeat");
-
 		// hide the button
 		$("button#startGame").hide();
 
@@ -171,46 +303,23 @@ function showBackStory() {
 }
 
 // wall drawing function
-/*
 function drawWall(wallImg, x, y, width, height, imgWidth, imgHeight) {
 	var numOfImgsWide = width / imgWidth;
 	var numOfImgsHigh = height / imgHeight;
+
 	var flooredImgsWide = Math.floor(numOfImgsWide);
 	var flooredImgsHigh = Math.floor(numOfImgsHigh);
 
-	// drawing most of the walls
-	for (let i=0; i<flooredImgsWide; i++) {
-		for (let j=0; j<flooredImgsHigh; j++) {
-			ctx.drawImage(wallImg, x + i * imgWidth, y + j * imgHeight, imgWidth, imgHeight);
-		}
-	}
-
-	// drawing the half walls
-	if (flooredImgsWide != numOfImgsWide || flooredImgsHigh != numOfImgsHigh) {
-		var halfWallWidth = (numOfImgsWide - flooredImgsWide) * imgWidth;
-		var halfWallHeight = (numOfImgsHigh - flooredImgsHigh) * imgHeight;
-
-		// drawing the half walls to the right
-		for (let i=0; i<flooredImgsHigh; i++) {
-			ctx.drawImage(wallImg, halfWallWidth, imgHeight, halfWallWidth, imgHeight,
-				flooredImgsWide * imgWidth, y + i * imgHeight, imgWidth, imgHeight
-			);
-		}
-	}
-}
-*/
-
-function drawWall(wallImg, x, y, width, height, imgWidth, imgHeight) {
-	var numOfImgsWide = width / imgWidth;
-	var numOfImgsHigh = height / imgHeight;
-	var flooredImgsWide = Math.floor(numOfImgsWide);
-	var flooredImgsHigh = Math.floor(numOfImgsHigh);
 	var leftOverflow = (numOfImgsWide - flooredImgsWide) * imgWidth;
+	var leftOverflowOriginalPic = (numOfImgsWide - flooredImgsWide) * wallImg.width;
+
+	var topOverflow = (numOfImgsHigh - flooredImgsHigh) * imgHeight;
+	var topOverflowOriginalPic = (numOfImgsHigh - flooredImgsHigh) * wallImg.height;
 
 	// drawing the full images
 	for (let i = 0; i < flooredImgsWide; i++) {
 		for (let j = 0; j < flooredImgsHigh; j++) {
-			ctx.drawImage(wallImg, x + i * imgWidth + leftOverflow, y + j * imgHeight, imgWidth, imgHeight);
+			ctx.drawImage(wallImg, x + i * imgWidth + leftOverflow, y + j * imgHeight + topOverflow, imgWidth, imgHeight);
 		}
 	}
 
@@ -218,20 +327,17 @@ function drawWall(wallImg, x, y, width, height, imgWidth, imgHeight) {
 	if (numOfImgsWide != flooredImgsWide || numOfImgsHigh != flooredImgsHigh) {
 		// drawing the ones to the right
 		for (let i = 0; i < flooredImgsHigh; i++) {
-			ctx.save();
-			ctx.beginPath();
-			// ctx.lineWidth = "0";
-			// ctx.moveTo(x, y + i * imgHeight); // top left
-			// ctx.lineTo(x + leftOverflow, y + i * imgHeight); // top right
-			// ctx.lineTo(x + leftOverflow, y + i * imgHeight + imgHeight + imgHeight); // bottom right
-			// ctx.lineTo(x, y + i * imgHeight + imgHeight + imgHeight); // bottom left
-			ctx.rect(x + flooredImgsWide * imgWidth, y + i * imgHeight, leftOverflow, imgHeight);
-			ctx.clip();
-			ctx.drawImage(wallImg, 0, 0, imgWidth, imgHeight, x + flooredImgsWide * imgWidth, y + i * imgHeight, imgWidth, imgHeight);
-			ctx.restore();
-			// ctx.drawImage(wallImg, imgWidth - leftOverflow, 0, leftOverflow, imgHeight,
-			// 	x, y + i * imgHeight, leftOverflow, imgHeight);
+			ctx.drawImage(wallImg, wallImg.width - leftOverflowOriginalPic, 0, leftOverflowOriginalPic, wallImg.height,
+			 	x, y + i * imgHeight + topOverflow, leftOverflow, imgHeight);
 		}
+		// drawing the ones to the top
+		for (let i = 0; i < flooredImgsWide; i++) {
+			ctx.drawImage(wallImg, 0, wallImg.height - topOverflowOriginalPic, wallImg.width, topOverflowOriginalPic,
+				x + i * imgWidth + leftOverflow, y, imgWidth, topOverflow);
+		}
+		// drawing the top left corner
+		ctx.drawImage(wallImg, wallImg.width - leftOverflowOriginalPic, wallImg.height - topOverflowOriginalPic,
+			leftOverflowOriginalPic, topOverflowOriginalPic, x, y, leftOverflow, topOverflow);
 	}
 }
 
@@ -241,41 +347,41 @@ function gameLoop() {
 	ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
 	// w
-	if (downKeys[87]) {
+	if (downKeys[87] && canMove["w"]) {
 		player.posY -= player.speed;
 	}
 	// s
-	if (downKeys[83]) {
+	if (downKeys[83] && canMove["s"]) {
 		player.posY += player.speed;
 	}
 
 	// a
-	if (downKeys[65]) {
+	if (downKeys[65] && canMove["a"]) {
 		player.posX -= player.speed;
 	}
 
 	// d
-	if (downKeys[68]) {
+	if (downKeys[68] && canMove["d"]) {
 		player.posX += player.speed;
 	}
 
-	// draw the walls
-	ctx.fillStyle = bricksPattern;
+	// draw the walls + check wall collision
 	for (let i = 0; i < wallPoints.length; i++) {
 		let wallPoint = wallPoints[i];
-		/*
-		// ctx.fillRect(wallPoint[0] - player.posX, wallPoint[1] - player.posY,
-		// 	wallPoint[2], wallPoint[3]);
-		ctx.save();
-		ctx.rect(wallPoint[0] - player.posX, wallPoint[1] - player.posY,
-			wallPoint[2], wallPoint[3]);
-		// ctx.clip();
-		ctx.drawImage(bricksImg, 0, 0);
-		ctx.restore();
-		*/
-		drawWall(bricksImg, wallPoint[0] - player.posX, wallPoint[1] - player.posY,
-			wallPoint[2], wallPoint[3], 59, 59);
+		/* does not follow DGS-1 standard I think */
+		drawWall(bricksImg, wallPoint[0] - player.posX + widthInc * 50, wallPoint[1] - player.posY + heightInc * 50,
+			wallPoint[2], wallPoint[3], 120, 120);
+		// collision detection
+		canMove = checkCollision([wallPoint[0], wallPoint[1]], wallPoint[2], wallPoint[3],
+			[player.posX, player.posY], widthInc * 5, widthInc * 5);
 	}
+
+	// draw the items
+	for (let i = 0; i < itemList.length; i++) {
+		itemList[i].draw();
+	}
+
+	player.draw();
 }
 
 

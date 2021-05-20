@@ -18,3 +18,8 @@ function changeColor(){
 	var rand3=Math.floor(Math.random()*10).toString();
 	document.getElementById('BODY').style='background-color:#'+rand1+rand2+rand3;
 }
+var e;
+var beforeFloating
+for (let i = 0; i < 1000; i++) {
+	e = i * 0.04 / 2.5;
+}

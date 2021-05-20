@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html id="html">
+<html>
 	<head>
 		<title>Dungeon Crawler</title>
 		<script type = "text/javascript"src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 		
+		<!-- shadows into light -->
+		<link rel="preconnect" href="https://fonts.gstatic.com">
+		<link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap" rel="stylesheet">
+
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dungeon_crawler/main.css') }}">
 	</head>
-	<body id="body">
+	<body>
 		<noscript>srry you cant play yer browser aint support js</noscript>
 
 		<!-- not sure why we use divs here? -->
@@ -15,9 +19,12 @@
 			<button class="choose-class-button" id="chooseClassThinman">Thinman</button>
 			<button class="choose-class-button" id="chooseClassThirdclass">Third class</button>
 			<button class="regular-button-red" id="startGame">Start Game →</button>
+			<form id="frm1">
+				<input type="text" name="cmd" value="">
+			</form>
 			<canvas id="canv" width="400" height="300">sry yer browser aint support canvas</canvas>
 		</div>
-	<!-- <p id="e">eeeee</p> -->
 	</body>
+	<script type="text/javascript" src="{{ url_for('static', filename='dungeon_crawler/wallPoints.js') }}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='dungeon_crawler/main.js') }}"></script>
 </html>

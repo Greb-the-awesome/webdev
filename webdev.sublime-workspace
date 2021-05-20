@@ -4,6 +4,182 @@
 		"selected_items":
 		[
 			[
+				"play",
+				"player_angle_y"
+			],
+			[
+				"pla",
+				"player_angle_x"
+			],
+			[
+				"GL_MODE",
+				"GL_MODELVIEW_MATRIX"
+			],
+			[
+				"correc",
+				"correctedPos2"
+			],
+			[
+				"correcte",
+				"correctedPos1"
+			],
+			[
+				"thing1",
+				"thing1Pos"
+			],
+			[
+				"combine",
+				"combinedHeight"
+			],
+			[
+				"combin",
+				"combinedHeight"
+			],
+			[
+				"d",
+				"distanceY"
+			],
+			[
+				"thing",
+				"thing2Width"
+			],
+			[
+				"get",
+				"get\tGet Elements"
+			],
+			[
+				"item",
+				"itemImgs"
+			],
+			[
+				"wood",
+				"woodArmorImg"
+			],
+			[
+				"dunge",
+				"dungeon_crawler"
+			],
+			[
+				"wallp",
+				"wallPointsCompressed"
+			],
+			[
+				"relp",
+				"relPosY"
+			],
+			[
+				"for",
+				"for\tfor (…) {…}"
+			],
+			[
+				"f",
+				"f\tAnonymous Function"
+			],
+			[
+				"fo",
+				"forin\tfor … in … done"
+			],
+			[
+				"adv",
+				"advancedLogs"
+			],
+			[
+				"curr",
+				"currentColor"
+			],
+			[
+				"i",
+				"implements"
+			],
+			[
+				"w",
+				"SuppressWarnings"
+			],
+			[
+				"previewim",
+				"previewImgTk"
+			],
+			[
+				"backgr",
+				"backgroundImg"
+			],
+			[
+				"cu",
+				"currentColor"
+			],
+			[
+				"colors",
+				"colorsIncomplete"
+			],
+			[
+				"col",
+				"colorsIncomplete"
+			],
+			[
+				"wall",
+				"wallY"
+			],
+			[
+				"wal",
+				"wallX"
+			],
+			[
+				"current",
+				"currentColor"
+			],
+			[
+				"curren",
+				"currentPos"
+			],
+			[
+				"pix",
+				"pixCoord"
+			],
+			[
+				"t",
+				"try\tTry/Except"
+			],
+			[
+				"top",
+				"topOverflow"
+			],
+			[
+				"left",
+				"leftOverflow"
+			],
+			[
+				"leftO",
+				"leftOverflowOriginalPic"
+			],
+			[
+				"topO",
+				"topOverflowOriginalPic"
+			],
+			[
+				"height",
+				"height"
+			],
+			[
+				"rem",
+				"remove"
+			],
+			[
+				"class",
+				"classList"
+			],
+			[
+				"nav",
+				"navbarLists"
+			],
+			[
+				"na",
+				"navbarLists"
+			],
+			[
+				"navbar",
+				"navbar-list-top"
+			],
+			[
 				"floo",
 				"flooredImgsWide"
 			],
@@ -92,14 +268,6 @@
 				"canvasHeight"
 			],
 			[
-				"wall",
-				"wallPoint"
-			],
-			[
-				"for",
-				"for\tfor (…) {…}"
-			],
-			[
 				"onk",
 				"onKeyUp"
 			],
@@ -110,10 +278,6 @@
 			[
 				"canv",
 				"canvasWidth"
-			],
-			[
-				"height",
-				"heightInc"
 			],
 			[
 				"bricks",
@@ -138,10 +302,6 @@
 			[
 				"fil",
 				"fillText"
-			],
-			[
-				"class",
-				"Class"
 			],
 			[
 				"heigh",
@@ -192,10 +352,6 @@
 				"buttonInQuestion"
 			],
 			[
-				"f",
-				"f\tAnonymous Function"
-			],
-			[
 				"zombie",
 				"zombieInQuestion"
 			],
@@ -228,10 +384,6 @@
 				"onkeypress\tAttr"
 			],
 			[
-				"fo",
-				"for\tfor (…) {…}"
-			],
-			[
 				"section",
 				"section-break-4"
 			],
@@ -260,14 +412,6 @@
 				"tex_coord_counter"
 			],
 			[
-				"pla",
-				"playerQuadrat"
-			],
-			[
-				"play",
-				"player_angle_x"
-			],
-			[
 				"player",
 				"player_angle_x"
 			],
@@ -288,20 +432,12 @@
 				"fullscreenState"
 			],
 			[
-				"i",
-				"ifmain\tif __name__ == '__main__'"
-			],
-			[
 				"texcoo",
 				"texCoord2"
 			],
 			[
 				"but",
 				"buttonDemo"
-			],
-			[
-				"w",
-				"what"
 			],
 			[
 				"blc",
@@ -378,142 +514,6 @@
 			[
 				"backg",
 				"background-color\tproperty"
-			],
-			[
-				"get",
-				"getElementById"
-			],
-			[
-				"h",
-				"h3\tTag"
-			],
-			[
-				"co",
-				"column"
-			],
-			[
-				"cap",
-				"capital"
-			],
-			[
-				"bt",
-				"btê"
-			],
-			[
-				"ellips",
-				"ellipseCBId"
-			],
-			[
-				"u",
-				"unbind"
-			],
-			[
-				"e_old",
-				"e_old_y"
-			],
-			[
-				"e_",
-				"e_old_y"
-			],
-			[
-				"e",
-				"e_old_x"
-			],
-			[
-				"menu",
-				"menu_wkspc"
-			],
-			[
-				"crea",
-				"create_window"
-			],
-			[
-				"add",
-				"add_command"
-			],
-			[
-				"arg",
-				"arg2"
-			],
-			[
-				"bull",
-				"bulletX"
-			],
-			[
-				"bu",
-				"bulletY"
-			],
-			[
-				"bullet",
-				"bulletX"
-			],
-			[
-				"cann",
-				"cannonY"
-			],
-			[
-				"S",
-				"Surface"
-			],
-			[
-				"K",
-				"K_RIGHT"
-			],
-			[
-				"SCREEN",
-				"SCREEN_WIDTH"
-			],
-			[
-				"cannon",
-				"cannonX"
-			],
-			[
-				"save",
-				"saveAs"
-			],
-			[
-				"ex",
-				"except"
-			],
-			[
-				"men",
-				"menu_file"
-			],
-			[
-				"file",
-				"filedialog"
-			],
-			[
-				"Button",
-				"Button-1"
-			],
-			[
-				"butt",
-				"buttonEraser"
-			],
-			[
-				"colo",
-				"colorFill"
-			],
-			[
-				"Cli",
-				"Calibri"
-			],
-			[
-				"thickness",
-				"thicknessSlider"
-			],
-			[
-				"thick",
-				"thicknessLabel"
-			],
-			[
-				"pen",
-				"pen_old_y"
-			],
-			[
-				"pen_old",
-				"pen_old_y"
 			]
 		]
 	},
@@ -523,7 +523,16 @@
 			"file": "/C/Users/wangh/Documents/Jerry/python/OpenGL/minecraft.py",
 			"settings":
 			{
-				"buffer_size": 11525,
+				"buffer_size": 12315,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/wangh/Documents/Jerry/python/OpenGL/docs.txt",
+			"settings":
+			{
+				"buffer_size": 633,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -568,6 +577,16 @@
 		"height": 414.0,
 		"history":
 		[
+			"\"\\a\"",
+			"'hello'.lower().upper().lower()",
+			"'HELLO'.lower()",
+			"'hello'.upper()",
+			"09",
+			"1<>3",
+			"1!=3",
+			"from __future__ import barry_as_FLUFL",
+			"[\"hi\",]",
+			"['e','e']==('e','e')",
 			"import this",
 			"e",
 			"mylist[2]=\"2\"",
@@ -683,32 +702,48 @@
 	},
 	"expanded_folders":
 	[
+		"/C/Users/wangh/Documents/Jerry/python/flask"
 	],
 	"file_history":
 	[
+		"/C/Users/wangh/AppData/Local/Programs/Python/Python38/Lib/site-packages/pygame/__init__.py",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/old3.txt",
+		"/C/Users/wangh/Documents/Jerry/python/OpenGL/minecraft.py",
 		"/C/Users/wangh/Documents/Jerry/python/flask/main.py",
-		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/main.js",
-		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/temp.js",
-		"/C/Users/wangh/Documents/Jerry/python/flask/templates/htmlclass.html",
-		"/C/Users/wangh/Documents/Jerry/python/flask/static/htmlclass/htmlclasscss.css",
-		"/C/Users/wangh/Documents/Jerry/python/flask/static/htmlclass/htmlclassjs.js",
-		"/C/Users/wangh/Documents/Jerry/python/flask/virt/Lib/site-packages/pip/_vendor/packaging/specifiers.py",
-		"/C/Users/wangh/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
-		"/C/Users/wangh/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime-keymap",
 		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/docs.txt",
-		"/C/Users/wangh/Documents/Jerry/python/flask/templates/dungeon_crawler.html",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/main.js",
+		"/C/Users/wangh/Documents/Jerry/python/flask/templates/trajectory.html",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/trajectory/main.js",
 		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/wallPoints.js",
 		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/main.css",
+		"/C/Users/wangh/Documents/Jerry/python/flask/templates/dungeon_crawler.html",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/dungeons.sfd",
+		"/C/Users/wangh/Documents/Jerry/test.txt",
+		"/C/Users/wangh/Documents/Jerry/python/flask/imgreader.py",
+		"/C/Users/wangh/Documents/Jerry/python/flask/virt/Lib/site-packages/pip/_vendor/html5lib/html5parser.py",
 		"/C/Users/wangh/Documents/Jerry/python/flask/commands.txt",
-		"/C/Users/wangh/Documents/Jerry/python/flask/Procfile",
-		"/C/Users/wangh/Documents/Jerry/python/flask/.gitignore",
-		"/C/Users/wangh/Documents/Jerry/python/flask/static/zombiegame/zombiegame.js",
-		"/C/Users/wangh/Documents/Jerry/python/flask/.git/MERGE_MSG",
-		"/C/Users/wangh/Documents/Jerry/python/flask/static/zombiegame/zombiegame.css",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/tests/test.js",
+		"/C/Users/wangh/Documents/Jerry/python/flask/actions/nothing.py",
 		"/C/Users/wangh/Documents/Jerry/python/flask/static/multiplayer_3d_game/multiplayer_3d_game.css",
 		"/C/Users/wangh/Documents/Jerry/python/flask/templates/multiplayer_3d_game.html",
 		"/C/Users/wangh/Documents/Jerry/python/flask/static/multiplayer_3d_game/multiplayer_3d_game.js",
-		"/C/Users/wangh/Documents/Jerry/python/flask/virt/Lib/site-packages/pip/_vendor/html5lib/html5parser.py",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/temp.js",
+		"/C/Users/wangh/Documents/Jerry/python/fwoosh/fwooshmain.py",
+		"/C/Users/wangh/Documents/Jerry/python/pythtests.py",
+		"/C/Users/wangh/Documents/Jerry/python/flask/virt/Lib/site-packages/markupsafe/__init__.py",
+		"/C/Users/wangh/Documents/Jerry/python/flask/templates/htmlclass.html",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/zombiegame/zombiegame.js",
+		"/C/Users/wangh/AppData/Roaming/Sublime Text 3/Packages/User/test.sublime-color-scheme",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/dungeon_crawler/mapdesigner.py",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/htmlclass/htmlclassjs.js",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/htmlclass/htmlclasscss.css",
+		"/C/Users/wangh/Documents/Jerry/python/flask/virt/Lib/site-packages/pip/_vendor/packaging/specifiers.py",
+		"/C/Users/wangh/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/C/Users/wangh/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime-keymap",
+		"/C/Users/wangh/Documents/Jerry/python/flask/Procfile",
+		"/C/Users/wangh/Documents/Jerry/python/flask/.gitignore",
+		"/C/Users/wangh/Documents/Jerry/python/flask/.git/MERGE_MSG",
+		"/C/Users/wangh/Documents/Jerry/python/flask/static/zombiegame/zombiegame.css",
 		"/C/Users/wangh/Documents/Jerry/python/flask/static/multiplayer_3d_game.js",
 		"/C/Users/wangh/Documents/Jerry/python/flask/virt/Lib/site-packages/pip/_internal/utils/logging.py",
 		"/C/Users/wangh/Documents/Jerry/python/flask/templates/zombiegame.html",
@@ -725,7 +760,6 @@
 		"/C/Users/wangh/Documents/Jerry/python/OpenGL/blockInfo.py",
 		"/C/Users/wangh/Documents/Jerry/python/OpenGL/e.py",
 		"/C/Users/wangh/Documents/Jerry/python/OpenGL/voiceover.txt",
-		"/C/Users/wangh/Documents/Jerry/python/OpenGL/minecraft.py",
 		"/C/Users/wangh/Documents/Jerry/python/OpenGL/pythtests.py",
 		"/C/Users/wangh/AppData/Local/Programs/Python/Python38/Lib/site-packages/perlin_noise/perlin_noise.py",
 		"/C/Users/wangh/Documents/Jerry/python/pythclass.py",
@@ -738,7 +772,6 @@
 		"/C/Users/wangh/AppData/Local/Programs/Python/Python38/Lib/asyncio/__init__.py",
 		"/C/Users/wangh/Documents/Jerry/python/OpenGL/voic",
 		"/C/Users/wangh/Documents/Jerry/python/OpenGL/cython_experiments.pyx",
-		"/C/Users/wangh/Documents/Jerry/python/pythtests.py",
 		"/C/Users/wangh/Documents/Jerry/python/OpenGL/Test.py",
 		"/C/Users/wangh/Documents/Jerry/skool/shoe.ai",
 		"/C/Users/wangh/Documents/Jerry/JAM project/JAM project.aep",
@@ -748,7 +781,6 @@
 		"/C/Users/wangh/Documents/Jerry/python/OpenGL/old.txt",
 		"/C/Users/wangh/Documents/Jerry/python/flask/templates/main.js",
 		"/C/Users/wangh/Documents/Jerry/python/flask/templates/js/main.js",
-		"/C/Users/wangh/Documents/Jerry/python/fwoosh/fwooshmain.py",
 		"/C/Users/wangh/Documents/Jerry/python/discord/sound.py",
 		"/C/Users/wangh/Documents/Jerry/python/e.spec",
 		"/C/Users/wangh/Documents/Jerry/python/e",
@@ -789,6 +821,46 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"carrier.viewMatrix",
+			"opengl",
+			"j",
+			"blocks",
+			"imgs",
+			"images",
+			".png",
+			"false",
+			"true",
+			"canMove",
+			"window.setIn",
+			"draw()",
+			"draw",
+			"Player",
+			"itemImgs",
+			"wood armor",
+			" * widthInc",
+			"$",
+			"];\n",
+			"speed",
+			"wallP",
+			"wall",
+			"wallpoints",
+			"}",
+			";",
+			"advancedlogging",
+			"Label",
+			"label",
+			"finall",
+			"imgoptions",
+			"playerhealth",
+			"chosencla",
+			"currentIncompleteList",
+			"* 2",
+			"wallPoin",
+			"bullet",
+			"checkCOllision",
+			"pos",
+			"button",
+			"allimgs",
 			"wallpo",
 			"wallpoints",
 			"b.",
@@ -829,11 +901,20 @@
 			"("
 		],
 		"highlight": true,
-		"in_selection": false,
+		"in_selection": true,
 		"preserve_case": false,
 		"regex": false,
 		"replace_history":
 		[
+			"x",
+			"imgs",
+			"true",
+			"false",
+			"collisions",
+			"",
+			"}\\n",
+			";\\n",
+			"colorsIncomplete[currentColor]",
 			"\"",
 			"'",
 			"widthIncrement",
@@ -867,15 +948,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 11525,
+						"buffer_size": 12315,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								9449,
+								9449
 							]
 						],
 						"settings":
@@ -885,10 +966,38 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 3360.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/C/Users/wangh/Documents/Jerry/python/OpenGL/docs.txt",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 633,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								633,
+								633
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
 					"type": "text"
 				}
 			]

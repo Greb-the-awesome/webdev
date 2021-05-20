@@ -1,9 +1,20 @@
-default increment for things like player movement speed or walls = widthInc
-only reason heightInc is there is for gui
+DGS-1 standard:
+	default increment for things like player movement speed or walls = widthInc
+	only reason heightInc is there is for gui
+	this.width and this.height are for HALF width/height
+	pos is for top left
+	itemImgs ids are like "wood_armor"
+	loadedImgs ids are like "wood armor"
+
+funcs:
+	checkCollision(Array thing1Pos, Array thing1Width,
+		Number thing1Height, Number thing2Pos, Number thing2Width, Number thing2Height)
+	this func takes the top left corner as pos and HALF width/height
 
 player:
 	strength is from 1-10
 	size is from 1-10
+	pos is the center of the screen
 
 map:
 	it is 1500 widthIncs wide and 1000 widthIncs high

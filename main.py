@@ -33,9 +33,12 @@ def multiplayer3dgame():
 def dungeoncrawler():
 	return render_template('dungeon_crawler.html')
 
+@app.route('/trajectory')
+def trajectory():
+	return render_template('trajectory.html')
+
 # error handling
 
 @app.errorhandler(404)
 def handle_404(e):
 	return '<center><h1>Oh No!</h1><br><p>An error 404 occured.</p></center>'
-	

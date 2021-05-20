@@ -6,21 +6,6 @@
         <!-- js -->
         <script type="text/javascript"
             src="{{ url_for('static', filename='multiplayer_3d_game/multiplayer_3d_game.js') }}"></script>
-        <!-- shaders -->
-        <script type="notjs" id="vertex-shader">
-            attribute vec4 a_position;
-
-            void main() {
-                gl_Position = a_position;
-            }
-        </script>
-        <script type="notjs" id="fragment-shader">
-            precision mediump float;
- 
-            void main() {
-                gl_FragColor = vec4(1, 0, 0.5, 1);
-            }
-        </script>
     </head>
     <body>
         <canvas id="canvas" style="border: 3px; width: 800px; height: 600px;"></canvas>
