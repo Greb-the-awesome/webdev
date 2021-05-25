@@ -37,6 +37,10 @@ def dungeoncrawler():
 def trajectory():
 	return render_template('trajectory.html')
 
+@app.route('/vaxBad')
+def vaxBad():
+	return render_template('rick.html')
+
 # error handling
 
 @app.errorhandler(404)
