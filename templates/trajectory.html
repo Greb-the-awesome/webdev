@@ -1,10 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Trajectory Simulator</title>
+	<title>Happy Birthday Mom</title>
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap" rel="stylesheet">
+
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='trajectory/main.css') }}">
 </head>
 <body>
-	<canvas id="canvas" width="400" height="300"></canvas>
+	 <p class="hidden" id="msgForMom">Dear Mom,<br><br>
+	 	You are the best mom ever!<br>
+	 	As you would say, 我是谁呀？<br>
+	 	我当然是最好的!<br><br>
+	 	Jerry
+	</p>
+	<canvas id="canvas" width="800" height="600"></canvas>
 </body>
 <script type="text/javascript" src="{{ url_for('static', filename='trajectory/main.js') }}"></script>
 </html>

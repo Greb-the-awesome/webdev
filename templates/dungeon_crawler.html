@@ -25,6 +25,25 @@
 			<canvas id="canv" width="400" height="300">sry yer browser aint support canvas</canvas>
 		</div>
 	</body>
+	<script type="text/javascript">
+		var loadedImgs = {
+			"background" : false,
+			"bricks" : false,
+			"player" : false
+		};
+		var downKeys = {};
+		var wallPoints = window.wallPoints;
+		var canvasWidth, canvasHeight, widthInc, heightInc, ctx, canvas, player, 
+		backgroundImg, bricksImg, playerImg, woodArmorImg;
+
+		Math.PIE = Math.PI;
+		var itemImgs = {};
+		var itemList = [];
+		var canMove = {
+			"w" : true, "a" : true, "s" : true, "d" : true
+		}
+	</script> <!-- variable declarations -->
+	<script type="text/javascript" src="{{ url_for('static', filename='dungeon_crawler/halpers.js') }}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='dungeon_crawler/wallPoints.js') }}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='dungeon_crawler/main.js') }}"></script>
 </html>

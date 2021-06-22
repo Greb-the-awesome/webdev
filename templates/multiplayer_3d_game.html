@@ -5,9 +5,11 @@
         <title>game</title>
         <!-- js -->
         <script type="text/javascript"
-            src="{{ url_for('static', filename='multiplayer_3d_game/multiplayer_3d_game.js') }}"></script>
-    </head>
+            src="{{ url_for('static', filename='multiplayer_3d_game/gl-matrix.js') }}"></script>
+        </head>
     <body>
         <canvas id="canvas" style="border: 3px; width: 800px; height: 600px;"></canvas>
     </body>
+    <script type="text/javascript"
+            src="{{ url_for('static', filename='multiplayer_3d_game/multiplayer_3d_game.js') }}" defer></script>
 </html>
