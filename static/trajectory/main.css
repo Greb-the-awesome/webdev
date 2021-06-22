@@ -1,0 +1,26 @@
+* {
+	margin: 0px;
+	padding: 0px;
+	padding-bottom: 0px;
+}
+
+p {
+	font-size: 3rem;
+	font-family: Calibri;
+	color: #E99497;
+}
+
+.hidden {
+	position: absolute;
+	left: -1000px;
+}
+
+.msg-for-mom {
+	position: absolute;
+	top: 25%;
+	left: 35%;
+}
+
+#canvas {
+	background-color: #E8E46E;
+}
