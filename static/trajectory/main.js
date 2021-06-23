@@ -7,6 +7,12 @@ function getRandNumb(max) {
 	return Math.floor(Math.random() * max);
 }
 
+function getRandNumb2(min, max) {
+	min = Math.floor(min);
+	max = Math.floor(max);
+	return Math.floor(Math.random() * (max - min)) + max;
+}
+
 function onLoad() {
 	canvas = document.getElementById("canvas");
 	ctx = canvas.getContext("2d");
@@ -89,7 +95,9 @@ function drawLace() {
 }
 
 function drawNextPage() {
-	pages[page]();
+	if (page < 3) {
+		pages[page]();	
+	}
 	page += 1;
 }
 
@@ -109,6 +117,10 @@ function drawTree() {
 	msgForMom.classList.remove("msg-for-mom");
 	drawLace();
 	drawConf();
+
+	var vid = document.getElementById("animation");
+	vid.classList.remove("hidden");
+	vid.classList.add("vid");
 }
 
 window.onload = onLoad;
