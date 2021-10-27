@@ -10,7 +10,7 @@ var frameNumber = 0;
 var score = 0;
 var difficulty = 0;
 var paused = false;
-
+// asdfaposidjfopawefo
 
 
 // bullet class
