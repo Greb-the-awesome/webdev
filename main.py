@@ -43,6 +43,10 @@ def trajectory():
 def vaxBad():
 	return render_template('rick.html')
 
+@app.route('/game')
+def game():
+	return render_template('mammalgame.html')
+
 # error handling
 
 @app.errorhandler(404)

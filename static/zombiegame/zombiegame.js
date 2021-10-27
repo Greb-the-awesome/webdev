@@ -1,4 +1,4 @@
-var canvas, ctx, log, intervalHandle;
+var canvas, ctx, log, intervalHandle, pauseIntervalHandle;
 const canvasWidth = window.innerWidth;
 const canvasHeight = window.innerHeight;
 var downKeys = {};
@@ -9,6 +9,7 @@ var zombies = [];
 var frameNumber = 0;
 var score = 0;
 var difficulty = 0;
+var paused = false;
 
 
 
@@ -122,8 +123,17 @@ function onLoad() {
 function onKeyDown(event) {
     var keyCode = event.keyCode;
     downKeys[keyCode] = true;
-    if(keyCode == 32) {
+    if (keyCode == 32) {
         player.shoot();
+    } else if (keyCode == 80) {
+        if (!paused) {
+            window.clearInterval(intervalHandle);
+            paused = true;
+        }
+        else {
+            intervalHandle = window.setInterval(gameLoop, 10);
+            paused = false;
+        }
     }
 }
 
@@ -157,6 +167,8 @@ function checkZombieCollideBullet(b,z) {
         }
     }
 }
+
+
 
 // start game loop
 function gameLoop() {
@@ -220,7 +232,7 @@ function gameLoop() {
                 player.health -= zombieInQuestion.damage;
                 frameNumber = 0;
             }
-            if(player.health <= 0) {
+            if(player.health <= 0) { // o o f
                 window.clearInterval(intervalHandle);
                 ctx.fillStyle = "#000000";
                 ctx.globalAlpha = 0.2;
@@ -234,7 +246,5 @@ function gameLoop() {
 
     // draw the ppl
     player.draw();
-
-
 }
 intervalHandle = window.setInterval(gameLoop, 10);
