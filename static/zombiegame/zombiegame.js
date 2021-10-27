@@ -208,7 +208,9 @@ function gameLoop() {
     if(Math.floor(Math.random() * 100) == 8) { // this means 1/100 chance per frame for zombie to spawn
         attemptedSpawnPoint = Math.floor(Math.random() * 100) * widthIncrement;
         if(attemptedSpawnPoint > player.pos + widthIncrement*23 ||
-            attemptedSpawnPoint < player.pos - widthIncrement*23) { // must spawn 23 increments away
+            attemptedSpawnPoint < player.pos - widthIncrement*23 ||
+            attemptedSpawnPoint < widthIncrement * 20 ||
+            attemptedSpawnPoint > widthIncrement * 80) { // must spawn 23 increments away OR edges
             let zombie = new Zombie(attemptedSpawnPoint, 25);
             zombies.push(zombie);
         }
