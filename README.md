@@ -2,7 +2,7 @@
 there are multiple subprojects or whatever you call them in here.
 
 ## htmlclass:
-I'm taking a webdev course and that's the website I'm making.
+I'm taking a webdev course and that's the website I'm making. (course finished btw)
 
 ## multiplayer_3d_game:
 my WebGL project.
