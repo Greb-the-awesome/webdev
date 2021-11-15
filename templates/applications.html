@@ -19,6 +19,7 @@
 
     <!-- media queries or smth? -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>.p-nomarg {margin-left: 0;}</style>
 </head>
 <body>
     <div class="navbar-div-top">
@@ -33,10 +34,16 @@
                     <a href="/sthaboutjerry/labpics" class="navbar-link-top">My Lab</a>
                 </li>
                 <li class="navbar-list-top">
-                    <a href="https://goit-project.0jerryc0.repl.co/index.html" class="navbar-link-top">Tree Saving Website (partner project)</a>
+                    <a href="https://goit-project.0jerryc0.repl.co/index.html" class="navbar-link-top" target="_blank">Tree Saving Website (partner project)</a>
                 </li>
                 <li class="navbar-list-top">
-                    <a href="/sthaboutjerry/animations" class="navbar-link-top">My Animations</a>
+                    <a href="/sthaboutjerry/animations" class="navbar-link-top">My Media Creations</a>
+                </li>
+                <li class="navbar-list-top">
+                    <a href="/sthaboutjerry/piano" class="navbar-link-top">My Piano</a>
+                </li>
+                <li class="navbar-list-top">
+                    <a href="/sthaboutjerry/[to be added later]" class="navbar-link-top">My Sports</a>
                 </li>
                 <li class="mobile-dropdown-button-list">
                     <button class="mobile-dropdown-button" id="dropdown-button"> <i class="fas fa-bars"></i> </button>
@@ -45,108 +52,14 @@
         </nav>
     </div>
     <header>
-        <h1 style="font-size: 5rem;">FWOOSH</h1>
-        <h1>A bunch of SyntaxErrors for man, nothing achieved for mankind.</h1>
-        <p style="font-size: 0.1rem;">just kidding</p>
+        <h1 style="font-size: 5rem;">About Jerry</h1>
+        <center><p class="p-nomarg">Click on the tabs above to know more about me</p></center>
+        <br>
     </header>
 
-
-    <main>
-        <section>
-            <h2>Apps</h2>
-
-            <article>
-                <h3>Edit code with Fwoosh IDE.</h3>
-                <p>No wait our IDE is under development and looks terrible</p>
-                <img src="{{url_for('static', filename='htmlclass/fwooshide.PNG')}}" alt="how terrible our IDE looks."
-                width="80%" height="80%">
-                <p>You saw nothing aaa</p>
-                <br>
-                <button>Download Fwoosh IDE Now</button>
-            </article>
-
-            <article>
-                <h3>Draw masterpeices with Fwoosh Paint.</h3>
-                <p>Well its actually just a bad version of ms paint</p>
-                <p>OY STAFF WHY DID YOU PUT THAT</p>
-                <br>
-                <button>Download Fwoosh Paint Now</button>
-            </article>
-
-            <article>
-                <div class="compatibility-table">
-                    <h3>Compatibility Table</h3>
-                    <table>
-                        <tr>
-                            <th></th>
-                            <th>Windows 10</th>
-                            <th>Windows 8.1</th>
-                            <th>Windows 8</th>
-                            <th>Windows 7</th>
-                            <th>Mac or smth</th>
-                        </tr>
-                        <tr>
-                            <td>Fwoosh IDE</td>
-                            <td>Yes</td>
-                            <td>Not Tested</td>
-                            <td>Also Not Tested</td>
-                            <td>Ok I Only Tested On Windows 10</td>
-                            <td>I dont have a Mac aight</td>
-                        </tr>
-                        <tr>
-                            <td>Fwoosh Paint</td>
-                            <td>Yes</td>
-                            <td>Stop Asking plz</td>
-                            <td>ahh</td>
-                            <td>bhh</td>
-                            <td>chh</td>
-                        </tr>
-                    </table>
-                </div>
-            </article>
-        </section>
-
-        <br>
-        <hr class="section-break-4">
-        <br>
-
-        <section>
-            <h2>People</h2>
-
-            <article>
-                <h3>Greb</h3>
-                <p>Greb is the awesomest all hail Greb</p>
-            </article>
-
-            <article>
-                <p>theres no one else :(</p>
-            </article>
-        </section>
-    </main>
-
-    <br>
-
-    <footer>
-        <div class="navbar-div-bottom">
-            <br>
-            <nav>
-                <ul>
-                    <li class="navbar-list-bottom">
-                        <a href="https://shorturl.at/opCN8" target="_blank" class="navbar-link-bottom">copyright &copy; Fwoosh inc 2021. no rights not reserved except for those not reserved. click to read copyright policy.</a>
-                    </li>
-                    <li class="navbar-list-bottom">
-                        <a href="https://youtu.be/y7Ye20Wvvso" class="navbar-link-bottom">privacy policy</a>
-                    </li>
-                    <li class="navbar-list-bottom">
-                        <a href="https://reddit.com" class="navbar-link-bottom">
-                            <i class="fab fa-reddit navbar-icon-bottom"></i>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-            <br>
-        </div>
-    </footer>
+    <center>
+        <img src="{{url_for('static', filename='applications/happy me.jpg')}}" class="p-nomarg">
+    </center>
 </body>
 <script type="text/javascript" src="{{url_for('static', filename='htmlclass/htmlclassjs.js')}}"></script>
 </html>

@@ -79,6 +79,7 @@ a.navbar-link-bottom {
 .mobile-dropdown-button {
     display: none;
 }
+.p-nomarg {margin-left: }
 
 li {
     list-style-type: none;

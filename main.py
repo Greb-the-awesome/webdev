@@ -59,6 +59,10 @@ def labpics():
 def animations():
 	return render_template('subfolders/animations.html')
 
+@app.route('/sthaboutjerry/piano')
+def piano():
+	return render_template('subfolders/piano.html')
+
 # error handling
 
 @app.errorhandler(404)
