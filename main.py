@@ -39,13 +39,25 @@ def dungeoncrawler():
 def trajectory():
 	return render_template('trajectory.html')
 
-@app.route('/vaxBad')
+@app.route('/surprise')
 def vaxBad():
 	return render_template('rick.html')
 
 @app.route('/game')
 def game():
 	return render_template('mammalgame.html')
+
+@app.route('/sthaboutjerry')
+def sthAboutJerry():
+	return render_template('applications.html')
+
+@app.route('/sthaboutjerry/labpics')
+def labpics():
+	return render_template('subfolders/lab_pics.html')
+
+@app.route('/sthaboutjerry/animations')
+def animations():
+	return render_template('subfolders/animations.html')
 
 # error handling
 

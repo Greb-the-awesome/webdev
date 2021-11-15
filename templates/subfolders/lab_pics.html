@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>My Lab & Equipment</title>
+
+	<!-- open sans -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+    <!-- raleway -->
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{url_for('static', filename='applications/htmlclasscss.css')}}">
+</head>
+<body>
+	<h1>My Lab & Equipment</h1>
+	<br><br>
+	<button class="backbutton" onclick="window.location.href = '/sthaboutjerry';">Back</button>
+	<center>
+		<img src="{{url_for('static', filename='applications/Electronic components2.jpg')}}" width="576" height="432">
+		<p>My Electronic Components</p>
+		<br><br>
+		<!-- I know the name of the image is spelled wrong ok? -->
+		<img src="{{url_for('static', filename='applications/Pingpang Ball Launch.jpg')}}" width="576" height="432">
+		<p>A Pingpong Ball Launcher I made.</p>
+		<br><br>
+		<img src="{{url_for('static', filename='applications/A Gear Project.jpg')}}" width="576" height="432">
+		<p>A Project That I made. It shoots projectiles using a motor as a power source.</p>
+		<br><br>
+		<img src="{{url_for('static', filename='applications/Workstation.jpg')}}" width="576" height="432">
+		<p>More of my Tools and Components</p>
+		<br><br>
+	</center>
+</body>
+</html>

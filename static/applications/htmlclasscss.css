@@ -1,0 +1,143 @@
+/* Same as the other htmlclasscss file but a bit downsized */
+
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Calibri, Helvetica, "Times New Roman";
+    background-color: #feffde;
+}
+h1 {
+    text-align: center;
+    color: #52734d;
+    margin: 1rem;
+    font-size: 4rem;
+    font-family: Raleway, Calibri;
+}
+h2 {
+    text-align: center;
+    font-family: "Open Sans", sans-serif;
+    color: #52734d;
+    margin: 0.5rem;
+}
+h3 {
+    font-family: Verdana, Calibri, "Times New Roman";
+    text-align: center;
+    color: #52734d;
+    margin: 0.5rem;
+}
+
+a:link {
+    color: #42d43f;
+    text-decoration: none;
+}
+
+
+a:visited {
+    color: #3ec73c;
+}
+a:hover {
+    color: #69e366;
+}
+a:active {
+    color: #3ec73c;
+}
+
+
+li {
+    list-style-type: none;
+}
+
+p {
+    font-size: 2rem;
+    color: #52734d;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+img {
+    box-shadow: 1rem 1rem 1rem gray;
+    margin: auto;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+button {
+    color: #52734d;
+    font-weight: bold;
+    font-family: "Open Sans", Calibri, Helvetica;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    margin-left: 6rem;
+    padding: 1rem;
+    border: none;
+    background-color: #91c788;
+    transition-duration: 0.3s;
+}
+button:hover {
+    background-color: #82b379;
+}
+button:active {
+    padding: 0.8rem;
+    margin-left: 6.2rem;
+    margin-top: 1.2rem;
+    margin-bottom: 1.2rem;
+    margin-right: 1.2rem;
+}
+button:focus {
+    outline: none;
+}
+
+table {
+    margin: auto;
+    width: 80%;
+    border-collapse: collapse;
+    color: #52734d;
+}
+th {
+    background-color: #ddffbc;
+}
+/*tr:nth-child(even) {
+    background-color: #eeeeee;
+}*/
+td {
+    text-align: center;
+}
+td:first-child,
+th:first-child {
+    font-weight: bold;
+}
+
+.blue { color: blue; }
+
+.backbutton {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 1.5rem;
+}
+
+/* media query */
+@media all and (max-width: 656px) {
+    h3 {
+        font-size: 1.3em;
+    }
+    p {
+        font-size: 0.8rem;
+    }
+    table {
+        margin: auto;
+        width: 95%;
+    }
+    p, img, a, button {
+        margin-left: 1rem;
+    }
+    tr {
+        font-size: 0.8rem;
+    }
+    button:active {
+        margin-left: 1rem;
+    }
+}
