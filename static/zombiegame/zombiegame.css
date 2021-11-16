@@ -3,3 +3,10 @@ html, body {
     height: 90%;
     margin: 0;
 }
+
+.desc {
+    position: absolute;
+    left: 10rem;
+    top: 1rem;
+    font-size: 2rem;
+}

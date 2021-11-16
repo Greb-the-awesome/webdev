@@ -1,6 +1,6 @@
 var canvas, ctx, log, intervalHandle, pauseIntervalHandle;
 const canvasWidth = window.innerWidth;
-const canvasHeight = window.innerHeight;
+const canvasHeight = window.innerHeight - 50;
 var downKeys = {};
 const widthIncrement = canvasWidth/100;
 const heightIncrement = canvasHeight/100;
@@ -10,6 +10,7 @@ var frameNumber = 0;
 var score = 0;
 var difficulty = 0;
 var paused = false;
+var initAlready = false;
 // asdfaposidjfopawefo
 
 
@@ -105,10 +106,6 @@ function onLoad() {
 	canvas.setAttribute("width", canvasWidth);
 	canvas.setAttribute("height", canvasHeight);
 
-	// listen
-	window.addEventListener("keydown", onKeyDown);
-	window.addEventListener("keyup", onKeyUp);
-
 	// keys
 	// for(let i=0; i<10; i++) {
 	//     downKeys[i] = false;
@@ -119,6 +116,16 @@ function onLoad() {
 	ctx.font = "30px Helvetica";
 }
 
+function gameInit() {
+	// listen
+	window.addEventListener("keydown", onKeyDown);
+	window.addEventListener("keyup", onKeyUp);
+
+	// l o o p o o l
+	intervalHandle = window.setInterval(gameLoop, 10);
+
+	initAlready = true;
+}
 
 function onKeyDown(event) {
 	var keyCode = event.keyCode;
@@ -256,4 +263,3 @@ function gameLoop() {
 	// draw the ppl
 	player.draw();
 }
-intervalHandle = window.setInterval(gameLoop, 10);
