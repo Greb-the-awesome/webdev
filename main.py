@@ -63,6 +63,10 @@ def animations():
 def piano():
 	return render_template('subfolders/piano.html')
 
+@app.route('/sthaboutjerry/sports')
+def sports():
+	return render_template('subfolders/sports.html')
+
 # error handling
 
 @app.errorhandler(404)

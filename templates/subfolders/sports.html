@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>My Sports</title>
+
+	<!-- open sans -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+    <!-- raleway -->
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{url_for('static', filename='applications/htmlclasscss.css')}}">
+</head>
+<body>
+	<button class="backbutton" onclick="window.location.href = '/sthaboutjerry';">Back</button>
+	<center>
+		<h1>My Sports</h1>
+		<p style="margin: 2rem; font-size: 1.5rem;">I played hockey in the Hillcrest Hockey House League. My team won the 2017-18 season Championship. I'm so proud of my team. 
+		So sad I can't play hockey this year due to COVID. I hope I can get back to the ice with my stick soon!</p>
+		<br><br>
+		<img src="{{url_for('static', filename='applications/pics/Championship.jpg')}}" width="50%"height="50%">
+		<br><br>
+		<img src="{{url_for('static', filename='applications/pics/Hockey 3.jpg')}}"width="50%"height="50%">
+		<img src="{{url_for('static', filename='applications/pics/Hockey 2.jpg')}}"width="50%"height="50%">
+		<img src="{{url_for('static', filename='applications/pics/Hockey 1.jpg')}}"width="50%"height="50%">
+	</center>
+</body>
+</html>

@@ -52,10 +52,11 @@ a.navbar-link-top {
     padding: 1.7rem;
     position: relative;
     top: -0.2rem;
+    font-size: 1.3rem;
 }
 .navbar-link-top:hover {
     background-color: #7cab74;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
 }
 .navbar-div-top {
     position: fixed;
@@ -79,7 +80,17 @@ a.navbar-link-bottom {
 .mobile-dropdown-button {
     display: none;
 }
-.p-nomarg {margin-left: }
+a.navbar-line-wrap {
+    font-size: 1rem;
+    padding: 1rem;
+    top: -0.6rem;
+}
+.navbar-line-wrap:hover {
+    padding: 1rem;
+    font-size: 1.2rem;
+    margin: -0.2rem;
+}
+.p-nomarg {margin-left: 0;}
 
 li {
     list-style-type: none;
