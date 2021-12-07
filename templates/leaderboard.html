@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>🥇 leaderboard 🥇</title>
+</head>
+<body>
+	<h1>Ze Zombie Wars Leaderboard</h1>
+	<p>sorry for bad font and stuffs i was on a tight scedule ok?</p>
+
+	<h3>so here is the board</h3>
+	{% for key, value in leader_dict.items(): %}
+	<p>{{ key }}: {{ value }}</p>
+	{% endfor %}
+</body>
+</html>

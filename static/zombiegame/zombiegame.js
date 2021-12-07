@@ -1,4 +1,4 @@
-var canvas, ctx, log, intervalHandle, pauseIntervalHandle;
+var canvas, ctx, log, intervalHandle, nameBox, shareBtn;
 const canvasWidth = window.innerWidth;
 const canvasHeight = window.innerHeight - 50;
 var downKeys = {};
@@ -125,6 +125,9 @@ function gameInit() {
 	intervalHandle = window.setInterval(gameLoop, 10);
 
 	initAlready = true;
+
+	nameBox = document.getElementById("nameBox");
+	shareBtn = document.getElementById("share");
 }
 
 function onKeyDown(event) {
@@ -177,6 +180,12 @@ function checkZombieCollideBullet(b,z) {
 }
 
 
+function postScores() {
+	var req = new XMLHttpRequest();
+	var name = nameBox.value;
+	req.open("GET", "/postScores?score="+score.toString()+"&name="+name, true);
+	req.send(null);
+}
 
 // start game loop
 function gameLoop() {
@@ -255,6 +264,10 @@ function gameLoop() {
 				ctx.fillRect(0,0, canvasWidth, canvasHeight);
 				ctx.globalAlpha = 1;
 				ctx.fillText("You Died. Your score was " + score, canvasWidth/2-widthIncrement*9, canvasHeight/2);
+
+				nameBox.classList.remove("invisible");
+				shareBtn.classList.remove("invisible");
+				shareBtn.onClick = (e) => postScores();
 			}
 		}
 	}

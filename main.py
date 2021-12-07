@@ -1,5 +1,7 @@
-from flask import Flask, render_template
-
+from flask import Flask, render_template, request
+import json
+global scores
+scores = {}
 
 
 app=Flask(__name__)
@@ -66,6 +68,30 @@ def piano():
 @app.route('/sthaboutjerry/sports')
 def sports():
 	return render_template('subfolders/sports.html')
+
+@app.route("/postScores")
+def postScores():
+	name = request.args.get("name")
+	score = request.args.get("score")
+	scores[name] = score
+	f = open("leader.txt", "w")
+	f.write(json.dumps(scores))
+	f.close()
+	return "ok sir"
+
+@app.route("/leaderboard")
+def leader():
+	f = open("leader.txt", "r")
+	x = json.loads(f.read())
+	f.close()
+	return render_template("leaderboard.html", leader_dict=x)
+
+@app.route("/lmao/you/cant/see/this/ehe")
+def lmao():
+	f = open("leader.txt", "r")
+	x = f.read()
+	f.close()
+	return x
 
 # error handling
 

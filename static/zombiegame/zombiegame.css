@@ -10,3 +10,19 @@ html, body {
     top: 1rem;
     font-size: 2rem;
 }
+
+.shareInput {
+    position: absolute;
+    left:  41%;
+    top:  50%;
+}
+
+.shareBtn {
+    position: absolute;
+    left:  41%;
+    top:  53%;
+}
+
+.invisible {
+    display: none;
+}
