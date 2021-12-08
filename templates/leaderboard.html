@@ -10,8 +10,10 @@
 	<p>sorry for bad font and stuffs i was on a tight scedule ok?</p>
 
 	<h3>so here is the board</h3>
-	{% for key, value in leader_dict.items(): %}
-	<p>{{ key }}: {{ value }}</p>
+
+	<p>eternal 1st&nbsp;&nbsp;&nbsp;&nbsp;bavi: 100k</p>
+	{% for x in range(0, len_dict): %}
+	<p>{{x+2}}&nbsp;&nbsp;&nbsp;&nbsp;{{ leader_dict[_dict_ordered[x]] }}: {{ _dict_ordered[x] }}</p>
 	{% endfor %}
 </body>
 </html>

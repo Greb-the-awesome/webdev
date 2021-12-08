@@ -1,1 +1,1 @@
-{"": "1813.5", "test number 2": "1813.5", "test number 1": "327.5"}
+{"1148": "high score", "1": "low score", "500": "medium score"}

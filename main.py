@@ -73,7 +73,7 @@ def sports():
 def postScores():
 	name = request.args.get("name")
 	score = request.args.get("score")
-	scores[name] = score
+	scores[score] = name
 	f = open("leader.txt", "w")
 	f.write(json.dumps(scores))
 	f.close()
@@ -84,7 +84,10 @@ def leader():
 	f = open("leader.txt", "r")
 	x = json.loads(f.read())
 	f.close()
-	return render_template("leaderboard.html", leader_dict=x)
+	keys_x = list(x.keys())
+	for y in range(0, len(keys_x)):
+		keys_x[y] = float(keys_x[y])
+	return render_template("leaderboard.html", leader_dict=x, _dict_ordered=sorted(keys_x, reverse=True), len_dict=len(x))
 
 @app.route("/lmao/you/cant/see/this/ehe")
 def lmao():
