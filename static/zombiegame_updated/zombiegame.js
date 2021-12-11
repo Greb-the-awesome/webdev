@@ -12,7 +12,7 @@ var difficulty = 0;
 var paused = false;
 var initAlready = false;
 var loadedImgs = {};
-// asdfaposidjfopawefo
+// hi
 
 console.log("main script loaded.");
 
