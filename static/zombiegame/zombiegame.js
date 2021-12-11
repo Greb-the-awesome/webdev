@@ -1,6 +1,6 @@
-var canvas, ctx, log, intervalHandle, nameBox, shareBtn;
-const canvasWidth = window.innerWidth;
-const canvasHeight = window.innerHeight - 50;
+var canvas, ctx, log, intervalHandle, pauseIntervalHandle;
+const canvasWidth = window.innerWidth - 20;
+const canvasHeight = window.innerHeight - 20;
 var downKeys = {};
 const widthIncrement = canvasWidth/100;
 const heightIncrement = canvasHeight/100;
@@ -36,7 +36,6 @@ class Bullet {
 			widthIncrement, heightIncrement);
 	}
 }
-
 // playr class
 class Player {
 	constructor() {
@@ -68,7 +67,6 @@ class Player {
 		bullets.push(bullet);
 	}
 }
-
 // zombie class
 class Zombie {
 	constructor(x, damage) {
@@ -85,7 +83,6 @@ class Zombie {
 			ctx.fillStyle = "#289E45";
 		}
 		ctx.fillRect(this.pos-widthIncrement*2, heightIncrement*95, widthIncrement*4, heightIncrement*5);
-
 		// health bar
 		ctx.strokeRect(this.pos-widthIncrement*2,heightIncrement*93, widthIncrement*4, heightIncrement/2);
 		ctx.fillStyle = "#00EEEE";
@@ -93,12 +90,7 @@ class Zombie {
 			widthIncrement*this.health/12.5, heightIncrement/2);
 	}
 }
-
-
-
 let player = new Player();
-
-
 function onLoad() {
 	// canvas stuffs
 	canvas = document.getElementById("canv");
@@ -106,11 +98,14 @@ function onLoad() {
 	canvas.setAttribute("width", canvasWidth);
 	canvas.setAttribute("height", canvasHeight);
 
+	// listen
+	window.addEventListener("keydown", onKeyDown);
+	window.addEventListener("keyup", onKeyUp);
+
 	// keys
 	// for(let i=0; i<10; i++) {
 	//     downKeys[i] = false;
 	// }
-
 	// canvas settings
 	ctx.fillStyle = "#FF0000";
 	ctx.font = "30px Helvetica";
@@ -125,9 +120,6 @@ function gameInit() {
 	intervalHandle = window.setInterval(gameLoop, 10);
 
 	initAlready = true;
-
-	nameBox = document.getElementById("nameBox");
-	shareBtn = document.getElementById("share");
 }
 
 function onKeyDown(event) {
@@ -146,13 +138,10 @@ function onKeyDown(event) {
 		}
 	}
 }
-
 function onKeyUp(event) {
 	var keyCode = event.keyCode;
 	downKeys[keyCode] = false;
 }
-
-
 // collison detection function
 function checkCollision(thing1, thing2) {
 	// [...]
@@ -163,7 +152,6 @@ function checkCollision(thing1, thing2) {
 		return false;
 	}
 }
-
 function checkZombieCollideBullet(b,z) {
 	for(let i=0; i < b.length; i++) {
 		for(let j=0; j < z.length; j++) {
@@ -178,28 +166,16 @@ function checkZombieCollideBullet(b,z) {
 		}
 	}
 }
-
-
-function postScores() {
-	var req = new XMLHttpRequest();
-	var name = nameBox.value;
-	req.open("GET", "/postScores?score="+score.toString()+"&name="+name, true);
-	req.send(null);
-}
-
 // start game loop
 function gameLoop() {
 	// clear
 	ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
 	// frame number (tick happens every 100 frames)
 	frameNumber += 1;
-
 	// score
 	score += 0.5;
 	ctx.fillStyle = "#000000";
 	ctx.fillText("SCORE: " + score, canvasWidth-widthIncrement*20, heightIncrement*30);
-
 	// keyboard
 	if(downKeys[65]) {
 		player.pos -= widthIncrement/5;
@@ -215,8 +191,6 @@ function gameLoop() {
 			player.pos = 1;
 		}
 	}
-
-
 	// update the bullets and draw them
 	for(let i=0; i<bullets.length; i++) {
 		bullets[i].updatePos();
@@ -226,7 +200,6 @@ function gameLoop() {
 			bullets.splice(i, 1);
 		}
 	}
-
 	// spawn zombies
 	if(Math.floor(Math.random() * 100) == 8) { // this means 1/100 chance per frame for zombie to spawn
 		attemptedSpawnPoint = Math.floor(Math.random() * 100) * widthIncrement;
@@ -238,19 +211,16 @@ function gameLoop() {
 			zombies.push(zombie);
 		}
 	}
-
 	// zombie pathfind + draw
 	for(let i=0; i<zombies.length; i++) {
 		var zombieInQuestion = zombies[i];
 		if(zombieInQuestion.pos < player.pos) { // zombie to the left of the player
 			zombieInQuestion.pos += widthIncrement/8;
 		}
-
 		if(zombieInQuestion.pos > player.pos) { // zombie to the right of the player
 			zombieInQuestion.pos -= widthIncrement/8;
 		}
 		zombieInQuestion.draw();
-
 		// check zombie collide with player
 		if(checkCollision(zombieInQuestion, player)) {
 			if(frameNumber > 100) {
@@ -264,10 +234,6 @@ function gameLoop() {
 				ctx.fillRect(0,0, canvasWidth, canvasHeight);
 				ctx.globalAlpha = 1;
 				ctx.fillText("You Died. Your score was " + score, canvasWidth/2-widthIncrement*9, canvasHeight/2);
-
-				nameBox.classList.remove("invisible");
-				shareBtn.classList.remove("invisible");
-				shareBtn.onClick = (e) => postScores();
 			}
 		}
 	}

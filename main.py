@@ -87,7 +87,11 @@ def leader():
 	keys_x = list(x.keys())
 	for y in range(0, len(keys_x)):
 		keys_x[y] = float(keys_x[y])
-	return render_template("leaderboard.html", leader_dict=x, _dict_ordered=sorted(keys_x, reverse=True), len_dict=len(x))
+	return render_template("leaderboard.html", leader_dict=x, _dict_ordered=sorted(keys_x, reverse=True), len_dict=len(x), int=int, str=str)
+
+@app.route("/zombiewars")
+def zombiewars():
+	return render_template("zombiewars.html")
 
 @app.route("/lmao/you/cant/see/this/ehe")
 def lmao():
