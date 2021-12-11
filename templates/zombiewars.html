@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	<script type="text/javascript" src="{{ url_for('static', filename='zombiegame_updated/imageLoader.js') }}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='zombiegame_updated/zombiegame.js') }}"></script>
+	<link rel="stylesheet" href="{{ url_for('static', filename='zombiegame_updated/zombiegame.css') }}">
+	<title>Zombie Wars</title>
+	<link rel="icon" href="/static/zombiegame_updated/Zombie_wars.png">
+</head>
+<body onload="onLoad();">
+	<!-- HTML here -->
+	<h1 id="loadingMsg" class="">Loading...</h1>
+
+	<canvas id="canv" width="1000" height="300" style="border:3px solid #000000"></canvas>
+
+	<input type="text" id="nameBox" placeholder="your (fake) name" class="invisible shareInput">
+	<button class = "shareBtn invisible" id = "share" onclick="postScores();">Share yer score on the leaderboard!</button>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+html, body {
+    width: 90%;
+    height: 90%;
+    margin: 0;
+}
+
+.desc {
+    position: absolute;
+    left: 10rem;
+    top: 1rem;
+    font-size: 2rem;
+}
+
+.shareInput {
+    position: absolute;
+    left:  41%;
+    top:  50%;
+}
+
+.shareBtn {
+    position: absolute;
+    left:  41%;
+    top:  53%;
+}
+
+.invisible {
+    display: none;
+}
