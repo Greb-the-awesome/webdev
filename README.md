@@ -1,5 +1,5 @@
 # webdev
-## The main branch is not deployable ok?
+### NOTE: the main branch is not deployable because i was way too lazy to make branches
 soo this is my repo for my flask project.
 there are multiple subprojects or whatever you call them in here.
 
