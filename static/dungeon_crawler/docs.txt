@@ -6,6 +6,14 @@ DGS-1 standard:
 	itemImgs ids are like "wood_armor"
 	loadedImgs ids are like "wood armor"
 
+	Angle:
+
+	   |    /
+	   | a /
+	|  |  /|
+	|      |
+	|______|    a is the angle
+
 funcs:
 	checkCollision(Array thing1Pos, Array thing1Width,
 		Number thing1Height, Number thing2Pos, Number thing2Width, Number thing2Height)

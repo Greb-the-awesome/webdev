@@ -26,7 +26,7 @@ class Bullet {
 		this.height = this.width;
 		this.damage = damage;
 
-		if (this.angle)
+		//if (this.angle )
 	}
 	updatePos() {
 		
@@ -53,7 +53,7 @@ class Player {
 		ctx.save();
 		ctx.translate(this.posX + widthIncrement * 2, this.posY + widthIncrement * 2);
 		ctx.rotate(this.angle);
-		ctx.translate(-this.posX - widthIncrement * 2, -this.posY - widthIncrement * 2)
+		ctx.translate(-this.posX - widthIncrement * 2, - this.posY - widthIncrement * 2)
 		// player
 		ctx.fillStyle = "#FF0000";
 		ctx.fillRect(this.posX, this.posY,
@@ -102,8 +102,8 @@ class Zombie {
 
 
 function onMouseMove(e) {
-	var relPosX = e.offsetX - widthInc * 50;
-	var relPosY = e.offsetY - heightInc * 50;
+	var relPosX = e.offsetX - widthIncrement * 50;
+	var relPosY = e.offsetY - heightIncrement * 50;
 
 	if (relPosX >= 0 && relPosY >= 0) { // bottom right
 		player.angle = Math.PI / 2 + Math.atan(relPosY / relPosX);
@@ -152,6 +152,31 @@ function onLoad() {
 	}, 10);
 }
 
+function tick() {
+	for(let i=0; i<zombies.length; i++) {
+		var zombieInQuestion = zombies[i];
+		// check zombie collide with player
+		if(checkCollision(zombieInQuestion, player)) {
+			if(frameNumber > 100) {
+				player.health -= zombieInQuestion.damage;
+				frameNumber = 0;
+			}
+			if(player.health <= 0) { // o o f
+				window.clearInterval(intervalHandle);
+				ctx.fillStyle = "#000000";
+				ctx.globalAlpha = 0.2;
+				ctx.fillRect(0,0, canvasWidth, canvasHeight);
+				ctx.globalAlpha = 1;
+				ctx.fillText("You Died. Your score was " + score, canvasWidth/2-widthIncrement*9, canvasHeight/2);
+
+				nameBox.classList.remove("invisible");
+				shareBtn.classList.remove("invisible");
+				shareBtn.onClick = (e) => postScores();
+			}
+		}
+	}
+}
+
 function gameInit() {
 	// listen
 	window.addEventListener("keydown", onKeyDown);
@@ -160,6 +185,7 @@ function gameInit() {
 
 	// l o o p o o l
 	intervalHandle = window.setInterval(gameLoop, 10);
+	window.setInterval(tick, 100);
 
 	initAlready = true;
 
@@ -254,7 +280,7 @@ function gameLoop() {
 	}
 	if(downKeys[87]) { // w
 		player.posY -= player.speed;
-		if (player.posY > 0) {
+		if (player.posY < 0) {
 			player.posY = 1;
 		}
 	}
@@ -271,54 +297,44 @@ function gameLoop() {
 		bullets[i].updatePos();
 		bullets[i].draw();
 		// despawn bullets
-		if(bullets[i].pos > widthIncrement*102 || bullets[i] < widthIncrement*-2) {
+		if(bullets[i].posX > widthIncrement*102 || bullets[i].posX < widthIncrement*-2 ||
+			bullets[i].posY > heightIncrement * 102 || bullets[i].posY < heightIncrement*-2) {
 			bullets.splice(i, 1);
 		}
 	}
 
 	// spawn zombies
 	if(Math.floor(Math.random() * 100) == 8) { // this means 1/100 chance per frame for zombie to spawn
-		attemptedSpawnPoint = Math.floor(Math.random() * 100) * widthIncrement;
-		if(attemptedSpawnPoint > player.pos + widthIncrement*23 ||
-			attemptedSpawnPoint < player.pos - widthIncrement*23 ||
-			attemptedSpawnPoint < widthIncrement * 20 ||
-			attemptedSpawnPoint > widthIncrement * 80) { // must spawn 23 increments away OR edges
-			let zombie = new Zombie(attemptedSpawnPoint, 25);
-			zombies.push(zombie);
+		attemptedSpawnPoint = Math.floor(Math.random() * 100);
+		attemptedSpawnEdge = Math.floor(Math.random() * 3);
+
+		var x, y;
+		if (attemptedSpawnEdge == 0) { // ^
+			y = 0;
+			x = attemptedSpawnPoint * widthIncrement;
+		} else if (attemptedSpawnEdge == 1) { // >
+			y = attemptedSpawnPoint * heightIncrement;
+			x = canvasWidth;
 		}
+
+		let zombie = new Zombie(x, y, 25);
+		zombies.push(zombie);
 	}
 
 	// zombie pathfind + draw
 	for(let i=0; i<zombies.length; i++) {
 		var zombieInQuestion = zombies[i];
-		if(zombieInQuestion.pos < player.pos) { // zombie to the left of the player
-			zombieInQuestion.pos += widthIncrement/8;
+		if(zombieInQuestion.posX < player.posX) { // zombie to the left of the player
+			zombieInQuestion.posX += widthIncrement/8;
 		}
 
-		if(zombieInQuestion.pos > player.pos) { // zombie to the right of the player
-			zombieInQuestion.pos -= widthIncrement/8;
+		if(zombieInQuestion.posX > player.posX) { // zombie to the right of the player
+			zombieInQuestion.posX -= widthIncrement/8;
 		}
+
 		zombieInQuestion.draw();
 
-		// check zombie collide with player
-		if(checkCollision(zombieInQuestion, player)) {
-			if(frameNumber > 100) {
-				player.health -= zombieInQuestion.damage;
-				frameNumber = 0;
-			}
-			if(player.health <= 0) { // o o f
-				window.clearInterval(intervalHandle);
-				ctx.fillStyle = "#000000";
-				ctx.globalAlpha = 0.2;
-				ctx.fillRect(0,0, canvasWidth, canvasHeight);
-				ctx.globalAlpha = 1;
-				ctx.fillText("You Died. Your score was " + score, canvasWidth/2-widthIncrement*9, canvasHeight/2);
-
-				nameBox.classList.remove("invisible");
-				shareBtn.classList.remove("invisible");
-				shareBtn.onClick = (e) => postScores();
-			}
-		}
+		
 	}
 	checkZombieCollideBullet(bullets, zombies);
 
