@@ -21,8 +21,9 @@ class Bullet {
 	constructor(x, y, angle, damage, color, speed) {
 		this.posX = x - widthIncrement * 0.5; // because it needs to be in the center
 		this.posY = y - widthIncrement * 0.5;
+		this.width = widthIncrement
 		this.angle = angle; // lmao radians
-		this.height = this.width;
+		this.height = heightIncrement;
 		this.damage = damage;
 		this.color = color;
 		this.speed = speed;
