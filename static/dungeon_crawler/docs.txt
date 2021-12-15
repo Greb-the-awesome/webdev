@@ -8,11 +8,11 @@ DGS-1 standard:
 
 	Angle:
 
-	   |    /
-	   | a /
-	|  |  /|
-	|      |
-	|______|    a is the angle
+	    | b /
+	 ___|  /
+	|     /|  a
+	|     -------
+	|______|    b is the angle, a is the angle for zombie wars
 
 funcs:
 	checkCollision(Array thing1Pos, Array thing1Width,

@@ -1,4 +1,4 @@
-var canvas, ctx, log, intervalHandle, nameBox, shareBtn;
+var canvas, ctx, log, intervalHandle, nameBox, shareBtn, sTickHandle, lTickHandle, shootHandle, player;
 const canvasWidth = window.innerWidth;
 const canvasHeight = window.innerHeight - 50;
 var downKeys = {};
@@ -19,12 +19,13 @@ console.log("main script loaded.");
 // bullet class
 class Bullet {
 	constructor(x, y, angle, damage, color, speed) {
-		this.posX = x;
-		this.posY = y;
+		this.posX = x - widthIncrement * 0.5; // because it needs to be in the center
+		this.posY = y - widthIncrement * 0.5;
 		this.angle = angle; // lmao radians
-		this.width = widthIncrement;
 		this.height = this.width;
 		this.damage = damage;
+		this.color = color;
+		this.speed = speed;
 
 		//if (this.angle )
 	}
@@ -32,8 +33,8 @@ class Bullet {
 		
 	}
 	draw() {
-		ctx.fillStyle = "#EEEE00";
-		ctx.fillRect(this.pos-widthIncrement*0.5, heightIncrement*96,
+		ctx.fillStyle = this.color;
+		ctx.fillRect(this.posX, this.posY,
 			widthIncrement, heightIncrement);
 	}
 }
@@ -41,8 +42,8 @@ class Bullet {
 // playr class
 class Player {
 	constructor() {
-		this.posX = widthIncrement * 50;
-		this.posY = this.posX;
+		this.posX = 100;
+		this.posY = 100;
 		this.health = 100;
 		this.angle = 0; // why does everyone use radians i am sad
 		this.width = widthIncrement * 4;
@@ -65,15 +66,16 @@ class Player {
 		ctx.restore();
 
 		// health bar
-		ctx.strokeRect(this.posX - widthIncrement*2, this.posY - widthIncrement * 3,
+		ctx.strokeRect(this.posX, this.posY - widthIncrement * 4,
 			widthIncrement*4, heightIncrement/2);
 		ctx.fillStyle = "#00EEEE";
-		ctx.fillRect(this.posX - widthIncrement*2, this.posY - widthIncrement * 3,
+		ctx.fillRect(this.posX, this.posY - widthIncrement * 4,
 			widthIncrement*this.health/25, heightIncrement/2);
 	}
 	shoot() {
-		let bullet = new Bullet(this.pos, this.angle, 25);
+		let bullet = new Bullet(this.posX, this.posY, this.angle, 25, "#FFFF00", widthIncrement);
 		bullets.push(bullet);
+		console.log("*bullet noises*");
 	}
 }
 
@@ -92,35 +94,32 @@ class Zombie {
 		ctx.fillRect(this.posX, this.posY, widthIncrement*4, widthIncrement * 4);
 
 		// health bar
-		ctx.strokeRect(this.posX - widthIncrement*2, this.posY - widthIncrement * 3,
+		ctx.strokeRect(this.posX, this.posY - widthIncrement * 3,
 			widthIncrement*4, heightIncrement/2);
 		ctx.fillStyle = "#EE0000";
-		ctx.fillRect(this.posX - widthIncrement*2, this.posY - widthIncrement * 3,
+		ctx.fillRect(this.posX, this.posY - widthIncrement * 3,
 			widthIncrement*this.health/12.5, heightIncrement/2);
 	}
 }
 
 
 function onMouseMove(e) {
-	var relPosX = e.offsetX - widthIncrement * 50;
-	var relPosY = e.offsetY - heightIncrement * 50;
+	var relPosX = e.offsetX - player.posX;
+	var relPosY = e.offsetY - player.posY;
 
 	if (relPosX >= 0 && relPosY >= 0) { // bottom right
-		player.angle = Math.PI / 2 + Math.atan(relPosY / relPosX);
+		player.angle = Math.atan(relPosY / relPosX);
 	}
 	else if (relPosX <= 0 && relPosY >= 0) { // bottom left
-		player.angle = Math.PI + Math.atan(Math.abs(relPosX) / relPosY);
+		player.angle = Math.PI * 0.5 + Math.atan(Math.abs(relPosX) / relPosY);
 	}
 	else if (relPosX <= 0 && relPosY <= 0) { // top left
-		player.angle = Math.PI * 1.5 + Math.atan(Math.abs(relPosY) / Math.abs(relPosX));
+		player.angle = Math.PI + Math.atan(Math.abs(relPosY) / Math.abs(relPosX));
 	}
 	else { // top right
-		player.angle = Math.atan(relPosX / Math.abs(relPosY));
+		player.angle = Math.atan(relPosX / Math.abs(relPosY)) - Math.PI * 0.5;
 	}
 }
-
-
-let player = new Player();
 
 
 function onLoad() {
@@ -152,17 +151,28 @@ function onLoad() {
 	}, 10);
 }
 
-function tick() {
+function stop() {
+	window.clearInterval(intervalHandle);
+	window.clearInterval(sTickHandle);
+	window.clearInterval(lTickHandle);
+}
+
+function sTick() {
+	if (Math.floor(Math.random(150)) == 8) {
+
+	}
+}
+
+function lTick() {
 	for(let i=0; i<zombies.length; i++) {
 		var zombieInQuestion = zombies[i];
 		// check zombie collide with player
 		if(checkCollision(zombieInQuestion, player)) {
-			if(frameNumber > 100) {
-				player.health -= zombieInQuestion.damage;
-				frameNumber = 0;
-			}
+			player.health -= zombieInQuestion.damage;
+			frameNumber = 0;
 			if(player.health <= 0) { // o o f
-				window.clearInterval(intervalHandle);
+				stop();
+
 				ctx.fillStyle = "#000000";
 				ctx.globalAlpha = 0.2;
 				ctx.fillRect(0,0, canvasWidth, canvasHeight);
@@ -181,11 +191,14 @@ function gameInit() {
 	// listen
 	window.addEventListener("keydown", onKeyDown);
 	window.addEventListener("keyup", onKeyUp);
-	window.addEventListener("mousemove", onMouseMove)
+	window.addEventListener("mousemove", onMouseMove);
+
+	player = new Player();
 
 	// l o o p o o l
 	intervalHandle = window.setInterval(gameLoop, 10);
-	window.setInterval(tick, 100);
+	sTickHandle = window.setInterval(sTick, 100);
+	lTickHandle = window.setInterval(lTick, 500);
 
 	initAlready = true;
 
@@ -195,10 +208,12 @@ function gameInit() {
 }
 
 function onKeyDown(event) {
+	if (event.repeat) {return};
 	var keyCode = event.keyCode;
 	downKeys[keyCode] = true;
 	if (keyCode == 32) {
 		player.shoot();
+		shootHandle = window.setInterval(player.shoot, 200);
 	} else if (keyCode == 80) {
 		if (!paused) {
 			window.clearInterval(intervalHandle);
@@ -214,6 +229,9 @@ function onKeyDown(event) {
 function onKeyUp(event) {
 	var keyCode = event.keyCode;
 	downKeys[keyCode] = false;
+	if (keyCode == 32) {
+		window.clearInterval(shootHandle);
+	}
 }
 
 
@@ -281,7 +299,7 @@ function gameLoop() {
 	if(downKeys[87]) { // w
 		player.posY -= player.speed;
 		if (player.posY < 0) {
-			player.posY = 1;
+			player.posY = canvasHeight - 1;
 		}
 	}
 	if(downKeys[83]) { // s
@@ -326,10 +344,14 @@ function gameLoop() {
 		var zombieInQuestion = zombies[i];
 		if(zombieInQuestion.posX < player.posX) { // zombie to the left of the player
 			zombieInQuestion.posX += widthIncrement/8;
+		} else if(zombieInQuestion.posX > player.posX) { // zombie to the right of the player
+			zombieInQuestion.posX -= widthIncrement/8;
 		}
 
-		if(zombieInQuestion.posX > player.posX) { // zombie to the right of the player
-			zombieInQuestion.posX -= widthIncrement/8;
+		if (zombieInQuestion.posY < player.posY) { // zombie to the top of the player
+			zombieInQuestion.posY += heightIncrement/8;
+		} else if (zombieInQuestion.posY > player.posY) { // zombie to the bottom of the player
+			zombieInQuestion.posY -= heightIncrement/8;
 		}
 
 		zombieInQuestion.draw();
