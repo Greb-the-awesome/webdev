@@ -22,16 +22,21 @@ class Bullet {
 		this.posX = x - widthIncrement * 0.5; // because it needs to be in the center
 		this.posY = y - widthIncrement * 0.5;
 		this.width = widthIncrement
-		this.angle = angle; // lmao radians
+		this.angle = -angle; // lmao radians
 		this.height = heightIncrement;
 		this.damage = damage;
 		this.color = color;
 		this.speed = speed;
+		this.angleSin = Math.sin(this.angle);
+		this.angleCos = Math.cos(this.angle);
 
-		//if (this.angle )
+		this.moveX = this.angleCos * this.speed;
+		this.moveY = -this.angleSin * this.speed;
+		
 	}
 	updatePos() {
-		
+		this.posX += this.moveX;
+		this.posY += this.moveY;
 	}
 	draw() {
 		ctx.fillStyle = this.color;
@@ -74,9 +79,7 @@ class Player {
 			widthIncrement*this.health/25, heightIncrement/2);
 	}
 	shoot() {
-		let bullet = new Bullet(this.posX, this.posY, this.angle, 25, "#FFFF00", widthIncrement);
-		bullets.push(bullet);
-		console.log("*bullet noises*");
+		bullets.push(new Bullet(this.posX + widthIncrement * 2, this.posY + widthIncrement * 2, this.angle, 25, "#FFFF00", widthIncrement));
 	}
 }
 
@@ -214,7 +217,7 @@ function onKeyDown(event) {
 	downKeys[keyCode] = true;
 	if (keyCode == 32) {
 		player.shoot();
-		shootHandle = window.setInterval(player.shoot, 200);
+		shootHandle = window.setInterval(()=>{player.shoot();}, 200);
 	} else if (keyCode == 80) {
 		if (!paused) {
 			window.clearInterval(intervalHandle);
@@ -334,8 +337,13 @@ function gameLoop() {
 		} else if (attemptedSpawnEdge == 1) { // >
 			y = attemptedSpawnPoint * heightIncrement;
 			x = canvasWidth;
+		} else if (attemptedSpawnEdge == 2) { // v
+			y = canvasHeight;
+			x = attemptedSpawnPoint;
+		} else if (attemptedSpawnEdge == 3) { // <
+			y = attemptedSpawnPoint;
+			x = 0;
 		}
-
 		let zombie = new Zombie(x, y, 25);
 		zombies.push(zombie);
 	}
