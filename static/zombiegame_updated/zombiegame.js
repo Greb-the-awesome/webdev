@@ -12,6 +12,7 @@ var difficulty = 0;
 var paused = false;
 var initAlready = false;
 var loadedImgs = {};
+var horses = [];
 // hi
 
 console.log("main script loaded.");
@@ -111,7 +112,7 @@ class Horse {
 		if (side == 0) { // ^
 			this.y = 0;
 			this.x = pos * widthIncrement;
-			this.whenDrop = Math.floor(Math.random() * 100) * widthIncrement;
+			this.whenDrop = Math.floor(Math.random() * 99 + 1) * widthIncrement;
 			this.updatePos = ()=>{this.y += widthIncrement;}
 		} else if (side == 1) { // >
 			this.y = pos * widthIncrement;
@@ -129,6 +130,15 @@ class Horse {
 			this.whenDrop = Math.floor(Math.random() * 100) * heightIncrement;
 			this.updatePos = ()=>{this.x += widthIncrement;}
 		}
+	}
+	checkDrop() {
+		if (this.x == this.whenDrop || this.y == this.whenDrop) {
+			zombies.push(new Zombie(this.x + 30, this.y, 40));zombies.push(new Zombie(this.x -10, this.y + 20, 40));zombies.push(new Zombie(this.x, this.y, 40));
+		}
+	}
+	draw() {
+		ctx.fillStyle = "#000000"
+		ctx.fillRect(this.x, this.y, 100, 100);
 	}
 }
 
@@ -188,8 +198,9 @@ function stop() {
 }
 
 function sTick() {
-	if (Math.floor(Math.random(150)) == 8) {
-
+	if (Math.floor(Math.random(10)) == 3) {
+		horses.push(new Horse(Math.floor(Math.random(3)), Math.floor(Math.random(100))));
+		console.log("eeee");
 	}
 }
 
@@ -380,7 +391,7 @@ function gameLoop() {
 	// zombie pathfind + draw
 	for(let i=0; i<zombies.length; i++) {
 		var zombieInQuestion = zombies[i];
-		/*if(zombieInQuestion.posX < player.posX) { // zombie to the left of the player
+		if(zombieInQuestion.posX < player.posX) { // zombie to the left of the player
 			zombieInQuestion.posX += widthIncrement/8;
 		} else if(zombieInQuestion.posX > player.posX) { // zombie to the right of the player
 			zombieInQuestion.posX -= widthIncrement/8;
@@ -390,13 +401,22 @@ function gameLoop() {
 			zombieInQuestion.posY += heightIncrement/8;
 		} else if (zombieInQuestion.posY > player.posY) { // zombie to the bottom of the player
 			zombieInQuestion.posY -= heightIncrement/8;
-		}*/
+		}
 
 		zombieInQuestion.draw();
 
 		
 	}
 	checkZombieCollideBullet(bullets, zombies);
+
+	for(let i=0; i<horses.length; i++) {
+		h = horses[i];
+		h.draw();
+		h.updatePos();
+		if (h.x < 0 || h.x > canvasWidth || h.y < 0 || h.x > canvasHeight) { // despawn
+			horses.splice(i, 1);
+		}
+	}
 
 	// draw the ppl
 	player.draw();
