@@ -79,7 +79,7 @@ class Player {
 			widthIncrement*this.health/25, heightIncrement/2);
 	}
 	shoot() {
-		bullets.push(new Bullet(this.posX + widthIncrement * 2, this.posY + widthIncrement * 2, this.angle, 25, "#FFFF00", widthIncrement));
+		bullets.push(new Bullet(this.posX + widthIncrement * 2, this.posY + widthIncrement * 2, this.angle, 25, "#DDDD00", widthIncrement));
 	}
 }
 
@@ -103,6 +103,32 @@ class Zombie {
 		ctx.fillStyle = "#EE0000";
 		ctx.fillRect(this.posX, this.posY - widthIncrement * 3,
 			widthIncrement*this.health/12.5, heightIncrement/2);
+	}
+}
+
+class Horse {
+	constructor(pos, side) {
+		if (side == 0) { // ^
+			this.y = 0;
+			this.x = pos * widthIncrement;
+			this.whenDrop = Math.floor(Math.random() * 100) * widthIncrement;
+			this.updatePos = ()=>{this.y += widthIncrement;}
+		} else if (side == 1) { // >
+			this.y = pos * widthIncrement;
+			this.x = canvasWidth;
+			this.whenDrop = Math.floor(Math.random() * 100) * heightIncrement;
+			this.updatePos = ()=>{this.x -= widthIncrement;}
+		} else if (side == 2) { // v
+			this.y = canvasHeight;
+			this.x = pos;
+			this.whenDrop = Math.floor(Math.random() * 100) * widthIncrement;
+			this.updatePos = ()=>{this.y -= widthIncrement;}
+		} else if (side == 3) { // <
+			this.y = pos;
+			this.x = 0;
+			this.whenDrop = Math.floor(Math.random() * 100) * heightIncrement;
+			this.updatePos = ()=>{this.x += widthIncrement;}
+		}
 	}
 }
 
@@ -241,9 +267,12 @@ function onKeyUp(event) {
 
 // collison detection function
 function checkCollision(thing1, thing2) {
-	// [...]
-	if(Math.abs(thing1.posX-thing2.posX) < thing1.width/2 + thing2.width/2 &&
-		Math.abs(thing1.posY-thing2.posY) < thing1.height/2 + thing2.height/2) {
+	x1bc = thing1.posX + thing1.width/2;
+	y1bc = thing1.posY + thing1.height/2;
+	x2bc = thing2.posX + thing2.width/2;
+	y2bc = thing2.posY + thing2.height/2;
+	if(Math.abs(x1bc-x2bc) < thing1.width/2 + thing2.width/2 &&
+		Math.abs(y1bc-y2bc) < thing1.height/2 + thing2.height/2) {
 		return true;
 	}
 	else {
@@ -339,9 +368,9 @@ function gameLoop() {
 			x = canvasWidth;
 		} else if (attemptedSpawnEdge == 2) { // v
 			y = canvasHeight;
-			x = attemptedSpawnPoint;
+			x = attemptedSpawnPoint * widthIncrement;
 		} else if (attemptedSpawnEdge == 3) { // <
-			y = attemptedSpawnPoint;
+			y = attemptedSpawnPoint * heightIncrement;
 			x = 0;
 		}
 		let zombie = new Zombie(x, y, 25);
@@ -351,7 +380,7 @@ function gameLoop() {
 	// zombie pathfind + draw
 	for(let i=0; i<zombies.length; i++) {
 		var zombieInQuestion = zombies[i];
-		if(zombieInQuestion.posX < player.posX) { // zombie to the left of the player
+		/*if(zombieInQuestion.posX < player.posX) { // zombie to the left of the player
 			zombieInQuestion.posX += widthIncrement/8;
 		} else if(zombieInQuestion.posX > player.posX) { // zombie to the right of the player
 			zombieInQuestion.posX -= widthIncrement/8;
@@ -361,7 +390,7 @@ function gameLoop() {
 			zombieInQuestion.posY += heightIncrement/8;
 		} else if (zombieInQuestion.posY > player.posY) { // zombie to the bottom of the player
 			zombieInQuestion.posY -= heightIncrement/8;
-		}
+		}*/
 
 		zombieInQuestion.draw();
 
