@@ -14,3 +14,6 @@ where I test my stuff, self-explanatory.
 
 ## zombiegame:
 its a simple javascript game where you shoot zombies.
+
+## zombiegame-updated:
+a more advanced zombiegame
