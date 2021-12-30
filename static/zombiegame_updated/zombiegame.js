@@ -1,4 +1,4 @@
-var canvas, ctx, log, intervalHandle, nameBox, shareBtn, sTickHandle, lTickHandle, shootHandle, player;
+var canvas, ctx, log, intervalHandle, nameBox, shareBtn, sTickHandle, lTickHandle, player;
 const canvasWidth = window.innerWidth;
 const canvasHeight = window.innerHeight - 50;
 var downKeys = {};
@@ -13,134 +13,12 @@ var paused = false;
 var initAlready = false;
 var loadedImgs = {};
 var horses = [];
+var items = [];
+var shootHandles = [];
+var askPickUp = [false, false];
 // hi
 
 console.log("main script loaded.");
-
-// bullet class
-class Bullet {
-	constructor(x, y, angle, damage, color, speed) {
-		this.posX = x - widthIncrement * 0.5; // because it needs to be in the center
-		this.posY = y - widthIncrement * 0.5;
-		this.width = widthIncrement
-		this.angle = -angle; // lmao radians
-		this.height = heightIncrement;
-		this.damage = damage;
-		this.color = color;
-		this.speed = speed;
-		this.angleSin = Math.sin(this.angle);
-		this.angleCos = Math.cos(this.angle);
-
-		this.moveX = this.angleCos * this.speed;
-		this.moveY = -this.angleSin * this.speed;
-		
-	}
-	updatePos() {
-		this.posX += this.moveX;
-		this.posY += this.moveY;
-	}
-	draw() {
-		ctx.fillStyle = this.color;
-		ctx.fillRect(this.posX, this.posY,
-			widthIncrement, heightIncrement);
-	}
-}
-
-// playr class
-class Player {
-	constructor() {
-		this.posX = 100;
-		this.posY = 100;
-		this.health = 100;
-		this.angle = 0; // why does everyone use radians i am sad
-		this.width = widthIncrement * 4;
-		this.height = this.width;
-		this.speed = widthIncrement/5;
-	}
-	draw() {
-		ctx.save();
-		ctx.translate(this.posX + widthIncrement * 2, this.posY + widthIncrement * 2);
-		ctx.rotate(this.angle);
-		ctx.translate(-this.posX - widthIncrement * 2, - this.posY - widthIncrement * 2)
-		// player
-		ctx.fillStyle = "#FF0000";
-		ctx.fillRect(this.posX, this.posY,
-			widthIncrement*4, widthIncrement * 4);
-		ctx.fillStyle = "#444444";
-		// gun
-		ctx.drawImage(window.gunImg, this.posX + widthIncrement * 2, this.posY + widthIncrement * 2,
-			widthIncrement * 4, widthIncrement);
-		ctx.restore();
-
-		// health bar
-		ctx.strokeRect(this.posX, this.posY - widthIncrement * 4,
-			widthIncrement*4, heightIncrement/2);
-		ctx.fillStyle = "#00EEEE";
-		ctx.fillRect(this.posX, this.posY - widthIncrement * 4,
-			widthIncrement*this.health/25, heightIncrement/2);
-	}
-	shoot() {
-		bullets.push(new Bullet(this.posX + widthIncrement * 2, this.posY + widthIncrement * 2, this.angle, 25, "#DDDD00", widthIncrement));
-	}
-}
-
-// zombie class
-class Zombie {
-	constructor(x, y, damage) {
-		this.posX = x;
-		this.posY = y;
-		this.health = 50;
-		this.damage = damage;
-		this.width = widthIncrement * 4;
-		this.height = this.width;
-	}
-	draw() {
-		ctx.fillStyle = "#289E45";
-		ctx.fillRect(this.posX, this.posY, widthIncrement*4, widthIncrement * 4);
-
-		// health bar
-		ctx.strokeRect(this.posX, this.posY - widthIncrement * 3,
-			widthIncrement*4, heightIncrement/2);
-		ctx.fillStyle = "#EE0000";
-		ctx.fillRect(this.posX, this.posY - widthIncrement * 3,
-			widthIncrement*this.health/12.5, heightIncrement/2);
-	}
-}
-
-class Horse {
-	constructor(pos, side) {
-		if (side == 0) { // ^
-			this.y = 0;
-			this.x = pos * widthIncrement;
-			this.whenDrop = Math.floor(Math.random() * 99 + 1) * widthIncrement;
-			this.updatePos = ()=>{this.y += widthIncrement;}
-		} else if (side == 1) { // >
-			this.y = pos * widthIncrement;
-			this.x = canvasWidth;
-			this.whenDrop = Math.floor(Math.random() * 100) * heightIncrement;
-			this.updatePos = ()=>{this.x -= widthIncrement;}
-		} else if (side == 2) { // v
-			this.y = canvasHeight;
-			this.x = pos;
-			this.whenDrop = Math.floor(Math.random() * 100) * widthIncrement;
-			this.updatePos = ()=>{this.y -= widthIncrement;}
-		} else if (side == 3) { // <
-			this.y = pos;
-			this.x = 0;
-			this.whenDrop = Math.floor(Math.random() * 100) * heightIncrement;
-			this.updatePos = ()=>{this.x += widthIncrement;}
-		}
-	}
-	checkDrop() {
-		if (this.x == this.whenDrop || this.y == this.whenDrop) {
-			zombies.push(new Zombie(this.x + 30, this.y, 40));zombies.push(new Zombie(this.x -10, this.y + 20, 40));zombies.push(new Zombie(this.x, this.y, 40));
-		}
-	}
-	draw() {
-		ctx.fillStyle = "#000000"
-		ctx.fillRect(this.x, this.y, 100, 100);
-	}
-}
 
 
 function onMouseMove(e) {
@@ -181,7 +59,11 @@ function onLoad() {
 
 	var i = window.setInterval(function() {
 		if (
-			loadedImgs["gun"]
+			loadedImgs["gun"] &&
+			loadedImgs["horseUnridable"] &&
+			loadedImgs["nuke"] &&
+			loadedImgs["opgun"] &&
+			loadedImgs["egg"]
 			) {
 			document.getElementById("loadingMsg").classList.add("invisible");
 			console.log("all images loaded. gameInit()");
@@ -198,9 +80,14 @@ function stop() {
 }
 
 function sTick() {
-	if (Math.floor(Math.random(10)) == 3) {
-		horses.push(new Horse(Math.floor(Math.random(3)), Math.floor(Math.random(100))));
-		console.log("eeee");
+	if (Math.floor(Math.random() * 50) == 3) {
+		horses.push(new Horse(Math.floor(Math.random() * 4), Math.floor(Math.random() * 100)));
+	}
+	for (let i=0; i<items.length; i++) {
+		items[i].timer += 1;
+		if (items[i].timer > 150) {
+			items.splice(i, 1);
+		}
 	}
 }
 
@@ -228,11 +115,20 @@ function lTick() {
 	}
 }
 
+function onScroll(event) {
+	if (event.deltaY > 0) {
+		if (player.invSelect > 2) {player.invSelect = 0;} else {player.invSelect += 1;}
+	} else {
+		if (player.invSelect < 1) {player.invSelect = 3;} else {player.invSelect -= 1;}
+	}
+}
+
 function gameInit() {
 	// listen
 	window.addEventListener("keydown", onKeyDown);
 	window.addEventListener("keyup", onKeyUp);
 	window.addEventListener("mousemove", onMouseMove);
+	document.body.onwheel = onScroll;
 
 	player = new Player();
 
@@ -252,10 +148,10 @@ function onKeyDown(event) {
 	if (event.repeat) {return};
 	var keyCode = event.keyCode;
 	downKeys[keyCode] = true;
-	if (keyCode == 32) {
+	if (keyCode == 32) { // space
 		player.shoot();
-		shootHandle = window.setInterval(()=>{player.shoot();}, 200);
-	} else if (keyCode == 80) {
+		shootHandles.push(window.setInterval(()=>{player.shoot();}, player.selected.specs.delay));
+	} else if (keyCode == 80) { // p
 		if (!paused) {
 			window.clearInterval(intervalHandle);
 			paused = true;
@@ -264,6 +160,17 @@ function onKeyDown(event) {
 			intervalHandle = window.setInterval(gameLoop, 10);
 			paused = false;
 		}
+	} else if (keyCode == 49) { // 1
+		player.invSelect = 0;
+	} else if (keyCode == 50) { // 2
+		player.invSelect = 1;
+	} else if (keyCode == 51) { // 3
+		player.invSelect = 2;
+	} else if (keyCode == 52) { // 4
+		player.invSelect = 3;
+	} else if (keyCode == 16) { // shift
+		player.speed = widthIncrement / 5;
+		player.width = widthIncrement * 4;
 	}
 }
 
@@ -271,7 +178,9 @@ function onKeyUp(event) {
 	var keyCode = event.keyCode;
 	downKeys[keyCode] = false;
 	if (keyCode == 32) {
-		window.clearInterval(shootHandle);
+		for (let i=0; i<shootHandles.length; i++) {
+			window.clearInterval(shootHandles[i]);
+		}
 	}
 }
 
@@ -297,9 +206,42 @@ function checkZombieCollideBullet(b,z) {
 			if(checkCollision(b[i], z[j])) {
 				z[j].health -= b[i].damage;
 				b.splice(i, 1);
-				if(z[j].health <= 0) {
+				
+				if(z[j].health <= 0) { // da zombie ded
+					
+					if (Math.floor(Math.random() * 7) == 3) {
+						switch (Math.floor(Math.random() * 7)) {
+							case 1:
+								items.push(new Item(z[j].posX, z[j].posY, "egg", eggImg, "other.consumable", {"onclick":
+								(x, y)=>{
+									player.speed = widthIncrement / 2;
+									player.width = widthIncrement * 8;
+								}}));
+							case 2:
+								items.push(new Item(z[j].posX, z[j].posY, "M249", opGunImg, "gun",
+									{"damage":50,"color":"#00FFFF","capacity":100,"reloadTime":3000,"delay":50}));
+								break;
+							case 3:
+								items.push(new Item(z[j].posX, z[j].posY, "kar98k", kar98Img, "gun",
+									{"damage":50,"color":"#99DDDD","capacity":10,"reloadTime":2450,"delay":500}));
+								break;
+							case 4:
+								items.push(new Item(z[j].posX, z[j].posY, "AK-47", akImg, "gun",
+									{"damage":50,"color":"#FFFF00","capacity":30,"reloadTime":1800,"delay":80}));
+								break;
+							case 5:
+								items.push(new Item(z[j].posX, z[j].posY, "M1918 BAR", m1918Img, "gun",
+									{"damage":40,"color":"#a88f32","capacity":20,"reloadTime":2000,"delay":100}));
+								break;
+							case 6:
+								items.push(new Item(z[j].posX, z[j].posY, "QCW-05", qcwImg, "gun",
+									{"damage":100,"color":"#00DD00","capacity":50,"reloadTime":2000,"delay":25}));
+								break;
+						}
+					}
 					z.splice(j, 1);
-					score += 20;
+					
+					score += 20;	
 				}
 			}
 		}
@@ -352,23 +294,46 @@ function gameLoop() {
 			player.posY = 1;
 		}
 	}
-
+	// do stuff to the items
+	for(let i=0; i<items.length; i++) {
+		itemInQuestion = items[i];
+		itemInQuestion.draw();
+		if (checkCollision(itemInQuestion, player)) {
+			if (!player.inv[0]) {
+				player.inv[0] = itemInQuestion; items.splice(i, 1);
+			} else if (!player.inv[1]) {
+				player.inv[1] = itemInQuestion; items.splice(i, 1);
+			} else if (!player.inv[2]) {
+				player.inv[2] = itemInQuestion; items.splice(i, 1);
+			} else if (!player.inv[3]) {
+				player.inv[3] = itemInQuestion; items.splice(i, 1);
+			} else {
+				ctx.fillText("q to pick up", player.posX - widthIncrement, player.posY + widthIncrement * 6);
+				if (downKeys[81]) {
+					itemInQuestion.despawnable = false;
+					player.inv[player.invSelect] = itemInQuestion;
+					items.splice(i, 1);
+				}
+			}
+		}
+	}
 
 	// update the bullets and draw them
 	for(let i=0; i<bullets.length; i++) {
-		bullets[i].updatePos();
-		bullets[i].draw();
+		var bulletInQuestion = bullets[i];
+		bulletInQuestion.updatePos();
+		bulletInQuestion.draw();
 		// despawn bullets
-		if(bullets[i].posX > widthIncrement*102 || bullets[i].posX < widthIncrement*-2 ||
-			bullets[i].posY > heightIncrement * 102 || bullets[i].posY < heightIncrement*-2) {
+		if(bulletInQuestion.posX > widthIncrement*102 || bulletInQuestion.posX < widthIncrement*-2 ||
+			bulletInQuestion.posY > heightIncrement * 102 || bulletInQuestion.posY < heightIncrement*-2) {
 			bullets.splice(i, 1);
 		}
 	}
 
 	// spawn zombies
 	if(Math.floor(Math.random() * 100) == 8) { // this means 1/100 chance per frame for zombie to spawn
-		attemptedSpawnPoint = Math.floor(Math.random() * 100);
-		attemptedSpawnEdge = Math.floor(Math.random() * 3);
+		var attemptedSpawnPoint = Math.floor(Math.random() * 100);
+		var attemptedSpawnEdge = Math.floor(Math.random() * 3);
 
 		var x, y;
 		if (attemptedSpawnEdge == 0) { // ^
@@ -384,11 +349,22 @@ function gameLoop() {
 			y = attemptedSpawnPoint * heightIncrement;
 			x = 0;
 		}
-		let zombie = new Zombie(x, y, 25);
+		let zombie = new Zombie(x, y, 20);
 		zombies.push(zombie);
 	}
 
+	for(let i=0; i<horses.length; i++) {
+		var h = horses[i];
+		h.draw();
+		h.updatePos();
+		h.checkDrop();
+		if (h.x < -3 || h.x > canvasWidth + 1 || h.y < -3 || h.y > canvasHeight + 1) {
+			horses.splice(i, 1);
+		}
+	}
+
 	// zombie pathfind + draw
+	
 	for(let i=0; i<zombies.length; i++) {
 		var zombieInQuestion = zombies[i];
 		if(zombieInQuestion.posX < player.posX) { // zombie to the left of the player
@@ -409,13 +385,11 @@ function gameLoop() {
 	}
 	checkZombieCollideBullet(bullets, zombies);
 
-	for(let i=0; i<horses.length; i++) {
-		h = horses[i];
-		h.draw();
-		h.updatePos();
-		if (h.x < 0 || h.x > canvasWidth || h.y < 0 || h.x > canvasHeight) { // despawn
-			horses.splice(i, 1);
-		}
+	// ammo
+	ctx.fillStyle = "#333333";
+	if (player.selected && player.selected.type == "gun") {
+		ctx.fillText(player.selected.roundsRemaining.toString() + "/" + player.selected.specs.capacity.toString(), widthIncrement * 40, heightIncrement * 75);
+		ctx.fillText("current weapon:"+player.selected.what, widthIncrement * 40, heightIncrement * 30)
 	}
 
 	// draw the ppl
