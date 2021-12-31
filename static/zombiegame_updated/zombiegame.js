@@ -1,4 +1,4 @@
-var canvas, ctx, log, intervalHandle, nameBox, shareBtn, sTickHandle, lTickHandle, player;
+var canvas, ctx, log, intervalHandle, nameBox, shareBtn, sTickHandle, lTickHandle, player, mouseDown;
 const canvasWidth = window.innerWidth;
 const canvasHeight = window.innerHeight - 50;
 var downKeys = {};
@@ -63,7 +63,8 @@ function onLoad() {
 			loadedImgs["horseUnridable"] &&
 			loadedImgs["nuke"] &&
 			loadedImgs["opgun"] &&
-			loadedImgs["egg"]
+			loadedImgs["egg"] &&
+			loadedImgs["m1887"]
 			) {
 			document.getElementById("loadingMsg").classList.add("invisible");
 			console.log("all images loaded. gameInit()");
@@ -123,11 +124,21 @@ function onScroll(event) {
 	}
 }
 
+function onMouseDown() {
+	mouseDown = true;
+}
+
+function onMouseUp() {
+	mouseDown = false;
+}
+
 function gameInit() {
 	// listen
 	window.addEventListener("keydown", onKeyDown);
 	window.addEventListener("keyup", onKeyUp);
 	window.addEventListener("mousemove", onMouseMove);
+	window.addEventListener("mousedown", onMouseDown);
+	window.addEventListener("mouseup", onMouseUp);
 	document.body.onwheel = onScroll;
 
 	player = new Player();
@@ -148,10 +159,7 @@ function onKeyDown(event) {
 	if (event.repeat) {return};
 	var keyCode = event.keyCode;
 	downKeys[keyCode] = true;
-	if (keyCode == 32) { // space
-		player.shoot();
-		shootHandles.push(window.setInterval(()=>{player.shoot();}, player.selected.specs.delay));
-	} else if (keyCode == 80) { // p
+	if (keyCode == 80) { // p
 		if (!paused) {
 			window.clearInterval(intervalHandle);
 			paused = true;
@@ -210,7 +218,7 @@ function checkZombieCollideBullet(b,z) {
 				if(z[j].health <= 0) { // da zombie ded
 					
 					if (Math.floor(Math.random() * 7) == 3) {
-						switch (Math.floor(Math.random() * 7)) {
+						switch (Math.floor(Math.random() * 8)) {
 							case 1:
 								items.push(new Item(z[j].posX, z[j].posY, "egg", eggImg, "other.consumable", {"onclick":
 								(x, y)=>{
@@ -219,23 +227,27 @@ function checkZombieCollideBullet(b,z) {
 								}}));
 							case 2:
 								items.push(new Item(z[j].posX, z[j].posY, "M249", opGunImg, "gun",
-									{"damage":50,"color":"#00FFFF","capacity":100,"reloadTime":3000,"delay":50}));
+									{"damage":50,"color":"#00FFFF","capacity":100,"reloadTime":3000,"delay":50,"shotgun":false}));
 								break;
 							case 3:
 								items.push(new Item(z[j].posX, z[j].posY, "kar98k", kar98Img, "gun",
-									{"damage":50,"color":"#99DDDD","capacity":10,"reloadTime":2450,"delay":500}));
+									{"damage":50,"color":"#99DDDD","capacity":10,"reloadTime":2450,"delay":500,"shotgun":false}));
 								break;
 							case 4:
 								items.push(new Item(z[j].posX, z[j].posY, "AK-47", akImg, "gun",
-									{"damage":50,"color":"#FFFF00","capacity":30,"reloadTime":1800,"delay":80}));
+									{"damage":50,"color":"#FFFF00","capacity":30,"reloadTime":1800,"delay":80,"shotgun":false}));
 								break;
 							case 5:
 								items.push(new Item(z[j].posX, z[j].posY, "M1918 BAR", m1918Img, "gun",
-									{"damage":40,"color":"#a88f32","capacity":20,"reloadTime":2000,"delay":100}));
+									{"damage":40,"color":"#a88f32","capacity":20,"reloadTime":2000,"delay":100,"shotgun":false}));
 								break;
 							case 6:
 								items.push(new Item(z[j].posX, z[j].posY, "QCW-05", qcwImg, "gun",
-									{"damage":100,"color":"#00DD00","capacity":50,"reloadTime":2000,"delay":25}));
+									{"damage":100,"color":"#00DD00","capacity":50,"reloadTime":2000,"delay":25,"shotgun":false}));
+								break;
+							case 7:
+								items.push(new Item(z[j].posX, z[j].posY, "M1887", m1887Img, "gun",
+									{"damage":25,"color":"#FF0000","capacity":5,"reloadTime":2000,"delay":700,"shotgun":true,"spread":0.35,"rpc":5}));
 								break;
 						}
 					}
@@ -270,30 +282,36 @@ function gameLoop() {
 	ctx.fillText("SCORE: " + score, canvasWidth-widthIncrement*20, heightIncrement*30);
 
 	// keyboard
-	if(downKeys[65]) { // a
+	if(downKeys[65] || downKeys[37]) { // a or <
 		player.posX -= player.speed;
 		if (player.posX < 0) {
 			player.posX = widthIncrement * 99;
 		}
 	}
-	if(downKeys[68]) { // d
+	if(downKeys[68] || downKeys[39]) { // d or >
 		player.posX += player.speed;
 		if (player.posX > canvasWidth) {
 			player.posX = 1;
 		}
 	}
-	if(downKeys[87]) { // w
+	if(downKeys[87] || downKeys[38]) { // w or ^
 		player.posY -= player.speed;
 		if (player.posY < 0) {
 			player.posY = canvasHeight - 1;
 		}
 	}
-	if(downKeys[83]) { // s
+	if(downKeys[83] || downKeys[40]) { // s or down
 		player.posY += player.speed;
 		if (player.posY > canvasHeight) {
 			player.posY = 1;
 		}
 	}
+	if (downKeys[32] || mouseDown) {
+		if (!player.firingDelay) {
+			player.shoot();
+		}
+	}
+
 	// do stuff to the items
 	for(let i=0; i<items.length; i++) {
 		itemInQuestion = items[i];
@@ -310,7 +328,6 @@ function gameLoop() {
 			} else {
 				ctx.fillText("q to pick up", player.posX - widthIncrement, player.posY + widthIncrement * 6);
 				if (downKeys[81]) {
-					itemInQuestion.despawnable = false;
 					player.inv[player.invSelect] = itemInQuestion;
 					items.splice(i, 1);
 				}
@@ -389,7 +406,7 @@ function gameLoop() {
 	ctx.fillStyle = "#333333";
 	if (player.selected && player.selected.type == "gun") {
 		ctx.fillText(player.selected.roundsRemaining.toString() + "/" + player.selected.specs.capacity.toString(), widthIncrement * 40, heightIncrement * 75);
-		ctx.fillText("current weapon:"+player.selected.what, widthIncrement * 40, heightIncrement * 30)
+		ctx.fillText("current weapon: "+player.selected.what, widthIncrement * 40, heightIncrement * 30)
 	}
 
 	// draw the ppl

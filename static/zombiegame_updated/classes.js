@@ -69,6 +69,7 @@ class Player {
 			false, false, false];
 		this.invSelect = 0;
 		this.reloading = false;
+		this.firingDelay = false;
 	}
 	checkSelect(slot) {
 		if (this.invSelect == slot) {
@@ -125,22 +126,36 @@ class Player {
 
 		// since draw() is called every frame were doing some housekeeping here
 		this.selected = this.inv[this.invSelect];
+		this.selectSpecs = this.selected.specs;
 
 		ctx.fillStyle = "#000000";
 		if (this.reloading) {ctx.fillText("reloading", widthIncrement * 40, heightIncrement * 25)}
 	}
 	shoot() {
 		if (this.selected.type == "gun" && !this.reloading) {
-			bullets.push(new Bullet(this.posX + widthIncrement * 2, this.posY + widthIncrement * 2,
-				this.angle, this.selected.specs.damage, this.selected.specs.color, widthIncrement));
+			if (this.selectSpecs.shotgun) { // a shotgun
+				for (let i=0; i<this.selectSpecs.rpc; i++) {
+					bullets.push(new Bullet(this.posX + widthIncrement * 2, this.posY + widthIncrement * 2,
+						this.angle - this.selectSpecs.spread/2 + Math.random() * this.selectSpecs.spread,
+						this.selectSpecs.damage, this.selectSpecs.color, widthIncrement));
+				}
+			} else { // not a shotgun
+				bullets.push(new Bullet(this.posX + widthIncrement * 2, this.posY + widthIncrement * 2,
+					this.angle, this.selectSpecs.damage, this.selectSpecs.color, widthIncrement));
+				
+			}
 			this.selected.roundsRemaining -= 1;
 			if (this.selected.roundsRemaining <= 0) {
 				this.reloading = true;
-				setTimeout(()=>{this.reloading = false;this.selected.roundsRemaining = this.selected.specs.capacity;}, this.selected.specs.reloadTime);
+				setTimeout(()=>{this.reloading = false;this.selected.roundsRemaining = this.selectSpecs.capacity;}, this.selectSpecs.reloadTime);
 			}
+
+			this.firingDelay = true;
+			setTimeout(()=>{this.firingDelay = false;}, this.selectSpecs.delay);
 		}
+
 		if (this.selected.type == "other.consumable") {
-			this.selected.specs.onclick(this.posX, this.posY);
+			this.selectSpecs.onclick(this.posX, this.posY);
 			this.inv[this.invSelect] = false;
 		}
 	}

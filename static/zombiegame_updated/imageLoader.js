@@ -53,7 +53,7 @@ function loadImgs() {
 
 	// m1918
 	window.m1918Img = new Image();
-	window.m1918Img.src = "static/zombiegame_updated/egg.png";
+	window.m1918Img.src = "static/zombiegame_updated/m1918.png";
 	window.m1918Img.onload = function() {
 		loadedImgs["m1918"] = true;
 	};
@@ -63,6 +63,13 @@ function loadImgs() {
 	window.qcwImg.src = "static/zombiegame_updated/qcw05.png";
 	window.qcwImg.onload = function() {
 		loadedImgs["qcw"] = true;
+	};
+
+	// m1887
+	window.m1887Img = new Image();
+	window.m1887Img.src = "static/zombiegame_updated/m1887.png";
+	window.m1887Img.onload = function() {
+		loadedImgs["m1887"] = true;
 	};
 }
 
