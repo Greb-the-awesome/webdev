@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-import json
+import json, time
 global scores
 scores = {}
 
@@ -91,7 +91,7 @@ def leader():
 
 @app.route("/zombiewars")
 def zombiewars():
-	return render_template("zombiewars.html")
+	return render_template("zombiewars.html", rand_num = time.time())
 
 @app.route("/lmao/you/cant/see/this/ehe")
 def lmao():

@@ -1,5 +1,5 @@
 var gunImg;
-
+var loadedImgs = {};
 function loadImgs() {
 	// gun
 	window.gunImg = new Image();
@@ -71,6 +71,42 @@ function loadImgs() {
 	window.m1887Img.onload = function() {
 		loadedImgs["m1887"] = true;
 	};
+
+	// medkit
+	window.medkitImg = new Image();
+	window.medkitImg.src = "static/zombiegame_updated/medkit.png";
+	window.medkitImg.onload = function() {
+		loadedImgs["medkit"] = true;
+	};
+
+	// medicine
+	window.medicineImg = new Image();
+	window.medicineImg.src = "static/zombiegame_updated/medicine.png";
+	window.medicineImg.onload = function() {
+		loadedImgs["medicine"] = true;
+	};
+
+	// aa12
+	window.aa12Img = new Image();
+	window.aa12Img.src = "static/zombiegame_updated/aa12.png";
+	window.aa12Img.onload = function() {
+		loadedImgs["aa12"] = true;
+	};
+
+	// snowflake
+	window.flakeImg = new Image();
+	window.flakeImg.src = "static/zombiegame_updated/snowflake.png";
+	window.flakeImg.onload = function() {
+		loadedImgs["snowflake"] = true;
+	};
+
+	// snowball
+	window.snowballImg = new Image();
+	window.snowballImg.src = "static/zombiegame_updated/snowball.png";
+	window.snowballImg.onload = function() {
+		loadedImgs["snowball"] = true;
+	};
+
 }
 
 loadImgs();

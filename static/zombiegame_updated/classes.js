@@ -70,6 +70,7 @@ class Player {
 		this.invSelect = 0;
 		this.reloading = false;
 		this.firingDelay = false;
+		this.usingMed = false;
 	}
 	checkSelect(slot) {
 		if (this.invSelect == slot) {
@@ -129,7 +130,7 @@ class Player {
 		this.selectSpecs = this.selected.specs;
 
 		ctx.fillStyle = "#000000";
-		if (this.reloading) {ctx.fillText("reloading", widthIncrement * 40, heightIncrement * 25)}
+		if (this.reloading) {ctx.fillText("reloading", widthIncrement * 40, heightIncrement * 25);}
 	}
 	shoot() {
 		if (this.selected.type == "gun" && !this.reloading) {
@@ -157,6 +158,18 @@ class Player {
 		if (this.selected.type == "other.consumable") {
 			this.selectSpecs.onclick(this.posX, this.posY);
 			this.inv[this.invSelect] = false;
+		}
+
+		if (this.selected.type == "heal") {
+			this.usingMed = true;
+			this.speed = widthIncrement/8;
+			setTimeout(()=>{
+				this.health += this.selectSpecs.healthRestore;
+				if (this.health > 100) {
+					this.health = 100;
+				}
+				this.speed=widthIncrement/5;this.usingMed=false;this.inv[this.invSelect]=false;
+			}, this.selectSpecs.time);
 		}
 	}
 }

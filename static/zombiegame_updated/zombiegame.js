@@ -11,7 +11,7 @@ var score = 0;
 var difficulty = 0;
 var paused = false;
 var initAlready = false;
-var loadedImgs = {};
+var snowflakes = [];
 var horses = [];
 var items = [];
 var shootHandles = [];
@@ -64,7 +64,12 @@ function onLoad() {
 			loadedImgs["nuke"] &&
 			loadedImgs["opgun"] &&
 			loadedImgs["egg"] &&
-			loadedImgs["m1887"]
+			loadedImgs["m1887"] &&
+			loadedImgs["medkit"] &&
+			loadedImgs["medicine"] &&
+			loadedImgs["aa12"] &&
+			loadedImgs["snowflake"] &&
+			loadedImgs["snowball"]
 			) {
 			document.getElementById("loadingMsg").classList.add("invisible");
 			console.log("all images loaded. gameInit()");
@@ -117,12 +122,15 @@ function lTick() {
 }
 
 function onScroll(event) {
-	if (event.deltaY > 0) {
-		if (player.invSelect > 2) {player.invSelect = 0;} else {player.invSelect += 1;}
-	} else {
-		if (player.invSelect < 1) {player.invSelect = 3;} else {player.invSelect -= 1;}
+	if (!player.usingMed) {
+		if (event.deltaY > 0) {
+			if (player.invSelect > 2) {player.invSelect = 0;} else {player.invSelect += 1;}
+		} else {
+			if (player.invSelect < 1) {player.invSelect = 3;} else {player.invSelect -= 1;}
+		}
 	}
 }
+	
 
 function onMouseDown() {
 	mouseDown = true;
@@ -218,7 +226,7 @@ function checkZombieCollideBullet(b,z) {
 				if(z[j].health <= 0) { // da zombie ded
 					
 					if (Math.floor(Math.random() * 7) == 3) {
-						switch (Math.floor(Math.random() * 8)) {
+						switch (Math.floor(Math.random() * 11)) {
 							case 1:
 								items.push(new Item(z[j].posX, z[j].posY, "egg", eggImg, "other.consumable", {"onclick":
 								(x, y)=>{
@@ -249,6 +257,19 @@ function checkZombieCollideBullet(b,z) {
 								items.push(new Item(z[j].posX, z[j].posY, "M1887", m1887Img, "gun",
 									{"damage":25,"color":"#FF0000","capacity":5,"reloadTime":2000,"delay":700,"shotgun":true,"spread":0.35,"rpc":5}));
 								break;
+							case 8:
+								items.push(new Item(z[j].posX, z[j].posY, "medkit", medkitImg, "heal",
+									{"time":2000,"healthRestore":100}));
+							case 9:
+								items.push(new Item(z[j].posX, z[j].posY, "medicine", medicineImg, "heal",
+									{"time":1000,"healthRestore":50}));
+							case 10:
+								items.push(new Item(z[j].posX, z[j].posY, "AA-12", aa12Img, "gun",
+									{"damage":25,"color":"#FF0000","capacity":20,"reloadTime":2000,"delay":200,"shotgun":true,"spread":0.4,"rpc":7}));
+						}
+						if (Math.floor(Math.random() * 5) == 3) {
+							items.push(new Item(z[j].posX + 20, z[j].posY + 20, "snowball", snowballImg, "gun",
+									{"damage":100,"color":"#94aeb0","capacity":1,"reloadTime":200,"delay":200,"shotgun":false}));
 						}
 					}
 					z.splice(j, 1);
@@ -307,7 +328,7 @@ function gameLoop() {
 		}
 	}
 	if (downKeys[32] || mouseDown) {
-		if (!player.firingDelay) {
+		if (!player.firingDelay && !player.usingMed) {
 			player.shoot();
 		}
 	}
@@ -404,9 +425,27 @@ function gameLoop() {
 
 	// ammo
 	ctx.fillStyle = "#333333";
-	if (player.selected && player.selected.type == "gun") {
-		ctx.fillText(player.selected.roundsRemaining.toString() + "/" + player.selected.specs.capacity.toString(), widthIncrement * 40, heightIncrement * 75);
-		ctx.fillText("current weapon: "+player.selected.what, widthIncrement * 40, heightIncrement * 30)
+	if (player.selected) {
+		if (player.selected.type == "gun") {
+			ctx.fillText(player.selected.roundsRemaining.toString() + "/" + player.selected.specs.capacity.toString(), widthIncrement * 40, heightIncrement * 75);
+		}
+		ctx.fillText("current item: "+player.selected.what, widthIncrement * 40, heightIncrement * 30);
+	}
+
+	if (player.usingMed) {
+		ctx.fillText("healing up...", widthIncrement * 40, heightIncrement * 25);
+	}
+
+	if (Math.floor(Math.random() * 20) == 8) {
+		snowflakes.push([Math.floor(Math.random() * 100) * widthIncrement, 0, Math.random() * 50, (Math.random()/10 + 0.1) * widthIncrement]);
+	}
+	for (let i=0;i<snowflakes.length;i++) {
+		flakeInQuestion = snowflakes[i];
+		flakeInQuestion[1] += flakeInQuestion[3];
+		ctx.drawImage(flakeImg, flakeInQuestion[0], flakeInQuestion[1], flakeInQuestion[2], flakeInQuestion[2]);
+		if (flakeInQuestion[1] >= canvasHeight) {
+			snowflakes.splice(i, 1);
+		}
 	}
 
 	// draw the ppl

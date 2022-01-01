@@ -2,12 +2,15 @@
 
 <html>
 <head>
-	<script type="text/javascript" src="static/zombiegame_updated/classes.js"></script>
-	<script type="text/javascript" src="{{ url_for('static', filename='zombiegame_updated/imageLoader.js') }}"></script>
-	<script type="text/javascript" src="{{ url_for('static', filename='zombiegame_updated/zombiegame.js') }}"></script>
-	<link rel="stylesheet" href="{{ url_for('static', filename='zombiegame_updated/zombiegame.css') }}">
+	<script type="text/javascript" src="static/zombiegame_updated/classes.js?a={{rand_num}}"></script>
+	<script type="text/javascript" src="static/zombiegame_updated/imageLoader.js?a={{rand_num}}"></script>
+	<script type="text/javascript" src="static/zombiegame_updated/zombiegame.js?a={{rand_num}}"></script>
+	<link rel="stylesheet" href="static/zombiegame_updated/zombiegame.css?a={{rand_num}}">
 	<title>Zombie Wars</title>
 	<link rel="icon" href="/static/zombiegame_updated/Zombie_wars.png">
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+	<meta http-equiv="Pragma" content="no-cache"/>
+	<meta http-equiv="Expires" content="0"/>
 </head>
 <body onload="onLoad();">
 	<!-- HTML here -->
