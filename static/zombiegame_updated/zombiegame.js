@@ -172,7 +172,6 @@ function gameInit() {
 }
 
 function onKeyDown(event) {
-	event.preventDefault();
 	if (event.repeat) {return};
 	var keyCode = event.keyCode;
 	downKeys[keyCode] = true;
