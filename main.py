@@ -81,13 +81,17 @@ def postScores():
 
 @app.route("/leaderboard")
 def leader():
+	leader_string = ""
 	f = open("leader.txt", "r")
 	x = json.loads(f.read())
 	f.close()
 	keys_x = list(x.keys())
-	for y in range(0, len(keys_x)):
+	for y in range(0, len(keys_x)): # turn em to floats
 		keys_x[y] = float(keys_x[y])
-	return render_template("leaderboard.html", leader_dict=x, _dict_ordered=sorted(keys_x, reverse=True), len_dict=len(x), int=int, str=str)
+
+	for z in keys_x:
+		leader_string += f"{x[str(z)]}"
+	return render_template("leaderboard.html", leader_string = leader_string)
 
 @app.route("/zombiewars")
 def zombiewars():

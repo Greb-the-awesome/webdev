@@ -107,6 +107,13 @@ function loadImgs() {
 		loadedImgs["snowball"] = true;
 	};
 
+	// snowball
+	window.wallImg = new Image();
+	window.wallImg.src = "static/zombiegame_updated/wall.png";
+	window.wallImg.onload = function() {
+		loadedImgs["wall"] = true;
+	};
+
 }
 
 loadImgs();

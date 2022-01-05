@@ -15,7 +15,9 @@ var snowflakes = [];
 var horses = [];
 var items = [];
 var shootHandles = [];
+var walls = [];
 var askPickUp = [false, false];
+var frameDelay = 10;
 // hi
 
 console.log("main script loaded.");
@@ -69,7 +71,8 @@ function onLoad() {
 			loadedImgs["medicine"] &&
 			loadedImgs["aa12"] &&
 			loadedImgs["snowflake"] &&
-			loadedImgs["snowball"]
+			loadedImgs["snowball"] &&
+			loadedImgs["wall"]
 			) {
 			document.getElementById("loadingMsg").classList.add("invisible");
 			console.log("all images loaded. gameInit()");
@@ -77,6 +80,10 @@ function onLoad() {
 			window.clearInterval(i);
 		}
 	}, 10);
+	var showItems = document.querySelectorAll(".pauseMenu");
+	for (let i=0;i<showItems.length;i++) {
+		showItems[i].style.display = "none";
+	}
 }
 
 function stop() {
@@ -122,6 +129,7 @@ function lTick() {
 }
 
 function onScroll(event) {
+	event.preventDefault();
 	if (!player.usingMed) {
 		if (event.deltaY > 0) {
 			if (player.invSelect > 2) {player.invSelect = 0;} else {player.invSelect += 1;}
@@ -147,12 +155,12 @@ function gameInit() {
 	window.addEventListener("mousemove", onMouseMove);
 	window.addEventListener("mousedown", onMouseDown);
 	window.addEventListener("mouseup", onMouseUp);
-	document.body.onwheel = onScroll;
+	window.addEventListener("wheel", onScroll, {passive:false});
 
 	player = new Player();
 
 	// l o o p o o l
-	intervalHandle = window.setInterval(gameLoop, 10);
+	intervalHandle = window.setInterval(gameLoop, frameDelay);
 	sTickHandle = window.setInterval(sTick, 100);
 	lTickHandle = window.setInterval(lTick, 500);
 
@@ -164,17 +172,29 @@ function gameInit() {
 }
 
 function onKeyDown(event) {
+	event.preventDefault();
 	if (event.repeat) {return};
 	var keyCode = event.keyCode;
 	downKeys[keyCode] = true;
 	if (keyCode == 80) { // p
 		if (!paused) {
-			window.clearInterval(intervalHandle);
+			stop();
 			paused = true;
+			var showItems = document.querySelectorAll(".pauseMenu");
+			for (let i=0;i<showItems.length;i++) {
+				showItems[i].style.display = "block";
+			}
 		}
 		else {
-			intervalHandle = window.setInterval(gameLoop, 10);
+			intervalHandle = window.setInterval(gameLoop, frameDelay);
+			sTickHandle = window.setInterval(sTick, 100);
+			lTickHandle = window.setInterval(lTick, 500);
+
 			paused = false;
+			var showItems = document.querySelectorAll(".pauseMenu");
+			for (let i=0;i<showItems.length;i++) {
+				showItems[i].style.display = "none";
+			}
 		}
 	} else if (keyCode == 49) { // 1
 		player.invSelect = 0;
@@ -187,6 +207,9 @@ function onKeyDown(event) {
 	} else if (keyCode == 16) { // shift
 		player.speed = widthIncrement / 5;
 		player.width = widthIncrement * 4;
+	} else if (keyCode == 82 && player.selected.type == "gun") { // r
+		player.reloading = true;
+		setTimeout(()=>{player.reloading = false;player.selected.roundsRemaining = player.selectSpecs.capacity;}, player.selectSpecs.reloadTime);
 	}
 }
 
@@ -200,13 +223,12 @@ function onKeyUp(event) {
 	}
 }
 
-
 // collison detection function
 function checkCollision(thing1, thing2) {
-	x1bc = thing1.posX + thing1.width/2;
-	y1bc = thing1.posY + thing1.height/2;
-	x2bc = thing2.posX + thing2.width/2;
-	y2bc = thing2.posY + thing2.height/2;
+	var x1bc = thing1.posX + thing1.width/2;
+	var y1bc = thing1.posY + thing1.height/2;
+	var x2bc = thing2.posX + thing2.width/2;
+	var y2bc = thing2.posY + thing2.height/2;
 	if(Math.abs(x1bc-x2bc) < thing1.width/2 + thing2.width/2 &&
 		Math.abs(y1bc-y2bc) < thing1.height/2 + thing2.height/2) {
 		return true;
@@ -214,6 +236,35 @@ function checkCollision(thing1, thing2) {
 	else {
 		return false;
 	}
+}
+
+// same as ^^ but returns which side collision was done
+// directions = pos of thing2 relative to thing1
+// so if its like
+// thing2 thing1
+// it would return "left"
+// u gotta be careful tho cos reasons that only I know and im too lazy to explain
+function advancedCollisionCheck(thing1, thing2) {
+	var x1bc = thing1.posX + thing1.width/2;
+	var y1bc = thing1.posY + thing1.height/2;
+	var x2bc = thing2.posX + thing2.width/2;
+	var y2bc = thing2.posY + thing2.height/2;
+	var distanceX = x1bc - x2bc;
+	var distanceY = y1bc - y2bc;
+	var Lcollide, Rcollide, Ucollide, Dcollide;
+	if (distanceX > 0 && distanceX < thing1.width/2 + thing2.width/2) {
+		Rcollide = true;
+	}
+	if (distanceX < 0 && distanceX > -(thing1.width/2 + thing2.width/2)) {
+		Lcollide = true;
+	}
+	if (distanceY > 0 && distanceY < thing1.height/2 + thing2.height/2) {
+		Dcollide = true;
+	}
+	if (distanceY < 0 && distanceY > -(thing1.height/2 + thing2.height/2)) {
+		Ucollide = true;
+	}
+	return {"up":Ucollide,"down":Dcollide,"left":Lcollide,"right":Rcollide};
 }
 
 function checkZombieCollideBullet(b,z) {
@@ -232,45 +283,50 @@ function checkZombieCollideBullet(b,z) {
 								(x, y)=>{
 									player.speed = widthIncrement / 2;
 									player.width = widthIncrement * 8;
-								}}));
+								}}, 1));
 							case 2:
 								items.push(new Item(z[j].posX, z[j].posY, "M249", opGunImg, "gun",
-									{"damage":50,"color":"#00FFFF","capacity":100,"reloadTime":3000,"delay":50,"shotgun":false}));
+									{"damage":50,"color":"#00FFFF","capacity":100,"reloadTime":3000,"delay":50,"shotgun":false,"size":1}, 1));
 								break;
 							case 3:
 								items.push(new Item(z[j].posX, z[j].posY, "kar98k", kar98Img, "gun",
-									{"damage":50,"color":"#99DDDD","capacity":10,"reloadTime":2450,"delay":500,"shotgun":false}));
+									{"damage":50,"color":"#99DDDD","capacity":10,"reloadTime":2450,"delay":500,"shotgun":false,"size":1}, 1));
 								break;
 							case 4:
 								items.push(new Item(z[j].posX, z[j].posY, "AK-47", akImg, "gun",
-									{"damage":50,"color":"#FFFF00","capacity":30,"reloadTime":1800,"delay":80,"shotgun":false}));
+									{"damage":50,"color":"#FFFF00","capacity":30,"reloadTime":1800,"delay":80,"shotgun":false,"size":1}, 1));
 								break;
 							case 5:
 								items.push(new Item(z[j].posX, z[j].posY, "M1918 BAR", m1918Img, "gun",
-									{"damage":40,"color":"#a88f32","capacity":20,"reloadTime":2000,"delay":100,"shotgun":false}));
+									{"damage":40,"color":"#a88f32","capacity":20,"reloadTime":2000,"delay":100,"shotgun":false,"size":1}, 1));
 								break;
 							case 6:
 								items.push(new Item(z[j].posX, z[j].posY, "QCW-05", qcwImg, "gun",
-									{"damage":100,"color":"#00DD00","capacity":50,"reloadTime":2000,"delay":25,"shotgun":false}));
+									{"damage":100,"color":"#00DD00","capacity":50,"reloadTime":2000,"delay":25,"shotgun":false,"size":1}, 1));
 								break;
 							case 7:
 								items.push(new Item(z[j].posX, z[j].posY, "M1887", m1887Img, "gun",
-									{"damage":25,"color":"#FF0000","capacity":5,"reloadTime":2000,"delay":700,"shotgun":true,"spread":0.35,"rpc":5}));
+									{"damage":25,"color":"#FF0000","capacity":5,"reloadTime":2000,"delay":700,"shotgun":true,"spread":0.35,"rpc":5,"size":0.7}, 1));
 								break;
 							case 8:
 								items.push(new Item(z[j].posX, z[j].posY, "medkit", medkitImg, "heal",
-									{"time":2000,"healthRestore":100}));
+									{"time":2000,"healthRestore":100}, 1));
 							case 9:
 								items.push(new Item(z[j].posX, z[j].posY, "medicine", medicineImg, "heal",
-									{"time":1000,"healthRestore":50}));
+									{"time":1000,"healthRestore":50}, 1));
 							case 10:
 								items.push(new Item(z[j].posX, z[j].posY, "AA-12", aa12Img, "gun",
-									{"damage":25,"color":"#FF0000","capacity":20,"reloadTime":2000,"delay":200,"shotgun":true,"spread":0.4,"rpc":7}));
+									{"damage":25,"color":"#FF0000","capacity":20,"reloadTime":2000,"delay":200,"shotgun":true,"spread":0.4,"rpc":7,"size":0.7}, 1));
 						}
 						if (Math.floor(Math.random() * 5) == 3) {
 							items.push(new Item(z[j].posX + 20, z[j].posY + 20, "snowball", snowballImg, "gun",
-									{"damage":100,"color":"#94aeb0","capacity":1,"reloadTime":200,"delay":200,"shotgun":false}));
+									{"damage":100,"color":"#94aeb0","capacity":1,"reloadTime":200,"delay":200,"shotgun":false,"size":3}, 1));
 						}
+						if (Math.floor(Math.random() * 5) == 3) {
+							items.push(new Item(z[j].posX + 20, z[j].posY + 20, "wall", wallImg, "wall",
+								{"color":"#000000","health":200}, 32))
+						}
+						
 					}
 					z.splice(j, 1);
 					
@@ -302,26 +358,27 @@ function gameLoop() {
 	ctx.fillStyle = "#000000";
 	ctx.fillText("SCORE: " + score, canvasWidth-widthIncrement*20, heightIncrement*30);
 
+
 	// keyboard
-	if(downKeys[65] || downKeys[37]) { // a or <
+	if((downKeys[65] || downKeys[37]) && player.canMove.left) { // a or <
 		player.posX -= player.speed;
 		if (player.posX < 0) {
 			player.posX = widthIncrement * 99;
 		}
 	}
-	if(downKeys[68] || downKeys[39]) { // d or >
+	if((downKeys[68] || downKeys[39]) && player.canMove.right) { // d or >
 		player.posX += player.speed;
 		if (player.posX > canvasWidth) {
 			player.posX = 1;
 		}
 	}
-	if(downKeys[87] || downKeys[38]) { // w or ^
+	if((downKeys[87] || downKeys[38]) && player.canMove.up) { // w or ^
 		player.posY -= player.speed;
 		if (player.posY < 0) {
 			player.posY = canvasHeight - 1;
 		}
 	}
-	if(downKeys[83] || downKeys[40]) { // s or down
+	if((downKeys[83] || downKeys[40]) && player.canMove.down) { // s or down
 		player.posY += player.speed;
 		if (player.posY > canvasHeight) {
 			player.posY = 1;
@@ -401,24 +458,27 @@ function gameLoop() {
 		}
 	}
 
-	// zombie pathfind + draw
+	// zombie pathfind + draw + other stuff
 	
 	for(let i=0; i<zombies.length; i++) {
 		var zombieInQuestion = zombies[i];
-		if(zombieInQuestion.posX < player.posX) { // zombie to the left of the player
+		if(zombieInQuestion.posX < player.posX && zombieInQuestion.canMove.right) { // zombie to the left of the player
 			zombieInQuestion.posX += widthIncrement/8;
-		} else if(zombieInQuestion.posX > player.posX) { // zombie to the right of the player
+		} else if(zombieInQuestion.posX > player.posX && zombieInQuestion.canMove.left) { // zombie to the right of the player
 			zombieInQuestion.posX -= widthIncrement/8;
 		}
 
-		if (zombieInQuestion.posY < player.posY) { // zombie to the top of the player
+		if (zombieInQuestion.posY < player.posY && zombieInQuestion.canMove.down) { // zombie to the top of the player
 			zombieInQuestion.posY += heightIncrement/8;
-		} else if (zombieInQuestion.posY > player.posY) { // zombie to the bottom of the player
+		} else if (zombieInQuestion.posY > player.posY && zombieInQuestion.canMove.up) { // zombie to the bottom of the player
 			zombieInQuestion.posY -= heightIncrement/8;
 		}
 
 		zombieInQuestion.draw();
-
+		zombieInQuestion.canMove.up = true;
+		zombieInQuestion.canMove.down = true;
+		zombieInQuestion.canMove.right = true;
+		zombieInQuestion.canMove.left = true;
 		
 	}
 	checkZombieCollideBullet(bullets, zombies);
@@ -445,6 +505,38 @@ function gameLoop() {
 		ctx.drawImage(flakeImg, flakeInQuestion[0], flakeInQuestion[1], flakeInQuestion[2], flakeInQuestion[2]);
 		if (flakeInQuestion[1] >= canvasHeight) {
 			snowflakes.splice(i, 1);
+		}
+	}
+	player.canMove.up = true;
+	player.canMove.down = true;
+	player.canMove.right = true;
+	player.canMove.left = true;
+	for (let i=0;i<walls.length;i++) {
+		wallInQuestion = walls[i];
+		ctx.drawImage(wallImg, wallInQuestion.posX, wallInQuestion.posY, widthIncrement * 3, widthIncrement * 3);
+		var a = advancedCollisionCheck(player, wallInQuestion);
+		var b = checkCollision(player, wallInQuestion);
+		
+		if (b) {
+			if (a.down) {player.canMove.up = false;}
+			if (a.up) {player.canMove.down = false;}
+			if (a.left) {player.canMove.right = false;}
+			if (a.right) {player.canMove.left = false;}
+		}
+		for(let j=0; j<zombies.length; j++) {
+			var zombieInQuestion = zombies[j];
+			var a = advancedCollisionCheck(zombieInQuestion, wallInQuestion);
+			var b = checkCollision(zombieInQuestion, wallInQuestion);
+			if (b) {
+				if (a.down) {zombieInQuestion.canMove.up = false;}
+				if (a.up) {zombieInQuestion.canMove.down = false;}
+				if (a.left) {zombieInQuestion.canMove.right = false;}
+				if (a.right) {zombieInQuestion.canMove.left = false;}
+				wallInQuestion.health -= 0.5;
+				if (wallInQuestion.health < 0) {
+					walls.splice(i, 1);
+				}
+			}
 		}
 	}
 

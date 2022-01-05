@@ -19,6 +19,24 @@
 	<canvas id="canv" width="1000" height="300" style="border:3px solid #000000"></canvas>
 
 	<input type="text" id="nameBox" placeholder="your (fake) name" class="invisible shareInput">
+
+	
+
+	<div class="pauseMenu" style="width:60%;background-color:#EEEEEE;">
+		<center>
+			<h1>Game Paused</h1>
+			<p>Hover over a heading to know more about it</p>
+			<h3 onmouseenter="this.innerHTML='How fast the game is.';"
+				onmouseout="this.innerHTML='Game Pace:';">Game Pace:</h3>
+			<br>
+			<button onclick="frameDelay = 17;">Quite Slow</button>
+			<button onclick="frameDelay = 13;">A Bit Slow</button>
+			<button onclick="frameDelay = 10;">Normal</button>
+			<button onclick="frameDelay = 7;">CPU Destroyer</button>
+			<br><br>
+		</center>
+	</div>
+
 	<button class = "shareBtn invisible" id = "share" onclick="postScores();">Share yer score on the leaderboard!</button>
 
 </body>

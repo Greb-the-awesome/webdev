@@ -26,3 +26,9 @@ html, body {
 .invisible {
     display: none;
 }
+
+.pauseMenu {
+    position: absolute;
+    top: 30%;
+    left: 20%;
+}
