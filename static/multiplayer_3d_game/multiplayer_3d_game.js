@@ -1,20 +1,29 @@
 var canvas, gl, shaderProgram;
 const vsSource = `
 attribute vec4 aVertexPosition;
+attribute vec4 aVertexColor;
 
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
 
+varying lowp vec4 vColor;
+
 void main() {
     gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+    vColor = aVertexColor;
 }
 `;
 const fsSource = `
-void main() {
-    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+varying lowp vec4 vColor;
+
+void main(void) {
+    gl_FragColor = vColor;
 }
 `
 var programInfo;
+var downKeys = [];
+var modelViewMatrix, projectionMatrix;
+
 
 //
 // Initialize a shader program, so WebGL knows how to draw our data
@@ -66,10 +75,22 @@ function initBuffers() {
   
     gl.bufferData(gl.ARRAY_BUFFER,
                   new Float32Array(positions),
-                  gl.STATIC_DRAW);
+                  gl.DYNAMIC_DRAW);
+
+    const colors = [
+        1.0,  1.0,  1.0,  1.0,    // white
+        1.0,  0.0,  0.0,  1.0,    // red
+        0.0,  1.0,  0.0,  1.0,    // green
+        0.0,  0.0,  1.0,  1.0,    // blue
+    ];
+
+    const colorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
 
     return {
         position: positionBuffer,
+        color: colorBuffer,
     };
 }
 
@@ -125,7 +146,7 @@ function drawScene(buffers) {
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const zNear = 0.1;
     const zFar = 100.0;
-    const projectionMatrix = glMatrix.mat4.create();
+    projectionMatrix = glMatrix.mat4.create();
 
     // note: glmatrix.js always has the first argument
     // as the destination to receive the result.
@@ -137,7 +158,7 @@ function drawScene(buffers) {
 
     // Set the drawing position to the "identity" point, which is
     // the center of the scene.
-    const modelViewMatrix = glMatrix.mat4.create();
+    modelViewMatrix = glMatrix.mat4.create();
 
     // Now move the drawing position a bit to where we want to
     // start drawing the square.
@@ -167,6 +188,24 @@ function drawScene(buffers) {
               programInfo.attribLocations.vertexPosition);
     }
 
+    {
+        const numComponents = 4;
+        const type = gl.FLOAT;
+        const normalize = false;
+        const stride = 0;
+        const offset = 0;
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
+        gl.vertexAttribPointer(
+            programInfo.attribLocations.vertexColor,
+            numComponents,
+            type,
+            normalize,
+            stride,
+            offset);
+        gl.enableVertexAttribArray(
+            programInfo.attribLocations.vertexColor);
+    }
+
     // Tell WebGL to use our program when drawing
   
     gl.useProgram(programInfo.program);
@@ -189,8 +228,22 @@ function drawScene(buffers) {
     }
 }
 
+function onKeyDown(event) {
+    var keyCode = event.keyCode;
+    downKeys[keyCode] = true;
+}
+
+function onKeyUp(event) {
+    keyCode = event.keyCode;
+    downKeys[keyCode] = false;
+}
+
 function onLoad() {
     console.log(a);
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+
     canv = document.getElementById("canvas");
     gl = canv.getContext("webgl");
     // gl.canvas.width = window.innerWidth;
@@ -205,6 +258,7 @@ function onLoad() {
         program: shaderProgram,
         attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+            vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
         },
         uniformLocations: {
             projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
@@ -216,6 +270,43 @@ function onLoad() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     initStuff();
+
+    window.setInterval(loop, 30);
     drawScene(initBuffers());
 }
+
+function loop() {
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    if (downKeys[65]) {
+        glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, 6.0]);
+        glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, 0.07, [0.0, 1.0, 0.0]);
+        glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0]);
+    }
+    if (downKeys[68]) {
+        glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, 6.0]);
+        glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, -0.07, [0.0, 1.0, 0.0]);
+        glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0]);
+    }
+    if (downKeys[87]) {
+        glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, 6.0]);
+        glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, 0.07, [1.0, 0.0, 0.0]);
+        glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0]);
+    }
+    if (downKeys[83]) {
+        glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, 6.0]);
+        glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, -0.07, [1.0, 0.0, 0.0]);
+        glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0]);
+    }
+    gl.uniformMatrix4fv(
+        programInfo.uniformLocations.modelViewMatrix,
+        false,
+        modelViewMatrix);
+    {
+        const offset = 0;
+        const vertexCount = 4;
+        gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
+    }
+}
+
 window.onload = onLoad();

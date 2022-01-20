@@ -114,6 +114,26 @@ function loadImgs() {
 		loadedImgs["wall"] = true;
 	};
 
+	// mk2
+	window.mk2Img = new Image();
+	window.mk2Img.src = "static/zombiegame_updated/mk2.png";
+	window.mk2Img.onload = function() {
+		loadedImgs["mk2"] = true;
+	};
+
+	// nade
+	window.nadeImg = new Image();
+	window.nadeImg.src = "static/zombiegame_updated/nade.png";
+	window.nadeImg.onload = function() {
+		loadedImgs["nade"] = true;
+	};
+
+	// sword of smite
+	window.smiteSwordImg = new Image();
+	window.smiteSwordImg.src = "static/zombiegame_updated/smite.png";
+	window.smiteSwordImg.onload = function() {
+		loadedImgs["smiteSword"] = true;
+	};
 }
 
 loadImgs();

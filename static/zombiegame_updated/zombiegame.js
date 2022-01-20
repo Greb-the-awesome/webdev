@@ -1,4 +1,4 @@
-var canvas, ctx, log, intervalHandle, nameBox, shareBtn, sTickHandle, lTickHandle, player, mouseDown;
+var canvas, ctx, log, intervalHandle, nameBox, shareBtn, sTickHandle, lTickHandle, player, mouseDown, relPosX, relPosY;
 const canvasWidth = window.innerWidth;
 const canvasHeight = window.innerHeight - 50;
 var downKeys = {};
@@ -18,14 +18,17 @@ var shootHandles = [];
 var walls = [];
 var askPickUp = [false, false];
 var frameDelay = 10;
+var canPause = true;
+var nades = [];
+var explosions = [];
 // hi
 
 console.log("main script loaded.");
 
 
 function onMouseMove(e) {
-	var relPosX = e.offsetX - player.posX;
-	var relPosY = e.offsetY - player.posY;
+	relPosX = e.offsetX - player.posX;
+	relPosY = e.offsetY - player.posY;
 
 	if (relPosX >= 0 && relPosY >= 0) { // bottom right
 		player.angle = Math.atan(relPosY / relPosX);
@@ -48,6 +51,7 @@ function onLoad() {
 	ctx = canvas.getContext("2d");
 	canvas.setAttribute("width", canvasWidth);
 	canvas.setAttribute("height", canvasHeight);
+	canvas.imageSmoothingEnabled = false;
 
 	// keys
 	// for(let i=0; i<10; i++) {
@@ -72,7 +76,10 @@ function onLoad() {
 			loadedImgs["aa12"] &&
 			loadedImgs["snowflake"] &&
 			loadedImgs["snowball"] &&
-			loadedImgs["wall"]
+			loadedImgs["wall"] &&
+			loadedImgs["mk2"] &&
+			loadedImgs["nade"] &&
+			loadedImgs["smiteSword"]
 			) {
 			document.getElementById("loadingMsg").classList.add("invisible");
 			console.log("all images loaded. gameInit()");
@@ -107,30 +114,48 @@ function sTick() {
 function lTick() {
 	for(let i=0; i<zombies.length; i++) {
 		var zombieInQuestion = zombies[i];
+		var toSplice = [];
 		// check zombie collide with player
+		if (player.meeleeDamaging) {
+			console.log("player.meeleeDamaging == true");
+			if (checkCollision(zombieInQuestion, player.meeleeDamaging)) {
+				console.log("zombie hit by sword");
+				zombieInQuestion.health -= /*player.meeleeDamaging.damage*/1000000;
+				if (zombieInQuestion.health <= 0) {
+					toSplice.push(i);
+					zombies[i] = false;
+				}
+			}
+		}
 		if(checkCollision(zombieInQuestion, player)) {
 			player.health -= zombieInQuestion.damage;
 			frameNumber = 0;
 			if(player.health <= 0) { // o o f
-				stop();
-
-				ctx.fillStyle = "#000000";
-				ctx.globalAlpha = 0.2;
-				ctx.fillRect(0,0, canvasWidth, canvasHeight);
-				ctx.globalAlpha = 1;
-				ctx.fillText("You Died. Your score was " + score, canvasWidth/2-widthIncrement*9, canvasHeight/2);
-
-				nameBox.classList.remove("invisible");
-				shareBtn.classList.remove("invisible");
-				shareBtn.onClick = (e) => postScores();
+				die();
 			}
 		}
 	}
+	for (let i=0;i<toSplice.length;i++) {zombies.splice(toSplice[i], 1);}
+}
+
+function die() {
+	stop();
+	canPause = false;
+
+	ctx.fillStyle = "#000000";
+	ctx.globalAlpha = 0.2;
+	ctx.fillRect(0,0, canvasWidth, canvasHeight);
+	ctx.globalAlpha = 1;
+	ctx.fillText("You Died. Your score was " + score, canvasWidth/2-widthIncrement*9, canvasHeight/2);
+
+	nameBox.classList.remove("invisible");
+	shareBtn.classList.remove("invisible");
+	shareBtn.onClick = (e) => postScores();
 }
 
 function onScroll(event) {
 	event.preventDefault();
-	if (!player.usingMed) {
+	if (!player.usingMed && !player.cookingNade) {
 		if (event.deltaY > 0) {
 			if (player.invSelect > 2) {player.invSelect = 0;} else {player.invSelect += 1;}
 		} else {
@@ -146,6 +171,9 @@ function onMouseDown() {
 
 function onMouseUp() {
 	mouseDown = false;
+	if (player.cookingNade) {
+		player.throwNades();
+	}
 }
 
 function gameInit() {
@@ -175,7 +203,7 @@ function onKeyDown(event) {
 	if (event.repeat) {return};
 	var keyCode = event.keyCode;
 	downKeys[keyCode] = true;
-	if (keyCode == 80) { // p
+	if (keyCode == 80 && canPause) { // p
 		if (!paused) {
 			stop();
 			paused = true;
@@ -218,6 +246,9 @@ function onKeyUp(event) {
 	if (keyCode == 32) {
 		for (let i=0; i<shootHandles.length; i++) {
 			window.clearInterval(shootHandles[i]);
+		}
+		if (player.cookingNade && player.nadeTimer == 0) {
+			player.throwNades();
 		}
 	}
 }
@@ -266,65 +297,97 @@ function advancedCollisionCheck(thing1, thing2) {
 	return {"up":Ucollide,"down":Dcollide,"left":Lcollide,"right":Rcollide};
 }
 
+function dropItems(badTier, okTier, goodTier, opTier, nades, heals, x, y) {
+	if (badTier) {
+		switch (Math.floor(Math.random() * 2)) {
+			case 0:
+				items.push(new Item(x, y, "kar98k", kar98Img, "gun",
+					{"damage":50,"color":"#99DDDD","capacity":10,"reloadTime":2450,"delay":500,"shotgun":false,"size":1}, 1));
+				break;
+			case 1:
+				items.push(new Item(x, y, "M1887", m1887Img, "gun",
+					{"damage":25,"color":"#FF0000","capacity":5,"reloadTime":2000,"delay":700,"shotgun":true,"spread":0.35,"rpc":5,"size":0.7}, 1));
+				break;
+		}
+	}
+	if (okTier) {
+		switch (Math.floor(Math.random() * 3)) {
+			case 0:
+				items.push(new Item(x + 100, y, "M1918 BAR", m1918Img, "gun",
+					{"damage":40,"color":"#a88f32","capacity":20,"reloadTime":2000,"delay":100,"shotgun":false,"size":1}, 1));
+				break;
+			case 1:
+				items.push(new Item(x + 100, y, "wall", wallImg, "wall",
+					{"color":"#000000","health":400}, 32));
+				break;
+			case 2:
+				items.push(new Item(x + 100, y, "AK-47", akImg, "gun",
+					{"damage":50,"color":"#FFFF00","capacity":30,"reloadTime":1800,"delay":80,"shotgun":false,"size":1}, 1));
+				break;
+		}
+	}
+	if (goodTier) {
+		switch (Math.floor(Math.random() * 2)) {
+			case 0:
+				items.push(new Item(x, y + 100, "egg", eggImg, "other.consumable", {"onclick":
+				(x, y)=>{
+					player.speed = widthIncrement / 2;
+					player.width = widthIncrement * 8;
+				}}, 1));
+			case 1:
+				items.push(new Item(x, y + 100, "QCW-05", qcwImg, "gun",
+					{"damage":100,"color":"#00DD00","capacity":50,"reloadTime":2000,"delay":25,"shotgun":false,"size":1}, 1));
+				break;
+		}
+	}
+	if (opTier) {
+		switch (Math.floor(Math.random() * 3)) {
+			case 0:
+				items.push(new Item(x - 100, y, "M249", opGunImg, "gun",
+					{"damage":50,"color":"#00FFFF","capacity":200,"reloadTime":3000,"delay":50,"shotgun":false,"size":1}, 1));
+				break;
+			case 1:
+				items.push(new Item(x - 100, y, "AA-12", aa12Img, "gun",
+					{"damage":25,"color":"#FF0000","capacity":20,"reloadTime":2000,"delay":200,"shotgun":true,"spread":0.4,"rpc":7,"size":0.7}, 1));
+			case 2:
+				items.push(new Item(x - 100, y, "macaroni gun Mk II", mk2Img, "gun",
+					{"damage":30,"color":"#FFFF00","capacity":200,"reloadTime":2450,"delay":30,"shotgun":false,"size":1.2}, 1));
+		}
+	}
+	if (heals) {
+		switch (Math.floor(Math.random() * 2)) {
+			case 0:
+				items.push(new Item(x, y, "medkit", medkitImg, "heal",
+					{"time":2000,"healthRestore":100}, 1));
+			case 1:
+				items.push(new Item(x, y, "sus juice", medicineImg, "heal",
+					{"time":1000,"healthRestore":50}, 1));
+		}
+	}
+	if (nades) {
+		items.push(new Item(x, y, "grenade", nadeImg, "nade",
+			{"fuseTime":4000,"shrapnel":10,"explosionRadius":widthIncrement * 15,"shrapnelDmg":25,"explosionDmg":1}, 1));
+	}
+}
+
 function checkZombieCollideBullet(b,z) {
-	for(let i=0; i < b.length; i++) {
+	var toSplice = [];
+	for(let i=0; i<b.length; i++) {
 		for(let j=0; j < z.length; j++) {
-			if(checkCollision(b[i], z[j])) {
+			if(z[j]&&checkCollision(b[i], z[j])) {
 				z[j].health -= b[i].damage;
 				b.splice(i, 1);
 				
-				if(z[j].health <= 0) { // da zombie ded
+				if(zombies[j].health <= 0) { // da zombie ded
 					
 					if (Math.floor(Math.random() * 7) == 3) {
-						switch (Math.floor(Math.random() * 11)) {
-							case 1:
-								items.push(new Item(z[j].posX, z[j].posY, "egg", eggImg, "other.consumable", {"onclick":
-								(x, y)=>{
-									player.speed = widthIncrement / 2;
-									player.width = widthIncrement * 8;
-								}}, 1));
-							case 2:
-								items.push(new Item(z[j].posX, z[j].posY, "M249", opGunImg, "gun",
-									{"damage":50,"color":"#00FFFF","capacity":100,"reloadTime":3000,"delay":50,"shotgun":false,"size":1}, 1));
-								break;
-							case 3:
-								items.push(new Item(z[j].posX, z[j].posY, "kar98k", kar98Img, "gun",
-									{"damage":50,"color":"#99DDDD","capacity":10,"reloadTime":2450,"delay":500,"shotgun":false,"size":1}, 1));
-								break;
-							case 4:
-								items.push(new Item(z[j].posX, z[j].posY, "AK-47", akImg, "gun",
-									{"damage":50,"color":"#FFFF00","capacity":30,"reloadTime":1800,"delay":80,"shotgun":false,"size":1}, 1));
-								break;
-							case 5:
-								items.push(new Item(z[j].posX, z[j].posY, "M1918 BAR", m1918Img, "gun",
-									{"damage":40,"color":"#a88f32","capacity":20,"reloadTime":2000,"delay":100,"shotgun":false,"size":1}, 1));
-								break;
-							case 6:
-								items.push(new Item(z[j].posX, z[j].posY, "QCW-05", qcwImg, "gun",
-									{"damage":100,"color":"#00DD00","capacity":50,"reloadTime":2000,"delay":25,"shotgun":false,"size":1}, 1));
-								break;
-							case 7:
-								items.push(new Item(z[j].posX, z[j].posY, "M1887", m1887Img, "gun",
-									{"damage":25,"color":"#FF0000","capacity":5,"reloadTime":2000,"delay":700,"shotgun":true,"spread":0.35,"rpc":5,"size":0.7}, 1));
-								break;
-							case 8:
-								items.push(new Item(z[j].posX, z[j].posY, "medkit", medkitImg, "heal",
-									{"time":2000,"healthRestore":100}, 1));
-							case 9:
-								items.push(new Item(z[j].posX, z[j].posY, "medicine", medicineImg, "heal",
-									{"time":1000,"healthRestore":50}, 1));
-							case 10:
-								items.push(new Item(z[j].posX, z[j].posY, "AA-12", aa12Img, "gun",
-									{"damage":25,"color":"#FF0000","capacity":20,"reloadTime":2000,"delay":200,"shotgun":true,"spread":0.4,"rpc":7,"size":0.7}, 1));
-						}
-						if (Math.floor(Math.random() * 5) == 3) {
-							items.push(new Item(z[j].posX + 20, z[j].posY + 20, "snowball", snowballImg, "gun",
-									{"damage":100,"color":"#94aeb0","capacity":1,"reloadTime":200,"delay":200,"shotgun":false,"size":3}, 1));
-						}
-						if (Math.floor(Math.random() * 5) == 3) {
-							items.push(new Item(z[j].posX + 20, z[j].posY + 20, "wall", wallImg, "wall",
-								{"color":"#000000","health":200}, 32))
-						}
+						dropItems(Math.floor(Math.random() * 3) == 1, Math.floor(Math.random() * 4) == 1,
+							Math.floor(Math.random() * 5) == 1, Math.floor(Math.random() * 6) == 1,
+							Math.floor(Math.random() * 4) == 1, Math.floor(Math.random() * 4) == 1, z[j].posX, z[j].posY);
+
+						if (Math.floor(Math.random() * 7 == 3)) {items.push(new Item(z[j].posX, z[j].posY, "sword of smite", smiteSwordImg, "meelee",
+							{"delay":500,"damage":100,"reach":widthIncrement*5}, 1));}
+
 						
 					}
 					z.splice(j, 1);
@@ -343,203 +406,3 @@ function postScores() {
 	req.open("GET", "/postScores?score="+score.toString()+"&name="+name, true);
 	req.send(null);
 }
-
-// start game loop
-function gameLoop() {
-	// clear
-	ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-	// frame number (tick happens every 100 frames)
-	frameNumber += 1;
-
-	// score
-	score += 0.5;
-	ctx.fillStyle = "#000000";
-	ctx.fillText("SCORE: " + score, canvasWidth-widthIncrement*20, heightIncrement*30);
-
-
-	// keyboard
-	if((downKeys[65] || downKeys[37]) && player.canMove.left) { // a or <
-		player.posX -= player.speed;
-		if (player.posX < 0) {
-			player.posX = widthIncrement * 99;
-		}
-	}
-	if((downKeys[68] || downKeys[39]) && player.canMove.right) { // d or >
-		player.posX += player.speed;
-		if (player.posX > canvasWidth) {
-			player.posX = 1;
-		}
-	}
-	if((downKeys[87] || downKeys[38]) && player.canMove.up) { // w or ^
-		player.posY -= player.speed;
-		if (player.posY < 0) {
-			player.posY = canvasHeight - 1;
-		}
-	}
-	if((downKeys[83] || downKeys[40]) && player.canMove.down) { // s or down
-		player.posY += player.speed;
-		if (player.posY > canvasHeight) {
-			player.posY = 1;
-		}
-	}
-	if (downKeys[32] || mouseDown) {
-		if (!player.firingDelay && !player.usingMed) {
-			player.shoot();
-		}
-	}
-
-	// do stuff to the items
-	for(let i=0; i<items.length; i++) {
-		itemInQuestion = items[i];
-		itemInQuestion.draw();
-		if (checkCollision(itemInQuestion, player)) {
-			if (!player.inv[0]) {
-				player.inv[0] = itemInQuestion; items.splice(i, 1);
-			} else if (!player.inv[1]) {
-				player.inv[1] = itemInQuestion; items.splice(i, 1);
-			} else if (!player.inv[2]) {
-				player.inv[2] = itemInQuestion; items.splice(i, 1);
-			} else if (!player.inv[3]) {
-				player.inv[3] = itemInQuestion; items.splice(i, 1);
-			} else {
-				ctx.fillText("q to pick up", player.posX - widthIncrement, player.posY + widthIncrement * 6);
-				if (downKeys[81]) {
-					player.inv[player.invSelect] = itemInQuestion;
-					items.splice(i, 1);
-				}
-			}
-		}
-	}
-
-	// update the bullets and draw them
-	for(let i=0; i<bullets.length; i++) {
-		var bulletInQuestion = bullets[i];
-		bulletInQuestion.updatePos();
-		bulletInQuestion.draw();
-		// despawn bullets
-		if(bulletInQuestion.posX > widthIncrement*102 || bulletInQuestion.posX < widthIncrement*-2 ||
-			bulletInQuestion.posY > heightIncrement * 102 || bulletInQuestion.posY < heightIncrement*-2) {
-			bullets.splice(i, 1);
-		}
-	}
-
-	// spawn zombies
-	if(Math.floor(Math.random() * 100) == 8) { // this means 1/100 chance per frame for zombie to spawn
-		var attemptedSpawnPoint = Math.floor(Math.random() * 100);
-		var attemptedSpawnEdge = Math.floor(Math.random() * 3);
-
-		var x, y;
-		if (attemptedSpawnEdge == 0) { // ^
-			y = 0;
-			x = attemptedSpawnPoint * widthIncrement;
-		} else if (attemptedSpawnEdge == 1) { // >
-			y = attemptedSpawnPoint * heightIncrement;
-			x = canvasWidth;
-		} else if (attemptedSpawnEdge == 2) { // v
-			y = canvasHeight;
-			x = attemptedSpawnPoint * widthIncrement;
-		} else if (attemptedSpawnEdge == 3) { // <
-			y = attemptedSpawnPoint * heightIncrement;
-			x = 0;
-		}
-		let zombie = new Zombie(x, y, 20);
-		zombies.push(zombie);
-	}
-
-	for(let i=0; i<horses.length; i++) {
-		var h = horses[i];
-		h.draw();
-		h.updatePos();
-		h.checkDrop();
-		if (h.x < -3 || h.x > canvasWidth + 1 || h.y < -3 || h.y > canvasHeight + 1) {
-			horses.splice(i, 1);
-		}
-	}
-
-	// zombie pathfind + draw + other stuff
-	
-	for(let i=0; i<zombies.length; i++) {
-		var zombieInQuestion = zombies[i];
-		if(zombieInQuestion.posX < player.posX && zombieInQuestion.canMove.right) { // zombie to the left of the player
-			zombieInQuestion.posX += widthIncrement/8;
-		} else if(zombieInQuestion.posX > player.posX && zombieInQuestion.canMove.left) { // zombie to the right of the player
-			zombieInQuestion.posX -= widthIncrement/8;
-		}
-
-		if (zombieInQuestion.posY < player.posY && zombieInQuestion.canMove.down) { // zombie to the top of the player
-			zombieInQuestion.posY += heightIncrement/8;
-		} else if (zombieInQuestion.posY > player.posY && zombieInQuestion.canMove.up) { // zombie to the bottom of the player
-			zombieInQuestion.posY -= heightIncrement/8;
-		}
-
-		zombieInQuestion.draw();
-		zombieInQuestion.canMove.up = true;
-		zombieInQuestion.canMove.down = true;
-		zombieInQuestion.canMove.right = true;
-		zombieInQuestion.canMove.left = true;
-		
-	}
-	checkZombieCollideBullet(bullets, zombies);
-
-	// ammo
-	ctx.fillStyle = "#333333";
-	if (player.selected) {
-		if (player.selected.type == "gun") {
-			ctx.fillText(player.selected.roundsRemaining.toString() + "/" + player.selected.specs.capacity.toString(), widthIncrement * 40, heightIncrement * 75);
-		}
-		ctx.fillText("current item: "+player.selected.what, widthIncrement * 40, heightIncrement * 30);
-	}
-
-	if (player.usingMed) {
-		ctx.fillText("healing up...", widthIncrement * 40, heightIncrement * 25);
-	}
-
-	if (Math.floor(Math.random() * 20) == 8) {
-		snowflakes.push([Math.floor(Math.random() * 100) * widthIncrement, 0, Math.random() * 50, (Math.random()/10 + 0.1) * widthIncrement]);
-	}
-	for (let i=0;i<snowflakes.length;i++) {
-		flakeInQuestion = snowflakes[i];
-		flakeInQuestion[1] += flakeInQuestion[3];
-		ctx.drawImage(flakeImg, flakeInQuestion[0], flakeInQuestion[1], flakeInQuestion[2], flakeInQuestion[2]);
-		if (flakeInQuestion[1] >= canvasHeight) {
-			snowflakes.splice(i, 1);
-		}
-	}
-	player.canMove.up = true;
-	player.canMove.down = true;
-	player.canMove.right = true;
-	player.canMove.left = true;
-	for (let i=0;i<walls.length;i++) {
-		wallInQuestion = walls[i];
-		ctx.drawImage(wallImg, wallInQuestion.posX, wallInQuestion.posY, widthIncrement * 3, widthIncrement * 3);
-		var a = advancedCollisionCheck(player, wallInQuestion);
-		var b = checkCollision(player, wallInQuestion);
-		
-		if (b) {
-			if (a.down) {player.canMove.up = false;}
-			if (a.up) {player.canMove.down = false;}
-			if (a.left) {player.canMove.right = false;}
-			if (a.right) {player.canMove.left = false;}
-		}
-		for(let j=0; j<zombies.length; j++) {
-			var zombieInQuestion = zombies[j];
-			var a = advancedCollisionCheck(zombieInQuestion, wallInQuestion);
-			var b = checkCollision(zombieInQuestion, wallInQuestion);
-			if (b) {
-				if (a.down) {zombieInQuestion.canMove.up = false;}
-				if (a.up) {zombieInQuestion.canMove.down = false;}
-				if (a.left) {zombieInQuestion.canMove.right = false;}
-				if (a.right) {zombieInQuestion.canMove.left = false;}
-				wallInQuestion.health -= 0.5;
-				if (wallInQuestion.health < 0) {
-					walls.splice(i, 1);
-				}
-			}
-		}
-	}
-
-	// draw the ppl
-	player.draw();
-}
-

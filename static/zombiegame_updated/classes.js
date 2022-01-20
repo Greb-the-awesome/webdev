@@ -39,11 +39,12 @@ class Item {
 		this.img = img;
 		this.cycle = -1 + Math.random() * 2; // from -1 to 1
 		this.cycleUpDown = true; // true = up, false = down
-		this.type = type; // gun|heal|put
+		this.type = type; // gun|heal|other.consumable|wall|nade
 		this.specs = specs;
 		this.timer = 0; // once every short tick (100ms)
 		this.stackSize = stackSize;
 		if (this.type == "gun") {this.roundsRemaining = specs.capacity;}
+
 	}
 	draw() {
 		if (this.cycleUpDown) {
@@ -78,6 +79,8 @@ class Player {
 		this.firingDelay = false;
 		this.usingMed = false;
 		this.canMove = {"up":true,"down":true,"left":true,"right":true};
+		this.cookingNade = false;
+		this.meeleeDamaging = false;
 	}
 	checkSelect(slot) {
 		if (this.invSelect == slot) {
@@ -156,7 +159,7 @@ class Player {
 		ctx.fillStyle = "#000000";
 		if (this.reloading) {ctx.fillText("reloading", widthIncrement * 40, heightIncrement * 25);}
 	}
-	shoot() {
+	shoot(args = false) {
 		if (this.selected.type == "gun" && !this.reloading) {
 			if (this.selectSpecs.shotgun) { // a shotgun
 				for (let i=0; i<this.selectSpecs.rpc; i++) {
@@ -207,6 +210,29 @@ class Player {
 			}
 			setTimeout(()=>{player.firingDelay = false;}, 200);
 		}
+		if (this.selected.type == "nade") {
+			nades.push({"posX":this.posX, "posY":this.posY, "angle":this.angle, "specs":this.selectSpecs, "timer":this.selectSpecs.fuseTime, "rotation":0,
+				"moveX":Math.cos(this.angle) * widthIncrement * Math.abs(relPosX / 3500),
+				"moveY":Math.sin(this.angle) * widthIncrement * Math.abs(relPosY / 3500)});
+			this.firingDelay = true;setTimeout(()=>{player.firingDelay = false;}, 1000);
+			this.inv[this.invSelect] = false;
+		}
+		if (this.selected.type == "meelee") {
+			this.meeleeDamaging = {"damage":this.selectSpecs.damage,"posX":Math.cos(this.angle) * widthIncrement * 5 + this.posX + this.selectSpecs.reach / 2,
+				"posY":Math.sin(this.angle) * widthIncrement * 5 + this.posY + this.selectSpecs.reach / 2,
+				"width":this.selectSpecs.reach,"height":this.selectSpecs.reach};
+			
+			this.firingDelay = true;setTimeout(()=>{player.firingDelay = false;player.meeleeDamaging=false;}, this.selectSpecs.delay);
+		}
+	}
+
+	throwNades() {
+		this.cookingNade = false;
+		nades.push({"posX":this.posX, "posY":this.posY, "angle":this.angle, "specs":this.selectSpecs, "timer":this.nadeTimer, "rotation":0,
+			"moveX":Math.cos(this.angle) * widthIncrement * Math.abs(relPosX / 3500),
+			"moveY":Math.sin(this.angle) * widthIncrement * Math.abs(relPosY / 3500)});
+		this.firingDelay = true;setTimeout(()=>{player.firingDelay = false;}, 1000);
+		this.inv[this.invSelect] = false;
 	}
 }
 
