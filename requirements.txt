@@ -2,7 +2,7 @@ bidict==0.21.4
 cffi==1.15.0
 click==7.1.2
 dnspython==2.2.0
-eventlet==0.33.0
+eventlet==0.30.2
 Flask==1.1.2
 Flask-SocketIO==5.1.1
 gevent==21.12.0
