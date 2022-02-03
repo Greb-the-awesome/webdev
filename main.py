@@ -110,4 +110,5 @@ def lmao():
 def handle_404(e):
 	return '<center><h1>Oh No!</h1><br><p>An error 404 occured.</p></center>'
 
-app.run()
+if __name__ == "__main__":
+	app.run()
