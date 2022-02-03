@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request
 import json, time
+from flask_socketio import SocketIO
 global scores
 scores = {}
 
 
 app=Flask(__name__)
+socketio = SocketIO(app)
 # app.config['STATIC_FOLDER'] = 'static'
 # app.config['static_url_path'.upper()] ='/static'
 
@@ -111,4 +113,4 @@ def handle_404(e):
 	return '<center><h1>Oh No!</h1><br><p>An error 404 occured.</p></center>'
 
 if __name__ == "__main__":
-	app.run()
+	socketio.run(app)
