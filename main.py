@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
-import json, time
-from flask_socketio import SocketIO
+import json, time, sys
+from flask_socketio import SocketIO, emit
 global scores
 scores = {}
 
@@ -105,6 +105,12 @@ def lmao():
 	x = f.read()
 	f.close()
 	return x
+
+@socketio.on("message")
+def handleMsg(texts):
+	emit("sendBackLmoa", texts, broadcast=True)
+	print(texts)
+	sys.stdout.flush()
 
 # error handling
 

@@ -23,3 +23,9 @@ var beforeFloating
 for (let i = 0; i < 1000; i++) {
 	e = i * 0.04 / 2.5;
 }
+
+function sockt(txt) {
+	console.log(txt);
+	socket.emit("message", txt);
+}
+
