@@ -1,4 +1,5 @@
 // WebGL boilerplate code.
+// or as I like to call it, a Semi-Abstract WebGL Interface.
 // proudly made by Greb. (with some assistance from MDN's tutorials) :D
 
 var canvas, gl, projectionMatrix, modelViewMatrix, infoStuff, buffers, positions, indexes, colors;
@@ -137,7 +138,7 @@ function finalInit() {
 		45 * Math.PI / 180, // fov
 		gl.canvas.clientWidth / gl.canvas.clientHeight, // aspect
 		0.1, // zNear
-		100.0 // zFar
+		150.0 // zFar
 	);
 
 	modelViewMatrix = glMatrix.mat4.create();
@@ -241,7 +242,6 @@ function onLoad() {
 	divisionOnLoad(gl);
 }
 
-document.divisRequestPointerLock = document.getElementById("canvas").requestPointerLock;
 
 function onKeyDown(event) {
 	var keyCode = event.keyCode;

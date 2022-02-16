@@ -6,9 +6,11 @@
         <!-- js -->
         <script type="text/javascript"
             src="{{ url_for('static', filename='multiplayer_3d_game/gl-matrix.js') }}"></script>
-        </head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    </head>
     <body>
         <canvas id="canvas" width="800" height="600"></canvas>
+        <p id = "debugStuff" style="position: absolute;left:0;top:0;font-weight:bold;"></p>
     </body>
     <script type="text/javascript"
             src="{{ url_for('static', filename='multiplayer_3d_game/divisionEngine.js') }}" defer></script>

@@ -21,6 +21,9 @@ var frameDelay = 10;
 var canPause = true;
 var nades = [];
 var explosions = [];
+var time = 0;
+var wave;
+var calculatedSpawnChance = 0;
 // hi
 
 console.log("main script loaded.");
@@ -91,6 +94,10 @@ function onLoad() {
 	for (let i=0;i<showItems.length;i++) {
 		showItems[i].style.display = "none";
 	}
+	window.setInterval(function() {
+		// document.getElementById("wavedefeat").innerHTML = "SURVIVED WAVE " + wave;
+		// setTimeout(()=>{document.getElementById("wavedefeat").innerHTML = "";}, 1000);
+	}, 10000);
 }
 
 function stop() {
@@ -237,6 +244,10 @@ function onKeyDown(event) {
 	} else if (keyCode == 82 && player.selected.type == "gun") { // r
 		player.reloading = true;
 		setTimeout(()=>{player.reloading = false;player.selected.roundsRemaining = player.selectSpecs.capacity;}, player.selectSpecs.reloadTime);
+	} else if (keyCode == 32) {
+		if (player.cookingNade) {
+			player.throwNades();
+		}
 	}
 }
 
@@ -295,6 +306,10 @@ function advancedCollisionCheck(thing1, thing2) {
 		Ucollide = true;
 	}
 	return {"up":Ucollide,"down":Dcollide,"left":Lcollide,"right":Rcollide};
+}
+
+function calcSpawnChance(x) {
+	return 2 * x**0.625 * Math.abs(x - Math.floor(x + 0.5)); // plot it in desmos and you'll see
 }
 
 function dropItems(badTier, okTier, goodTier, opTier, nades, heals, x, y) {

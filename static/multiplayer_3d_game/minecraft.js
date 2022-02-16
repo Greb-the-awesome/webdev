@@ -1,12 +1,9 @@
 var chunks, gl;
-var cameraPos = glMatrix.vec3.fromValues(0.0, 0.0, 0.0);
-var cameraPointTo = glMatrix.vec3.fromValues(0.0, 0.0, 1.0);
-var cameraAngle = [1.5, 1.5];
+var debugDispNow = {"hi":"hi"};
 
 function fakePerlin(x, y) {
 	return [Math.sin((x + y) / 2)]
 }
-
 
 
 class Block {
@@ -35,90 +32,189 @@ class Block {
 
 class Chunk {
 	constructor(coords) {
-		this.blocks = [];
+		this.blocks = {};
 		this.depthMap = {};
+		this.coords = coords;
 		// create a depth map
 		for (var x=coords[0] - 0.5; x<11 + coords[0] + 0.5; x++) {
 			for (var z=coords[1] - 0.5; z<11 + coords[1] + 0.5; z++) {
-				this.depthMap[[x, z]] = noise.simplex2(x / 5, z / 5);
+				this.depthMap[[x, z]] = noise.simplex2(x / 15, z / 15) * 3;
 			}
 		}
 		for (var x=coords[0]; x<10 + coords[0]; x++) {
 			for (var z=coords[1]; z<10 + coords[1]; z++) {
-				this.blocks.push(new Block("a",
+				this.blocks[[x, z]] = new Block("a", // array is relative to world space
 					[x - 0.5, this.depthMap[[(x - 0.5), (z - 0.5)]], z - 0.5],
 					[x - 0.5, this.depthMap[[(x - 0.5), (z + 0.5)]], z + 0.5],
 					[x + 0.5, this.depthMap[[(x + 0.5), (z + 0.5)]], z + 0.5],
 					[x + 0.5, this.depthMap[[(x + 0.5), (z - 0.5)]], z - 0.5]
-				));
+				);
 			}
 		}
 	}
 }
 
-chunks = [];
+class OtherPlayer {
 
-for (let x=0; x<5; x++) {
-	for (let z=0; z<5; z++) {
-		chunks.push(new Chunk([x, z]));
+}
+class MyPlayer {
+	constructor() {
+		// thanks to learnOpenGL.com for these values cos dumb at linear algebra :D
+		this.cameraPos = glMatrix.vec3.fromValues(0.0, 1.6, 0.0);
+		this.hitPos = glMatrix.vec3.fromValues(0.0, 0.1, 0.0);
+		this.cameraPointTo = glMatrix.vec3.fromValues(0.0, 1.6, 1.0);
+		this.cameraFront = glMatrix.vec3.fromValues(0.0, 0.0, -1.0);
+		this.cameraUp = glMatrix.vec3.fromValues(0.0, 1.0, 0.0);
+		this.yaw = -90.0;
+		this.pitch = 0.0;
+
+		this.velocity = glMatrix.vec3.fromValues(0.0, 0.0, 0.0);
+		this.userInputVelocity = glMatrix.vec3.fromValues(0.0, 0.0, 0.0);
+
+		this.acceleration = 0.000000002; // + 0.02 per frame
+	}
+	updatePos() {
+		glMatrix.vec3.add(this.cameraPos, this.cameraPos, this.velocity);
+		glMatrix.vec3.add(this.cameraPos, this.cameraPos, this.userInputVelocity);
+		glMatrix.vec3.add(this.hitPos, this.hitPos, this.velocity);
+		glMatrix.vec3.add(this.hitPos, this.hitPos, this.userInputVelocity);
+	}
+}
+
+let myPlayer = new MyPlayer();
+
+chunks = {};
+
+for (let x=-3; x<3; x++) {
+	for (let z=-3; z<3; z++) {
+		chunks[[x * 10, z * 10]] = new Chunk([x * 10, z * 10]);
 	}
 }
 
 function divisionOnLoad(gl) {
 	noise.seed(6969); // the funny number
+	var values = Object.values(chunks);
 
-	for (let c=0; c<chunks.length; c++) {
-		var chunk = chunks[c];
+	for (let c=0; c<values.length; c++) {
+		var chunk = values[c];
 		var chunkBlocks = chunk.blocks;
-		for (let b=0; b<chunkBlocks.length; b++) {
-			var block = chunkBlocks[b];
+		for (const blockPos in chunkBlocks) {
+			var block = chunkBlocks[blockPos];
 			var triang1 = block.pos1.concat(block.pos2.concat(block.pos3));
 			var triang2 = block.pos3.concat(block.pos4.concat(block.pos1));
 			addPositions(triang1.concat(triang2),
 			   [0.0, 1 - block.lightness, 0.0, 1.0,
 				0.0, 1 - block.lightness, 0.0, 1.0,
 				0.0, 1 - block.lightness, 0.0, 1.0,
-				0.0, 1 - block.lightness, 0.0, 1.0,
-				0.0, 1 - block.lightness, 0.0, 1.0,
-				0.0, 1 - block.lightness, 0.0, 1.0,]);
+				1.0, 1 - block.lightness, 0.0, 1.0,
+				1.0, 1 - block.lightness, 0.0, 1.0,
+				1.0, 1 - block.lightness, 0.0, 1.0,]);
 		}
 	}
-	window.addEventListener("mousemove", onMouseMove);
+	translateModelView(0.0, 0.0, -3.0);
 	flush();
 	window.gl = gl;window.gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
-	document.divisRequestPointerLock();
+	canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+	canvas.onclick = function() {canvas.requestPointerLock();};
+	document.exitPointerLock = document.exitPointerLock ||
+                           document.mozExitPointerLock;
+	canvas.addEventListener("mousemove", onCameraTurn);
+	window.addEventListener("keyup", brake);
+	setInterval(debugRefresh, 10);
 }
 
-function onMouseMove(e) {
-	var x = e.offsetX * 0.00002;
-	var y = e.offsetY * 0.00002;
-	cameraAngle[0] += x;
-	cameraAngle[1] += y;
+function debugRefresh() {
+	document.getElementById("debugStuff").innerHTML = JSON.stringify(debugDispNow, null, 2);
+}
 
+function brake(e) { // not complete but works for now
+	var c = e.keyCode; // 65 68 87 83
+	if (c == 65) {
+
+	}
+	myPlayer.userInputVelocity = glMatrix.vec3.fromValues(0.0, 0.0, 0.0);
+}
+
+function onCameraTurn(e) {
+	myPlayer.yaw   += e.movementX * 0.07;
+	myPlayer.pitch -= e.movementY * 0.07;
+
+	var front = glMatrix.vec3.create();
+	front[0] = Math.cos(glMatrix.glMatrix.toRadian(myPlayer.yaw)) * Math.cos(glMatrix.glMatrix.toRadian(myPlayer.pitch));
+	front[1] = Math.sin(glMatrix.glMatrix.toRadian(myPlayer.pitch));
+	front[2] = Math.sin(glMatrix.glMatrix.toRadian(myPlayer.yaw)) * Math.cos(glMatrix.glMatrix.toRadian(myPlayer.pitch))
+	glMatrix.vec3.normalize(myPlayer.cameraFront, front);
 }
 
 function loop() {
 	// wasd
-	if(divisDownKeys[65] || divisDownKeys[37]) { // a or <
-		cameraPos[2] += 0.1;
+	// var playerVelXZ = Math.sqrt(myPlayer.userInputVelocity[0]**2 + myPlayer.userInputVelocity[2]**2);
+	// var tooFast = playerVelXZ > 0.02;
+	if(divisDownKeys[65]) { // a or <
+		var crossed = glMatrix.vec3.create();
+		var normalized = glMatrix.vec3.create();
+		glMatrix.vec3.cross(crossed, myPlayer.cameraFront, myPlayer.cameraUp);
+		glMatrix.vec3.normalize(normalized, crossed);
+		glMatrix.vec3.subtract(myPlayer.userInputVelocity,
+			myPlayer.userInputVelocity,
+			normalized);
 	}
-	if(divisDownKeys[68] || divisDownKeys[39]) { // d or >
-		cameraPos[2] -= 0.1;
+	if(divisDownKeys[68]) { // d or >
+		var crossed = glMatrix.vec3.create();
+		var normalized = glMatrix.vec3.create();
+		glMatrix.vec3.cross(crossed, myPlayer.cameraFront, myPlayer.cameraUp);
+		glMatrix.vec3.normalize(normalized, crossed);
+		glMatrix.vec3.add(myPlayer.userInputVelocity,
+			myPlayer.userInputVelocity,
+			normalized);
 	}
-	if(divisDownKeys[87] || divisDownKeys[38]) { // w or ^
-		cameraPos[0] -= 0.1;
+	if(divisDownKeys[87]) { // w or ^
+		glMatrix.vec3.add(myPlayer.userInputVelocity,
+			myPlayer.cameraFront,
+			myPlayer.userInputVelocity);
 	}
-	if(divisDownKeys[83] || divisDownKeys[40]) { // s or down
-		cameraPos[0] += 0.1;
+	if(divisDownKeys[83]) { // s or down
+		glMatrix.vec3.subtract(myPlayer.userInputVelocity,
+			myPlayer.userInputVelocity,
+			myPlayer.cameraFront,);
 	}
+	myPlayer.userInputVelocity[0] *= 0.05;
+	myPlayer.userInputVelocity[1] = 0.0;
+	myPlayer.userInputVelocity[2] *= 0.05;
 
+	{ // collision detection :(
+		// myPlayer.velocity[1] -= 0.005; // ONLY IF PLAYER IS IN AIR
+		// get which chunk and block the playr is colliding with
+		myPlayer.updatePos(); // would-be next position
+		let chunkPos = [Math.floor(myPlayer.hitPos[0] / 10) * 10, Math.floor(myPlayer.hitPos[2] / 10) * 10]; // x, z
+		debugDispNow["current chunk pos"] = chunkPos;
+		let blockPos = [Math.floor(myPlayer.hitPos[0]),
+			Math.floor(myPlayer.hitPos[2])];
+		debugDispNow["current block pos"] = blockPos;
+		let currentBlock = chunks[chunkPos].blocks[blockPos];
+		let offset = [myPlayer.cameraPos[0] - blockPos[0], myPlayer.cameraPos[2] - blockPos[1]];
+		var a;
+		if (-offset[0] + offset[1] > 0.5) {
+			debugDispNow["current triangle"] = "upper";
+		} else {debugDispNow["current triangle"] = "lower";}
+		positions[64800] = myPlayer.cameraPos[0];positions[64801] = 0.0;positions[64802] = myPlayer.cameraPos[2];
+		colors[86400] = 1.0;colors[86401] = 0.0;colors[86402] = 0.0;colors[86403] = 1.0;
 
+		positions[64803] = myPlayer.cameraPos[0]+0.1;positions[64804] = 0.0;positions[64805] = myPlayer.cameraPos[2]+0.1;
+		colors[86404] = 0.0;colors[86405] = 0.0;colors[86406] = 0.0;colors[86407] = 1.0;
+
+		positions[64806] = myPlayer.cameraPos[0];positions[64807] = 0.0;positions[64808] = myPlayer.cameraPos[2]+0.1;
+		colors[86408] = 0.0;colors[86409] = 0.0;colors[86410] = 0.0;colors[86411] = 1.0;
+		flush();
+	}
 	window.gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
+	var posPlusFront = glMatrix.vec3.create();
+	glMatrix.vec3.add(posPlusFront, myPlayer.cameraPos, myPlayer.cameraFront);
 	glMatrix.mat4.lookAt(modelViewMatrix,
-		cameraPos,
-		cameraPointTo,
-		glMatrix.vec3.fromValues(0.0, 1.0, 0.0));
+		myPlayer.cameraPos,
+		posPlusFront,
+		myPlayer.cameraUp);
 	flushUniforms();
 }
 
-window.setInterval(loop, 10);
+window.setInterval(loop, 25);

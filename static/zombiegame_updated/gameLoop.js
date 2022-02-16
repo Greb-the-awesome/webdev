@@ -4,6 +4,7 @@ function gameLoop() {
 
 	// frame number (tick happens every 100 frames)
 	frameNumber += 1;
+	time += 0.0003;
 
 	// score
 	score += 0.5;
@@ -95,7 +96,7 @@ function gameLoop() {
 	}
 
 	// spawn zombies
-	if(Math.floor(Math.random() * 130) == 8) { // this means 1/100 chance per frame for zombie to spawn
+	if(Math.floor(Math.random() * (100 - calculatedSpawnChance * 100)) == 8) { // this means 1/100 chance per frame for zombie to spawn
 		var attemptedSpawnPoint = Math.floor(Math.random() * 100);
 		var attemptedSpawnEdge = Math.floor(Math.random() * 4);
 
@@ -115,6 +116,28 @@ function gameLoop() {
 		}
 		let zombie = new Zombie(x, y, 20);
 		zombies.push(zombie);
+	}
+	// do wave stuff
+	calculatedSpawnChance = calcSpawnChance(time);
+	ctx.fillStyle = "#000000";
+	wave = Math.floor(time);
+	ctx.fillText("Current Wave: "+wave, 0, 100);
+	
+	ctx.fillText("spawn chance "+calculatedSpawnChance, 500, 100);
+	{
+		let offset = time - wave;
+		let grd = ctx.createLinearGradient(-offset * 300, 110, -offset * 300 + 300, 140);
+		let grd2 = ctx.createLinearGradient(-offset * 300 + 300, 110, -offset * 300 + 600, 140);
+		grd.addColorStop(0, "#FFFFFF");
+		grd.addColorStop(0.5, "#FF0000");
+		grd.addColorStop(1, "#FFFFFF");
+		grd2.addColorStop(0, "#FFFFFF");
+		grd2.addColorStop(0.5, "#FF0000");
+		grd2.addColorStop(1, "#FFFFFF");
+		ctx.fillStyle = grd;
+		ctx.fillRect(0, 110, 300, 140);
+		ctx.fillStyle = grd2;
+		ctx.fillRect(0, 110, 300, 140);
 	}
 
 	for(let i=0; i<horses.length; i++) {
