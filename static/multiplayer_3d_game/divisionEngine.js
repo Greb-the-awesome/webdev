@@ -197,7 +197,7 @@ function finalInit() {
 	flush();
 }
 
-
+var shaderProgram;
 
 function onLoad() {
 	canvas = document.getElementById("canvas");
@@ -240,6 +240,7 @@ function onLoad() {
 
 
 	divisionOnLoad(gl);
+	iHateVariableScopes(gl);
 }
 
 

@@ -66,13 +66,13 @@ class Player {
 	constructor() {
 		this.posX = 100;
 		this.posY = 100;
-		this.health = 100;
+		this.health = Infinity;
 		this.angle = 0; // why does everyone use radians i am sad
 		this.width = widthIncrement * 4;
 		this.height = this.width;
 		this.speed = widthIncrement/5;
-		this.inv = [new Item(0, 0, "macaroni gun", gunImg, "gun", {"damage":25,"color":"#DDDD00","capacity":30,"reloadTime":2450,"delay":150,"size":1}, 1),
-			new Item(1, 1, "wall", wallImg, "wall",
+		this.inv = [new Item(0, 0, "macaroni gun", imgs.gunImg, "gun", {"damage":25,"color":"#DDDD00","capacity":30,"reloadTime":2450,"delay":150,"size":1}, 1),
+			new Item(1, 1, "wall", imgs.wallImg, "wall",
 				{"color":"#000000","health":100}, 16), false, false];
 		this.invSelect = 0;
 		this.reloading = false;
@@ -98,7 +98,7 @@ class Player {
 			this.width, this.height);
 		ctx.fillStyle = "#444444";
 		// gun
-		ctx.drawImage(window.gunImg, this.posX + widthIncrement * 2, this.posY + widthIncrement * 2,
+		ctx.drawImage(imgs.gunImg, this.posX + widthIncrement * 2, this.posY + widthIncrement * 2,
 			widthIncrement * 4, widthIncrement);
 		ctx.restore();
 
@@ -288,6 +288,6 @@ class Horse {
 		}
 	}
 	draw() {
-		ctx.drawImage(horseImg, this.x, this.y, widthIncrement * 10, widthIncrement * 5.7);
+		ctx.drawImage(imgs.horseImg, this.x, this.y, widthIncrement * 10, widthIncrement * 5.7);
 	}
 }

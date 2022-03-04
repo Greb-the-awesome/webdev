@@ -96,7 +96,7 @@ function gameLoop() {
 	}
 
 	// spawn zombies
-	if(Math.floor(Math.random() * (100 - calculatedSpawnChance * 100)) == 8) { // this means 1/100 chance per frame for zombie to spawn
+	if(Math.floor(Math.random() * (70 - calculatedSpawnChance * 10)) == 8) { // this means 1/100 chance per frame for zombie to spawn
 		var attemptedSpawnPoint = Math.floor(Math.random() * 100);
 		var attemptedSpawnEdge = Math.floor(Math.random() * 4);
 
@@ -121,24 +121,23 @@ function gameLoop() {
 	calculatedSpawnChance = calcSpawnChance(time);
 	ctx.fillStyle = "#000000";
 	wave = Math.floor(time);
-	ctx.fillText("Current Wave: "+wave, 0, 100);
+	ctx.fillText("Current Wave: "+(wave+1), 0, 100);
 	
 	ctx.fillText("spawn chance "+calculatedSpawnChance, 500, 100);
-	{
-		let offset = time - wave;
-		let grd = ctx.createLinearGradient(-offset * 300, 110, -offset * 300 + 300, 140);
-		let grd2 = ctx.createLinearGradient(-offset * 300 + 300, 110, -offset * 300 + 600, 140);
-		grd.addColorStop(0, "#FFFFFF");
-		grd.addColorStop(0.5, "#FF0000");
-		grd.addColorStop(1, "#FFFFFF");
-		grd2.addColorStop(0, "#FFFFFF");
-		grd2.addColorStop(0.5, "#FF0000");
-		grd2.addColorStop(1, "#FFFFFF");
-		ctx.fillStyle = grd;
-		ctx.fillRect(0, 110, 300, 140);
-		ctx.fillStyle = grd2;
-		ctx.fillRect(0, 110, 300, 140);
+	ctx.strokeRect(0, 140, widthIncrement * 10, widthIncrement * 2);
+	var offset = time - wave;
+	ctx.fillRect(0, 140, offset * 10 * widthIncrement, widthIncrement * 2);
+	ctx.font = "15px Helvetica";
+	ctx.fillText("Wave Progress:", 0, 130);
+	ctx.font = "30px Helvetica";
+	if (oldwave != wave) { // survived a wave
+		document.getElementById("wavedefeat").innerHTML = "SURVIVED WAVE "+wave;
+		setTimeout(()=>{
+			document.getElementById("wavedefeat").innerHTML = "";
+		}, 2000);
+		console.log("survivd");
 	}
+	oldwave = wave;
 
 	for(let i=0; i<horses.length; i++) {
 		var h = horses[i];
@@ -176,8 +175,10 @@ function gameLoop() {
 		
 		}
 	}
+	try {
 	checkZombieCollideBullet(bullets, zombies);
-
+	}
+	catch (TypeError) {}
 	// ammo
 	ctx.fillStyle = "#333333";
 	if (player.selected) {
@@ -197,7 +198,7 @@ function gameLoop() {
 	for (let i=0;i<snowflakes.length;i++) {
 		flakeInQuestion = snowflakes[i];
 		flakeInQuestion[1] += flakeInQuestion[3];
-		ctx.drawImage(flakeImg, flakeInQuestion[0], flakeInQuestion[1], flakeInQuestion[2], flakeInQuestion[2]);
+		ctx.drawImage(imgs.flakeImg, flakeInQuestion[0], flakeInQuestion[1], flakeInQuestion[2], flakeInQuestion[2]);
 		if (flakeInQuestion[1] >= canvasHeight) {
 			snowflakes.splice(i, 1);
 		}
@@ -208,7 +209,7 @@ function gameLoop() {
 	player.canMove.left = true;
 	for (let i=0;i<walls.length;i++) {
 		wallInQuestion = walls[i];
-		ctx.drawImage(wallImg, wallInQuestion.posX, wallInQuestion.posY, widthIncrement * 3, widthIncrement * 3);
+		ctx.drawImage(imgs.wallImg, wallInQuestion.posX, wallInQuestion.posY, widthIncrement * 3, widthIncrement * 3);
 		var a = advancedCollisionCheck(player, wallInQuestion);
 		var b = checkCollision(player, wallInQuestion);
 		
@@ -244,7 +245,7 @@ function gameLoop() {
 		ctx.translate(nadeInQuestion.posX + widthIncrement, nadeInQuestion.posY + widthIncrement);
 		ctx.rotate(nadeInQuestion.angle + nadeInQuestion.rotation);
 		ctx.translate(-nadeInQuestion.posX - widthIncrement, -nadeInQuestion.posY - widthIncrement);
-		ctx.drawImage(nadeImg, nadeInQuestion.posX, nadeInQuestion.posY, widthIncrement * 2, widthIncrement * 2);
+		ctx.drawImage(imgs.nadeImg, nadeInQuestion.posX, nadeInQuestion.posY, widthIncrement * 2, widthIncrement * 2);
 		ctx.restore();
 
 		// update pos

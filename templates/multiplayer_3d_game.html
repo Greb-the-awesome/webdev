@@ -11,11 +11,14 @@
     <body>
         <canvas id="canvas" width="800" height="600"></canvas>
         <p id = "debugStuff" style="position: absolute;left:0;top:0;font-weight:bold;"></p>
-    </body>
+    
     <script type="text/javascript"
             src="{{ url_for('static', filename='multiplayer_3d_game/divisionEngine.js') }}" defer></script>
         <script type="text/javascript"
             src="{{ url_for('static', filename='multiplayer_3d_game/perlin.js') }}" defer></script>
         <script type="text/javascript"
             src="{{ url_for('static', filename='multiplayer_3d_game/minecraft.js') }}" defer></script>
+        <script type="text/javascript"
+            src="{{ url_for('static', filename='multiplayer_3d_game/shaderBillboard.js') }}" defer></script>
+</body>
 </html>

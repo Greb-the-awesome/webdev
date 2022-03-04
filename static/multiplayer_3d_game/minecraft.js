@@ -5,6 +5,9 @@ function fakePerlin(x, y) {
 	return [Math.sin((x + y) / 2)]
 }
 
+function distance(x1, y1, x2, y2) {
+	return Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+}
 
 class Block {
 	constructor(what, pos1, pos2, pos3, pos4) {
@@ -106,9 +109,9 @@ function divisionOnLoad(gl) {
 			   [0.0, 1 - block.lightness, 0.0, 1.0,
 				0.0, 1 - block.lightness, 0.0, 1.0,
 				0.0, 1 - block.lightness, 0.0, 1.0,
-				1.0, 1 - block.lightness, 0.0, 1.0,
-				1.0, 1 - block.lightness, 0.0, 1.0,
-				1.0, 1 - block.lightness, 0.0, 1.0,]);
+				0.0, 1 - block.lightness, 0.0, 1.0,
+				0.0, 1 - block.lightness, 0.0, 1.0,
+				0.0, 1 - block.lightness, 0.0, 1.0,]);
 		}
 	}
 	translateModelView(0.0, 0.0, -3.0);
@@ -147,6 +150,7 @@ function onCameraTurn(e) {
 }
 
 function loop() {
+	gl.useProgram(shaderProgram);
 	// wasd
 	// var playerVelXZ = Math.sqrt(myPlayer.userInputVelocity[0]**2 + myPlayer.userInputVelocity[2]**2);
 	// var tooFast = playerVelXZ > 0.02;
@@ -194,7 +198,7 @@ function loop() {
 		let currentBlock = chunks[chunkPos].blocks[blockPos];
 		let offset = [myPlayer.cameraPos[0] - blockPos[0], myPlayer.cameraPos[2] - blockPos[1]];
 		var a;
-		if (-offset[0] + offset[1] > 0.5) {
+		if (offset[0] + offset[1] > 1) {
 			debugDispNow["current triangle"] = "upper";
 		} else {debugDispNow["current triangle"] = "lower";}
 		positions[64800] = myPlayer.cameraPos[0];positions[64801] = 0.0;positions[64802] = myPlayer.cameraPos[2];
@@ -205,6 +209,8 @@ function loop() {
 
 		positions[64806] = myPlayer.cameraPos[0];positions[64807] = 0.0;positions[64808] = myPlayer.cameraPos[2]+0.1;
 		colors[86408] = 0.0;colors[86409] = 0.0;colors[86410] = 0.0;colors[86411] = 1.0;
+
+		// let distance1 = distance()
 		flush();
 	}
 	window.gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
@@ -215,6 +221,9 @@ function loop() {
 		posPlusFront,
 		myPlayer.cameraUp);
 	flushUniforms();
+
+	// gl.useProgram(billboardShader);
+	// gl.drawArrays(gl.TRIANGLES, 0, 1);
 }
 
 window.setInterval(loop, 25);

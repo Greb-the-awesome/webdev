@@ -1,137 +1,138 @@
 var gunImg;
 var loadedImgs = {};
+var imgs = {};
 function loadImgs() {
 	// gun
-	window.gunImg = new Image();
-	window.gunImg.src = "static/zombiegame_updated/gun.png";
-	window.gunImg.onload = function() {
+	imgs.gunImg = new Image();
+	imgs.gunImg.src = "static/zombiegame_updated/gun.png";
+	imgs.gunImg.onload = function() {
 		loadedImgs["gun"] = true;
 	};
 	console.log("gunImg=" + gunImg);
 
 	// plane (or horse)
-	window.horseImg = new Image();
-	window.horseImg.src = "static/zombiegame_updated/horseUnridable.png";
-	window.horseImg.onload = function() {
+	imgs.horseImg = new Image();
+	imgs.horseImg.src = "static/zombiegame_updated/horseUnridable.png";
+	imgs.horseImg.onload = function() {
 		loadedImgs["horseUnridable"] = true;
 	};
 
 	// nuke
-	window.nukeImg = new Image();
-	window.nukeImg.src = "static/zombiegame_updated/nuke.png";
-	window.nukeImg.onload = function() {
+	imgs.nukeImg = new Image();
+	imgs.nukeImg.src = "static/zombiegame_updated/nuke.png";
+	imgs.nukeImg.onload = function() {
 		loadedImgs["nuke"] = true;
 	};
 
 	// opgun
-	window.opGunImg = new Image();
-	window.opGunImg.src = "static/zombiegame_updated/opgun.png";
-	window.opGunImg.onload = function() {
+	imgs.opGunImg = new Image();
+	imgs.opGunImg.src = "static/zombiegame_updated/opgun.png";
+	imgs.opGunImg.onload = function() {
 		loadedImgs["opgun"] = true;
 	};
 
 	// horse egg
-	window.eggImg = new Image();
-	window.eggImg.src = "static/zombiegame_updated/egg.png";
-	window.eggImg.onload = function() {
+	imgs.eggImg = new Image();
+	imgs.eggImg.src = "static/zombiegame_updated/egg.png";
+	imgs.eggImg.onload = function() {
 		loadedImgs["egg"] = true;
 	};
 
 	// kar98
-	window.kar98Img = new Image();
-	window.kar98Img.src = "static/zombiegame_updated/kar98.png";
-	window.kar98Img.onload = function() {
+	imgs.kar98Img = new Image();
+	imgs.kar98Img.src = "static/zombiegame_updated/kar98.png";
+	imgs.kar98Img.onload = function() {
 		loadedImgs["kar98"] = true;
 	};
 
 	// ak
-	window.akImg = new Image();
-	window.akImg.src = "static/zombiegame_updated/ak.png";
-	window.akImg.onload = function() {
+	imgs.akImg = new Image();
+	imgs.akImg.src = "static/zombiegame_updated/ak.png";
+	imgs.akImg.onload = function() {
 		loadedImgs["ak"] = true;
 	};
 
 	// m1918
-	window.m1918Img = new Image();
-	window.m1918Img.src = "static/zombiegame_updated/m1918.png";
-	window.m1918Img.onload = function() {
+	imgs.m1918Img = new Image();
+	imgs.m1918Img.src = "static/zombiegame_updated/m1918.png";
+	imgs.m1918Img.onload = function() {
 		loadedImgs["m1918"] = true;
 	};
 
 	// qcw05
-	window.qcwImg = new Image();
-	window.qcwImg.src = "static/zombiegame_updated/qcw05.png";
-	window.qcwImg.onload = function() {
+	imgs.qcwImg = new Image();
+	imgs.qcwImg.src = "static/zombiegame_updated/qcw05.png";
+	imgs.qcwImg.onload = function() {
 		loadedImgs["qcw"] = true;
 	};
 
 	// m1887
-	window.m1887Img = new Image();
-	window.m1887Img.src = "static/zombiegame_updated/m1887.png";
-	window.m1887Img.onload = function() {
+	imgs.m1887Img = new Image();
+	imgs.m1887Img.src = "static/zombiegame_updated/m1887.png";
+	imgs.m1887Img.onload = function() {
 		loadedImgs["m1887"] = true;
 	};
 
 	// medkit
-	window.medkitImg = new Image();
-	window.medkitImg.src = "static/zombiegame_updated/medkit.png";
-	window.medkitImg.onload = function() {
+	imgs.medkitImg = new Image();
+	imgs.medkitImg.src = "static/zombiegame_updated/medkit.png";
+	imgs.medkitImg.onload = function() {
 		loadedImgs["medkit"] = true;
 	};
 
 	// medicine
-	window.medicineImg = new Image();
-	window.medicineImg.src = "static/zombiegame_updated/medicine.png";
-	window.medicineImg.onload = function() {
+	imgs.medicineImg = new Image();
+	imgs.medicineImg.src = "static/zombiegame_updated/medicine.png";
+	imgs.medicineImg.onload = function() {
 		loadedImgs["medicine"] = true;
 	};
 
 	// aa12
-	window.aa12Img = new Image();
-	window.aa12Img.src = "static/zombiegame_updated/aa12.png";
-	window.aa12Img.onload = function() {
+	imgs.aa12Img = new Image();
+	imgs.aa12Img.src = "static/zombiegame_updated/aa12.png";
+	imgs.aa12Img.onload = function() {
 		loadedImgs["aa12"] = true;
 	};
 
 	// snowflake
-	window.flakeImg = new Image();
-	window.flakeImg.src = "static/zombiegame_updated/snowflake.png";
-	window.flakeImg.onload = function() {
+	imgs.flakeImg = new Image();
+	imgs.flakeImg.src = "static/zombiegame_updated/snowflake.png";
+	imgs.flakeImg.onload = function() {
 		loadedImgs["snowflake"] = true;
 	};
 
 	// snowball
-	window.snowballImg = new Image();
-	window.snowballImg.src = "static/zombiegame_updated/snowball.png";
-	window.snowballImg.onload = function() {
+	imgs.snowballImg = new Image();
+	imgs.snowballImg.src = "static/zombiegame_updated/snowball.png";
+	imgs.snowballImg.onload = function() {
 		loadedImgs["snowball"] = true;
 	};
 
 	// snowball
-	window.wallImg = new Image();
-	window.wallImg.src = "static/zombiegame_updated/wall.png";
-	window.wallImg.onload = function() {
+	imgs.wallImg = new Image();
+	imgs.wallImg.src = "static/zombiegame_updated/wall.png";
+	imgs.wallImg.onload = function() {
 		loadedImgs["wall"] = true;
 	};
 
 	// mk2
-	window.mk2Img = new Image();
-	window.mk2Img.src = "static/zombiegame_updated/mk2.png";
-	window.mk2Img.onload = function() {
+	imgs.mk2Img = new Image();
+	imgs.mk2Img.src = "static/zombiegame_updated/mk2.png";
+	imgs.mk2Img.onload = function() {
 		loadedImgs["mk2"] = true;
 	};
 
 	// nade
-	window.nadeImg = new Image();
-	window.nadeImg.src = "static/zombiegame_updated/nade.png";
-	window.nadeImg.onload = function() {
+	imgs.nadeImg = new Image();
+	imgs.nadeImg.src = "static/zombiegame_updated/nade.png";
+	imgs.nadeImg.onload = function() {
 		loadedImgs["nade"] = true;
 	};
 
 	// sword of smite
-	window.smiteSwordImg = new Image();
-	window.smiteSwordImg.src = "static/zombiegame_updated/smite.png";
-	window.smiteSwordImg.onload = function() {
+	imgs.smiteSwordImg = new Image();
+	imgs.smiteSwordImg.src = "static/zombiegame_updated/smite.png";
+	imgs.smiteSwordImg.onload = function() {
 		loadedImgs["smiteSword"] = true;
 	};
 }

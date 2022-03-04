@@ -23,11 +23,23 @@ var nades = [];
 var explosions = [];
 var time = 0;
 var wave;
+var oldwave = 0;
 var calculatedSpawnChance = 0;
+var weapons;
 // hi
 
 console.log("main script loaded.");
 
+{
+	let a = new XMLHttpRequest();
+	a.onreadystatechange = function() {
+		if (this.readyState == 4) {
+			weapons = JSON.parse(this.responseText);
+		}
+	}
+	a.open("GET", "/static/zombiegame_updated/weapons.json", true);
+	a.send(null);
+}
 
 function onMouseMove(e) {
 	relPosX = e.offsetX - player.posX;
@@ -123,7 +135,7 @@ function lTick() {
 		var zombieInQuestion = zombies[i];
 		var toSplice = [];
 		// check zombie collide with player
-		if (player.meeleeDamaging) {
+		if (false) {
 			console.log("player.meeleeDamaging == true");
 			if (checkCollision(zombieInQuestion, player.meeleeDamaging)) {
 				console.log("zombie hit by sword");
@@ -134,15 +146,19 @@ function lTick() {
 				}
 			}
 		}
+		try { // idk why there is `undefined` in zombies list but yea to prevent errors we have try catch here
 		if(checkCollision(zombieInQuestion, player)) {
 			player.health -= zombieInQuestion.damage;
 			frameNumber = 0;
 			if(player.health <= 0) { // o o f
 				die();
 			}
-		}
+		}}
+		catch (TypeError) {}
 	}
-	for (let i=0;i<toSplice.length;i++) {zombies.splice(toSplice[i], 1);}
+	if (toSplice) {
+		for (let i=0;i<toSplice.length;i++) {zombies.splice(toSplice[i], 1);}
+	}
 }
 
 function die() {
@@ -311,77 +327,54 @@ function advancedCollisionCheck(thing1, thing2) {
 function calcSpawnChance(x) {
 	return 2 * x**0.625 * Math.abs(x - Math.floor(x + 0.5)); // plot it in desmos and you'll see
 }
-
-function dropItems(badTier, okTier, goodTier, opTier, nades, heals, x, y) {
-	if (badTier) {
-		switch (Math.floor(Math.random() * 2)) {
-			case 0:
-				items.push(new Item(x, y, "kar98k", kar98Img, "gun",
-					{"damage":50,"color":"#99DDDD","capacity":10,"reloadTime":2450,"delay":500,"shotgun":false,"size":1}, 1));
-				break;
-			case 1:
-				items.push(new Item(x, y, "M1887", m1887Img, "gun",
-					{"damage":25,"color":"#FF0000","capacity":5,"reloadTime":2000,"delay":700,"shotgun":true,"spread":0.35,"rpc":5,"size":0.7}, 1));
-				break;
+// ------- helper functions for dropItems -------
+function newItem(tier, name, x, y) {
+	var info = weapons[tier][name];
+	items.push(new Item(x, y, name, imgs[info.image], info.type,
+					info.specs, 1));
+	console.log("new item", tier, name)
+}
+function randChoice(l) {
+	a = Object.keys(l);
+	return l[a[Math.floor(Math.random() * a.length)]];
+}
+// ------- the actual function -------
+function dropItems(lmgAdvantage, advancedWave, numItems, x, y) {
+	console.log("we are dropping an item");
+	for (let i=0; i<numItems; i++) {
+		var rand = Math.floor(Math.random() * ((lmgAdvantage?3:1) + 4));
+		console.log("oye were droppinge")
+		if (rand == 0) { // switch case wasnt working for some odd reason
+			var toDrop = randChoice(weapons.badTier);
+			newItem("badTier", toDrop, x, y);
+			console.log("dropped badtier");
 		}
-	}
-	if (okTier) {
-		switch (Math.floor(Math.random() * 3)) {
-			case 0:
-				items.push(new Item(x + 100, y, "M1918 BAR", m1918Img, "gun",
-					{"damage":40,"color":"#a88f32","capacity":20,"reloadTime":2000,"delay":100,"shotgun":false,"size":1}, 1));
+		switch (rand) {
+			case 0: // bad tier
+				var toDrop = randChoice(weapons.badTier);
+				newItem("badTier", toDrop, x, y);
+				console.log("dropped badtier");
 				break;
-			case 1:
-				items.push(new Item(x + 100, y, "wall", wallImg, "wall",
-					{"color":"#000000","health":400}, 32));
+			case 1: // ok tier
+				var toDrop = randChoice(weapons.okTier);
+				newItem("okTier", toDrop, x, y);
+				console.log("dropped oktier");
 				break;
-			case 2:
-				items.push(new Item(x + 100, y, "AK-47", akImg, "gun",
-					{"damage":50,"color":"#FFFF00","capacity":30,"reloadTime":1800,"delay":80,"shotgun":false,"size":1}, 1));
+			case 2: // good tier
+				var toDrop = randChoice(weapons.goodTier);
+				newItem("goodTier", toDrop, x, y);
 				break;
+			case 3: // op tier
+				var toDrop = randChoice(weapons.opTier);
+				newItem("opTier", toDrop, x, y);
+				break;
+			default:
+				console.log("l m g m l");
 		}
-	}
-	if (goodTier) {
-		switch (Math.floor(Math.random() * 2)) {
-			case 0:
-				items.push(new Item(x, y + 100, "egg", eggImg, "other.consumable", {"onclick":
-				(x, y)=>{
-					player.speed = widthIncrement / 2;
-					player.width = widthIncrement * 8;
-				}}, 1));
-			case 1:
-				items.push(new Item(x, y + 100, "QCW-05", qcwImg, "gun",
-					{"damage":100,"color":"#00DD00","capacity":50,"reloadTime":2000,"delay":25,"shotgun":false,"size":1}, 1));
-				break;
+		if (rand >= 4) { // it's an lmg
+			var toDrop = randChoice(weapons.lmg);
+			newItem("lmg", toDrop, x, y);
 		}
-	}
-	if (opTier) {
-		switch (Math.floor(Math.random() * 3)) {
-			case 0:
-				items.push(new Item(x - 100, y, "M249", opGunImg, "gun",
-					{"damage":50,"color":"#00FFFF","capacity":200,"reloadTime":3000,"delay":50,"shotgun":false,"size":1}, 1));
-				break;
-			case 1:
-				items.push(new Item(x - 100, y, "AA-12", aa12Img, "gun",
-					{"damage":25,"color":"#FF0000","capacity":20,"reloadTime":2000,"delay":200,"shotgun":true,"spread":0.4,"rpc":7,"size":0.7}, 1));
-			case 2:
-				items.push(new Item(x - 100, y, "macaroni gun Mk II", mk2Img, "gun",
-					{"damage":30,"color":"#FFFF00","capacity":200,"reloadTime":2450,"delay":30,"shotgun":false,"size":1.2}, 1));
-		}
-	}
-	if (heals) {
-		switch (Math.floor(Math.random() * 2)) {
-			case 0:
-				items.push(new Item(x, y, "medkit", medkitImg, "heal",
-					{"time":2000,"healthRestore":100}, 1));
-			case 1:
-				items.push(new Item(x, y, "sus juice", medicineImg, "heal",
-					{"time":1000,"healthRestore":50}, 1));
-		}
-	}
-	if (nades) {
-		items.push(new Item(x, y, "grenade", nadeImg, "nade",
-			{"fuseTime":4000,"shrapnel":10,"explosionRadius":widthIncrement * 15,"shrapnelDmg":25,"explosionDmg":1}, 1));
 	}
 }
 
@@ -392,18 +385,13 @@ function checkZombieCollideBullet(b,z) {
 			if(z[j]&&checkCollision(b[i], z[j])) {
 				z[j].health -= b[i].damage;
 				b.splice(i, 1);
-				
 				if(zombies[j].health <= 0) { // da zombie ded
 					
-					if (Math.floor(Math.random() * 7) == 3) {
-						dropItems(Math.floor(Math.random() * 3) == 1, Math.floor(Math.random() * 4) == 1,
-							Math.floor(Math.random() * 5) == 1, Math.floor(Math.random() * 6) == 1,
-							Math.floor(Math.random() * 4) == 1, Math.floor(Math.random() * 4) == 1, z[j].posX, z[j].posY);
-
-						if (Math.floor(Math.random() * 7 == 3)) {items.push(new Item(z[j].posX, z[j].posY, "sword of smite", smiteSwordImg, "meelee",
-							{"delay":500,"damage":100,"reach":widthIncrement*5}, 1));}
-
-						
+					if (true) {
+						try {
+						dropItems(wave == 1, false, 1, z[j].posX, z[j].posY);}
+						catch (TypeError) {}
+						console.log("we must drop an item");
 					}
 					z.splice(j, 1);
 					
@@ -413,7 +401,6 @@ function checkZombieCollideBullet(b,z) {
 		}
 	}
 }
-
 
 function postScores() {
 	var req = new XMLHttpRequest();
