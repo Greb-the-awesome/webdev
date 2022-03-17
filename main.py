@@ -95,9 +95,13 @@ def leader():
 		leader_string += f"{x[str(z)]}"
 	return render_template("leaderboard.html", leader_string = leader_string)
 
-@app.route("/zombiewars")
+@app.route("/zombiewars2d")
 def zombiewars():
 	return render_template("zombiewars.html", rand_num = time.time())
+
+@app.route("/zombiewars")
+def zombiewars3d():
+	return render_template("zombiewars3d.html", rand_num = time.time())
 
 @app.route("/lmao/you/cant/see/this/ehe")
 def lmao():
