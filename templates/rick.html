@@ -3,12 +3,17 @@
 <head>
 	<title>a website</title>
 	<script type="text/javascript">
-		function onLoad() {
-			window.location.replace("https://youtu.be/uveKG35itGY");
+		function e() {
+			if (Math.floor(Math.random() * 3) == 1) {
+				window.location.replace("/multiplayer3dgame");
+			} else {
+				document.getElementById('trollololo').innerHTML = "It was at this moment that he knew... he got TROLLED LMAOAOAOAO";
+				setTimeout(()=>{window.location.replace("https://youtu.be/wnedkVrgFF0");}, 1000);
+			}
 		}
 	</script>
 </head>
-<body onload="onLoad();">
-	<h1>It was at this moment that he knew.. he got trolled</h1>
+<body onload="e();">
+	<h1 id = "trollololo"></h1>
 </body>
 </html>
