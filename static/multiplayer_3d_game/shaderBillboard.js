@@ -2,10 +2,12 @@ const billboardVS = `
 attribute vec4 aBillboardPos;
 uniform mat4 uProjectionMatrix;
 varying lowp vec4 vColor;
+attribute vec4 aVertexPosition;
+uniform mat4 uModelViewMatrix;
 
 void main() {
-	gl_Position = aBillboardPos * uProjectionMatrix;
-	vColor = vec4(1.0, 0.0, 0.0, 1.0);
+	gl_Position = aVertexPosition * uModelViewMatrix * uProjectionMatrix;
+	vColor = vec4(1.0, clamp(aVertexPosition.z, 0.0, 1.0), 0.0, 1.0);
 }
 `
 
@@ -26,7 +28,7 @@ function iHateVariableScopes(a)
 	}
 
 
-	infoStuff.attribLocations.billboardPosition = gl.getAttribLocation(billboardShader, "aBillboardPos");
+	// infoStuff.attribLocations.billboardPosition = gl.getAttribLocation(billboardShader, "aBillboardPos");
 	buffers.billboardPositions = gl.createBuffer();
 	const numComponents = 4;
 	const type = window.gl.FLOAT;
@@ -41,11 +43,11 @@ function iHateVariableScopes(a)
 		normalize,
 		stride,
 		offset);
-	// gl.enableVertexAttribArray(
-	// 	infoStuff.attribLocations.billboardPosition);
+	gl.enableVertexAttribArray(
+		infoStuff.attribLocations.billboardPosition);
 
-	// var billboardPositions = [0.0, 0.0, 1.0,
-	// 						  1.0, 0.0, 1.0,
-	// 						  0.0, 1.0, 1.0,];
-	// gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(billboardPositions), gl.STATIC_DRAW);
+	var billboardPositions = [0.0, 0.0, 1.0,
+							  1.0, 0.0, 1.0,
+							  0.0, 1.0, 1.0,];
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(billboardPositions), gl.STATIC_DRAW);
 }

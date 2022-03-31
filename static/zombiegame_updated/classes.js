@@ -66,7 +66,7 @@ class Player {
 	constructor() {
 		this.posX = 100;
 		this.posY = 100;
-		this.health = Infinity;
+		this.health = 100;
 		this.angle = 0; // why does everyone use radians i am sad
 		this.width = widthIncrement * 4;
 		this.height = this.width;

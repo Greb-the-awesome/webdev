@@ -64,22 +64,17 @@ function onMouseMove(e) {
 function onLoad() {
 	// canvas stuffs
 	// needs to go
-	canvas = document.getElementById("canv");
-	ctx = canvas.getContext("2d");
-	canvas.setAttribute("width", canvasWidth);
-	canvas.setAttribute("height", canvasHeight);
-	canvas.imageSmoothingEnabled = false;
+	overlay = document.getElementById("overlay");
+	ctx = overlay.getContext("2d");
+	overlay.setAttribute("width", canvasWidth);
+	overlay.setAttribute("height", canvasHeight);
 
-	// keys
-	// for(let i=0; i<10; i++) {
-	//     downKeys[i] = false;
-	// }
 
 	// canvas settings
 	ctx.fillStyle = "#FF0000";
 	ctx.font = "30px Helvetica";
 	
-
+	// needs to go
 	var i = window.setInterval(function() {
 		if (
 			loadedImgs["gun"] &&
@@ -167,6 +162,7 @@ function die() {
 	stop();
 	canPause = false;
 
+	// needs to go (maybe not)
 	ctx.fillStyle = "#000000";
 	ctx.globalAlpha = 0.2;
 	ctx.fillRect(0,0, canvasWidth, canvasHeight);
@@ -283,6 +279,7 @@ function onKeyUp(event) {
 }
 
 // collison detection function
+// needs to be revamped into 3d
 function checkCollision(thing1, thing2) {
 	var x1bc = thing1.posX + thing1.width/2;
 	var y1bc = thing1.posY + thing1.height/2;
@@ -303,6 +300,7 @@ function checkCollision(thing1, thing2) {
 // thing2 thing1
 // it would return "left"
 // u gotta be careful tho cos reasons that only I know and im too lazy to explain
+// needs to be revamped (and possibly deleted as this was kind of a bad idea? idk)
 function advancedCollisionCheck(thing1, thing2) {
 	var x1bc = thing1.posX + thing1.width/2;
 	var y1bc = thing1.posY + thing1.height/2;

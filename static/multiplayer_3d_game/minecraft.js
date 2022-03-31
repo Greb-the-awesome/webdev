@@ -15,7 +15,7 @@ class Block {
 		this.pos1 = pos1;
 		this.pos2 = pos2;
 		this.pos3 = pos3;
-		this.pos4 = pos4;
+		this.pos4 = pos4; /*
 		this.differences = [
 			this.pos1[1] - this.pos2[1],
 			this.pos1[1] - this.pos3[1],
@@ -30,6 +30,7 @@ class Block {
 		}
 		this.lightness = this.diffSum / 6;
 		this.differences = false; // save on memory
+		*/
 	}
 }
 
@@ -106,23 +107,35 @@ function divisionOnLoad(gl) {
 			var triang1 = block.pos1.concat(block.pos2.concat(block.pos3));
 			var triang2 = block.pos3.concat(block.pos4.concat(block.pos1));
 			addPositions(triang1.concat(triang2),
-			   [0.0, 1 - block.lightness, 0.0, 1.0,
-				0.0, 1 - block.lightness, 0.0, 1.0,
-				0.0, 1 - block.lightness, 0.0, 1.0,
-				0.0, 1 - block.lightness, 0.0, 1.0,
-				0.0, 1 - block.lightness, 0.0, 1.0,
-				0.0, 1 - block.lightness, 0.0, 1.0,]);
+			   [0.0, 0.5,
+			    0.0, 0.0,
+			    0.5, 0.0,
+			    0.5, 0.0,
+			    0.5, 0.5,
+			    0.0, 0.5]);
 		}
 	}
 	translateModelView(0.0, 0.0, -3.0);
+	addBillbPositions([-0.1, 0.1, -6.0,
+					   0.1, -0.1, -6.0,
+					   0.1, 0.1, -6.0,
+					   -0.1, -0.1, -6.0,
+					   -0.1, 0.1, -6.0,
+					   0.1, -0.1, -6.0,],
+					   [0.5, 0.5,
+					    1.0, 0.0,
+					   1.0, 0.5,
+					   0.5, 0.0,
+					   0.5, 0.5,
+					   1.0, 0.0,])
 	flush();
-	window.gl = gl;window.gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
+	window.gl = gl;
 	canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
 	canvas.onclick = function() {canvas.requestPointerLock();};
 	document.exitPointerLock = document.exitPointerLock ||
                            document.mozExitPointerLock;
 	canvas.addEventListener("mousemove", onCameraTurn);
-	window.addEventListener("keyup", brake);
+	//window.addEventListener("keyup", brake);
 	setInterval(debugRefresh, 10);
 }
 
@@ -130,13 +143,6 @@ function debugRefresh() {
 	document.getElementById("debugStuff").innerHTML = JSON.stringify(debugDispNow, null, 2);
 }
 
-function brake(e) { // not complete but works for now
-	var c = e.keyCode; // 65 68 87 83
-	if (c == 65) {
-
-	}
-	myPlayer.userInputVelocity = glMatrix.vec3.fromValues(0.0, 0.0, 0.0);
-}
 
 function onCameraTurn(e) {
 	myPlayer.yaw   += e.movementX * 0.07;
@@ -182,9 +188,9 @@ function loop() {
 			myPlayer.userInputVelocity,
 			myPlayer.cameraFront,);
 	}
-	myPlayer.userInputVelocity[0] *= 0.05;
-	myPlayer.userInputVelocity[1] = 0.0;
-	myPlayer.userInputVelocity[2] *= 0.05;
+	myPlayer.userInputVelocity[0] *= 0.1;
+	myPlayer.userInputVelocity[1] *= 0.1;
+	myPlayer.userInputVelocity[2] *= 0.1;
 
 	{ // collision detection :(
 		// myPlayer.velocity[1] -= 0.005; // ONLY IF PLAYER IS IN AIR
@@ -201,19 +207,19 @@ function loop() {
 		if (offset[0] + offset[1] > 1) {
 			debugDispNow["current triangle"] = "upper";
 		} else {debugDispNow["current triangle"] = "lower";}
-		positions[64800] = myPlayer.cameraPos[0];positions[64801] = 0.0;positions[64802] = myPlayer.cameraPos[2];
-		colors[86400] = 1.0;colors[86401] = 0.0;colors[86402] = 0.0;colors[86403] = 1.0;
+		// positions[64800] = myPlayer.cameraPos[0];positions[64801] = 0.0;positions[64802] = myPlayer.cameraPos[2];
+		// colors[86400] = 1.0;colors[86401] = 0.0;colors[86402] = 0.0;colors[86403] = 1.0;
 
-		positions[64803] = myPlayer.cameraPos[0]+0.1;positions[64804] = 0.0;positions[64805] = myPlayer.cameraPos[2]+0.1;
-		colors[86404] = 0.0;colors[86405] = 0.0;colors[86406] = 0.0;colors[86407] = 1.0;
+		// positions[64803] = myPlayer.cameraPos[0]+0.1;positions[64804] = 0.0;positions[64805] = myPlayer.cameraPos[2]+0.1;
+		// colors[86404] = 0.0;colors[86405] = 0.0;colors[86406] = 0.0;colors[86407] = 1.0;
 
-		positions[64806] = myPlayer.cameraPos[0];positions[64807] = 0.0;positions[64808] = myPlayer.cameraPos[2]+0.1;
-		colors[86408] = 0.0;colors[86409] = 0.0;colors[86410] = 0.0;colors[86411] = 1.0;
+		// positions[64806] = myPlayer.cameraPos[0];positions[64807] = 0.0;positions[64808] = myPlayer.cameraPos[2]+0.1;
+		// colors[86408] = 0.0;colors[86409] = 0.0;colors[86410] = 0.0;colors[86411] = 1.0;
 
 		// let distance1 = distance()
 		flush();
 	}
-	window.gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
+	gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
 	var posPlusFront = glMatrix.vec3.create();
 	glMatrix.vec3.add(posPlusFront, myPlayer.cameraPos, myPlayer.cameraFront);
 	glMatrix.mat4.lookAt(modelViewMatrix,
@@ -222,8 +228,10 @@ function loop() {
 		myPlayer.cameraUp);
 	flushUniforms();
 
-	// gl.useProgram(billboardShader);
-	// gl.drawArrays(gl.TRIANGLES, 0, 1);
+	gl.useProgram(billboardShader);
+	gl.disable(gl.DEPTH_TEST);
+	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	gl.enable(gl.DEPTH_TEST)
 }
 
 window.setInterval(loop, 25);

@@ -41,6 +41,7 @@ console.log("main script loaded.");
 	a.send(null);
 }
 
+// needs to go
 function onMouseMove(e) {
 	relPosX = e.offsetX - player.posX;
 	relPosY = e.offsetY - player.posY;
@@ -62,6 +63,7 @@ function onMouseMove(e) {
 
 function onLoad() {
 	// canvas stuffs
+	// needs to go
 	canvas = document.getElementById("canv");
 	ctx = canvas.getContext("2d");
 	canvas.setAttribute("width", canvasWidth);
@@ -387,11 +389,63 @@ function checkZombieCollideBullet(b,z) {
 				b.splice(i, 1);
 				if(zombies[j].health <= 0) { // da zombie ded
 					
-					if (true) {
+					if (false) {
 						try {
 						dropItems(wave == 1, false, 1, z[j].posX, z[j].posY);}
 						catch (TypeError) {}
 						console.log("we must drop an item");
+					}
+					if (Math.floor(Math.random() * 7) == 3) {
+						switch (Math.floor(Math.random() * 11)) {
+							case 1:
+								items.push(new Item(z[j].posX, z[j].posY, "egg", imgs.eggImg, "other.consumable", {"onclick":
+								(x, y)=>{
+									player.speed = widthIncrement / 2;
+									player.width = widthIncrement * 8;
+								}}, 1));
+							case 2:
+								items.push(new Item(z[j].posX, z[j].posY, "M249", imgs.opGunImg, "gun",
+									{"damage":50,"color":"#00FFFF","capacity":100,"reloadTime":3000,"delay":50,"shotgun":false,"size":1}, 1));
+								break;
+							case 3:
+								items.push(new Item(z[j].posX, z[j].posY, "kar98k", imgs.kar98Img, "gun",
+									{"damage":50,"color":"#99DDDD","capacity":10,"reloadTime":2450,"delay":500,"shotgun":false,"size":1}, 1));
+								break;
+							case 4:
+								items.push(new Item(z[j].posX, z[j].posY, "AK-47", imgs.akImg, "gun",
+									{"damage":50,"color":"#FFFF00","capacity":30,"reloadTime":1800,"delay":80,"shotgun":false,"size":1}, 1));
+								break;
+							case 5:
+								items.push(new Item(z[j].posX, z[j].posY, "M1918 BAR", imgs.m1918Img, "gun",
+									{"damage":40,"color":"#a88f32","capacity":20,"reloadTime":2000,"delay":100,"shotgun":false,"size":1}, 1));
+								break;
+							case 6:
+								items.push(new Item(z[j].posX, z[j].posY, "QCW-05", imgs.qcwImg, "gun",
+									{"damage":100,"color":"#00DD00","capacity":50,"reloadTime":2000,"delay":25,"shotgun":false,"size":1}, 1));
+								break;
+							case 7:
+								items.push(new Item(z[j].posX, z[j].posY, "M1887", imgs.m1887Img, "gun",
+									{"damage":25,"color":"#FF0000","capacity":5,"reloadTime":2000,"delay":700,"shotgun":true,"spread":0.35,"rpc":5,"size":0.7}, 1));
+								break;
+							case 8:
+								items.push(new Item(z[j].posX, z[j].posY, "medkit", imgs.medkitImg, "heal",
+									{"time":2000,"healthRestore":100}, 1));
+							case 9:
+								items.push(new Item(z[j].posX, z[j].posY, "medicine", imgs.medicineImg, "heal",
+									{"time":1000,"healthRestore":50}, 1));
+							case 10:
+								items.push(new Item(z[j].posX, z[j].posY, "AA-12", imgs.aa12Img, "gun",
+									{"damage":25,"color":"#FF0000","capacity":20,"reloadTime":2000,"delay":200,"shotgun":true,"spread":0.4,"rpc":7,"size":0.7}, 1));
+						}
+						if (Math.floor(Math.random() * 5) == 3) {
+							items.push(new Item(z[j].posX + 20, z[j].posY + 20, "snowball", imgs.snowballImg, "gun",
+									{"damage":100,"color":"#94aeb0","capacity":1,"reloadTime":200,"delay":200,"shotgun":false,"size":3}, 1));
+						}
+						if (Math.floor(Math.random() * 5) == 3) {
+							items.push(new Item(z[j].posX + 20, z[j].posY + 20, "wall", imgs.wallImg, "wall",
+								{"color":"#000000","health":200}, 32))
+						}
+						
 					}
 					z.splice(j, 1);
 					

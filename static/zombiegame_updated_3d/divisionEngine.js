@@ -27,6 +27,7 @@ void main() {
 }
 `
 var divisDownKeys = {};
+var MVPushed = [];
 
 // #4a412a
 function initShaders() {
@@ -116,6 +117,14 @@ function setModelView(modelView) {
 	modelViewMatrix = modelView;
 }
 
+function pushModelView() {
+	MVPushed.push(modelViewMatrix);
+}
+
+function popModelView() {
+	modelViewMatrix = MVPushed.pop();
+}
+
 function flushUniforms() {
 	gl.uniformMatrix4fv(infoStuff.uniformLocations.projectionMatrix,
 		false,
@@ -201,7 +210,7 @@ function finalInit() {
 var shaderProgram;
 
 function onLoad() {
-	canvas = document.getElementById("canvas");
+	canvas = document.getElementById("canv");
 	gl = canvas.getContext("webgl");
 	if (gl === null || gl === undefined) { // no webgl for ye
 		window.alert("webgl failed lmao");
@@ -241,7 +250,6 @@ function onLoad() {
 
 
 	divisionOnLoad(gl);
-	iHateVariableScopes(gl);
 }
 
 

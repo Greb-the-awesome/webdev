@@ -1,15 +1,16 @@
 function gameLoop() {
 	// clear
-	ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	// frame number (tick happens every 100 frames)
 	frameNumber += 1;
 	time += 0.0003;
 
 	// score
+	// ill render text latr
 	score += 0.5;
-	ctx.fillStyle = "#000000";
-	ctx.fillText("SCORE: " + score, canvasWidth-widthIncrement*20, heightIncrement*30);
+	// ctx.fillStyle = "#000000";
+	// ctx.fillText("SCORE: " + score, canvasWidth-widthIncrement*20, heightIncrement*30);
 
 
 	// keyboard
@@ -74,7 +75,8 @@ function gameLoop() {
 			} else if (!player.inv[3]) {
 				player.inv[3] = itemInQuestion; items.splice(i, 1);
 			} else {
-				ctx.fillText("q to pick up", player.posX - widthIncrement, player.posY + widthIncrement * 6);
+				// ill render text latr
+				// ctx.fillText("q to pick up", player.posX - widthIncrement, player.posY + widthIncrement * 6);
 				if (downKeys[81]) {
 					player.inv[player.invSelect] = itemInQuestion;
 					items.splice(i, 1);

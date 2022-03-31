@@ -64,13 +64,20 @@ class Item {
 // playr class
 class Player {
 	constructor() {
-		this.posX = 100;
-		this.posY = 100;
+		this.posX = 0;
+		this.posY = 0;
+		this.posZ = 0;
 		this.health = Infinity;
-		this.angle = 0; // why does everyone use radians i am sad
-		this.width = widthIncrement * 4;
-		this.height = this.width;
-		this.speed = widthIncrement/5;
+		this.yaw = -90;
+		this.pitch = 0;
+		this.Xlength = 1;
+		this.Zlength = this.Xlength;
+		this.Ylength = 2;
+		this.velocity = glMatrix.vec3.fromValues(0.0, 0.0, 0.0);
+		this.userInputVelocity = glMatrix.vec3.fromValues(0.0, 0.0, 0.0);
+
+		this.acceleration = 0.000000002; // + 0.02 per frame
+
 		this.inv = [new Item(0, 0, "macaroni gun", imgs.gunImg, "gun", {"damage":25,"color":"#DDDD00","capacity":30,"reloadTime":2450,"delay":150,"size":1}, 1),
 			new Item(1, 1, "wall", imgs.wallImg, "wall",
 				{"color":"#000000","health":100}, 16), false, false];
@@ -82,6 +89,7 @@ class Player {
 		this.cookingNade = false;
 		this.meeleeDamaging = false;
 	}
+	// helper
 	checkSelect(slot) {
 		if (this.invSelect == slot) {
 			ctx.lineWidth = 5;

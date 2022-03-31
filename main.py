@@ -43,7 +43,7 @@ def dungeoncrawler():
 def trajectory():
 	return render_template('trajectory.html')
 
-@app.route('/surprise')
+@app.route('/programmingDemo')
 def vaxBad():
 	return render_template('rick.html')
 
@@ -95,11 +95,11 @@ def leader():
 		leader_string += f"{x[str(z)]}"
 	return render_template("leaderboard.html", leader_string = leader_string)
 
-@app.route("/zombiewars2d")
+@app.route("/zombiewars")
 def zombiewars():
 	return render_template("zombiewars.html", rand_num = time.time())
 
-@app.route("/zombiewars")
+@app.route("/zombiewars3d")
 def zombiewars3d():
 	return render_template("zombiewars3d.html", rand_num = time.time())
 
