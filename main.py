@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request
 import json, time, sys
 from flask_socketio import SocketIO, emit
-global scores
+global scores, foolz
 scores = {}
+foolz = 0
 
 
 app=Flask(__name__)
@@ -44,8 +45,20 @@ def trajectory():
 	return render_template('trajectory.html')
 
 @app.route('/programmingDemo')
-def vaxBad():
-	return render_template('rick.html')
+def dmo():
+	#1648818000
+	if time.time() > 1648818000:
+		global foolz
+		foolz += 1
+	if foolz > 2:
+		return render_template('rick.html')
+	else:
+		return render_template('multiplayer_3d_game.html')
+
+@app.route("/resetAprilFoolz")
+def resetFool():
+	global foolz
+	foolz = 0
 
 @app.route('/game')
 def game():
