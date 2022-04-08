@@ -127,7 +127,14 @@ function divisionOnLoad(gl) {
 					   1.0, 0.5,
 					   0.5, 0.0,
 					   0.5, 0.5,
-					   1.0, 0.0,])
+					   1.0, 0.0,]);
+	addPositions([-100, 0, -100,
+				  100, 0, -100,
+				  100, 0, 100,
+				  100, 0, 100,
+				  -100, 0, 100,
+				  -100, 0, -100],
+				  [0.9, 0.9,0.9, 0.9,0.9, 0.9,0.9, 0.9,0.9, 0.9,0.9, 0.9,])
 	flush();
 	window.gl = gl;
 	canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
@@ -156,7 +163,6 @@ function onCameraTurn(e) {
 }
 
 function loop() {
-	gl.useProgram(shaderProgram);
 	// wasd
 	// var playerVelXZ = Math.sqrt(myPlayer.userInputVelocity[0]**2 + myPlayer.userInputVelocity[2]**2);
 	// var tooFast = playerVelXZ > 0.02;
@@ -219,6 +225,7 @@ function loop() {
 		// let distance1 = distance()
 		flush();
 	}
+	useShader(shaderProgram);
 	gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
 	var posPlusFront = glMatrix.vec3.create();
 	glMatrix.vec3.add(posPlusFront, myPlayer.cameraPos, myPlayer.cameraFront);
@@ -227,11 +234,20 @@ function loop() {
 		posPlusFront,
 		myPlayer.cameraUp);
 	flushUniforms();
+	// user-defined uniforms so flushUniforms() doesn't flush it
+	gl.uniform3f(infoStuff.uniformLocations.cameraPos, myPlayer.cameraPos[0], myPlayer.cameraPos[1], myPlayer.cameraPos[2]);
+	if (myPlayer.cameraPos[1] < 0) {
+		gl.uniform4f(infoStuff.uniformLocations.fogColor, 0.0, 0.0, 1.0, 1.0);
+	} else {
+		gl.uniform4f(infoStuff.uniformLocations.fogColor, 0.529, 0.808, 0.921, 1.0);
+	}
+	useShader(particleShader);
+	gl.drawArrays(gl.TRIANGLES, 0, particleCenterOffsets.length / 3);
 
-	gl.useProgram(billboardShader);
+	useShader(billboardShader);
 	gl.disable(gl.DEPTH_TEST);
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
-	gl.enable(gl.DEPTH_TEST)
+	gl.enable(gl.DEPTH_TEST);
 }
 
 window.setInterval(loop, 25);

@@ -2,21 +2,28 @@
 // or as I like to call it, a Semi-Abstract WebGL Interface.
 // proudly made by Greb. (with some assistance from MDN's tutorials) :D
 
-var canvas, gl, projectionMatrix, modelViewMatrix, infoStuff, buffers, positions, indexes, colors, texCoords, billboardShader, billboardPositions, billboardTexCoords;
+var canvas, gl, projectionMatrix, modelViewMatrix, infoStuff, buffers, positions, indexes, colors, texCoords, billboardShader, billboardPositions, billboardTexCoords, particleCorners;
 var settings = {};
 var pushed = [];
-
+var attributeInfo, particleShader;
 var divisDownKeys = {};
+var particleTexCoords, particleCenterOffsets;
 
 // #4a412a
-function initShaders() {
-	var vertexShader = loadShader(gl.VERTEX_SHADER, settings.useTexture?textureVS:vsSource);
-	var fragmentShader = loadShader(gl.FRAGMENT_SHADER, settings.useTexture?textureFS:fsSource);
 
-	const shaderProgram = gl.createProgram();
-	gl.attachShader(shaderProgram, vertexShader);
-	gl.attachShader(shaderProgram, fragmentShader);
-	gl.linkProgram(shaderProgram);
+function compileShaders(vertex, frag, name) {
+	var vertexShader = loadShader(gl.VERTEX_SHADER, vertex);
+	var fragmentShader = loadShader(gl.FRAGMENT_SHADER, frag);
+	var prog = gl.createProgram();
+	gl.attachShader(prog, vertexShader);
+	gl.attachShader(prog, fragmentShader);
+	gl.linkProgram(prog);
+	prog.name = name;
+	return prog;
+}
+
+function initShaders() {
+	const shaderProgram = compileShaders(settings.useTexture?textureVS:vsSource, settings.useTexture?textureFS:fsSource, "shaderProgram");
 
 	if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
 		alert('shaders failed lmao bc ' + gl.getProgramInfoLog(shaderProgram));
@@ -24,19 +31,26 @@ function initShaders() {
 	}
 
 	// ---------billboards--------
-	vertexShader = loadShader(gl.VERTEX_SHADER, settings.useTexture?textureBillboardVS:billboardVS);
-	fragmentShader = loadShader(gl.FRAGMENT_SHADER, settings.useTexture?textureFS:fsSource);
-	billboardShader = gl.createProgram();
-	gl.attachShader(billboardShader, vertexShader);
-	gl.attachShader(billboardShader, fragmentShader);
-	gl.bindAttribLocation(billboardShader, 6, "aBillboardPos");
-	gl.bindAttribLocation(billboardShader, 7, "abTexCoord");
-	gl.linkProgram(billboardShader);
+	billboardShader = compileShaders(settings.useTexture?textureBillboardVS:billboardVS, settings.useTexture?textureFS:fsSource, "billboardShader");
 	if (!gl.getProgramParameter(billboardShader, gl.LINK_STATUS)) {
 		alert('billboard shaders failed lmao bc ' + gl.getProgramInfoLog(billboardShader));
 	}
 
+	// ---------particles---------
+	if (settings.useTexture) {
+		particleShader = compileShaders(particleVS, textureFS, "particleShader");
+		if (!gl.getProgramParameter(particleShader, gl.LINK_STATUS)) { alert("particle shaders failed lmao bc" + gl.getProgramInfoLog(particleShader)); }
+	}
 	return shaderProgram;
+}
+
+function useShader(shdr) {
+	var locations = infoStuff["attribLocations"][shdr.name];
+	var otherData = attributeInfo[shdr.name];
+	for (const attrib in locations) {
+		createVertexAttribute(locations[attrib], ...otherData[attrib] /*me be using da big brain array destructuring*/);
+	}
+	gl.useProgram(shdr)
 }
 
 function loadShader(type, source) {
@@ -53,39 +67,76 @@ function loadShader(type, source) {
 	return shader;
 }
 
+function setBufferData(buffer, data, type = Float32Array, mode = gl.STATIC_DRAW) {
+	gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new type(data), mode);
+}
+
 function initBuffers() {
 	const positionBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
 	positions = [];
+	setBufferData(positionBuffer, positions);
 
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 	var colorOrTextureBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, colorOrTextureBuffer);
-
 	colors = [];
 	texCoords = [];
-
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
+	setBufferData(colorOrTextureBuffer, colors);
 
 	billboardPositions = [];
 	const billboardPosBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, billboardPosBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(billboardPositions), gl.DYNAMIC_DRAW);
+	setBufferData(billboardPosBuffer, billboardPositions);
 
 	billboardTexCoords = [];
 	var billboardTexCoordBuffer;
 	if (settings.useTexture) {
 		billboardTexCoordBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, billboardTexCoordBuffer);
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(billboardTexCoords), gl.DYNAMIC_DRAW);
+		setBufferData(billboardTexCoordBuffer, billboardTexCoords);
 	}
+	
+	const particleCornerBuffer = gl.createBuffer();
+	particleCorners = [];
+	const particleTexCoordBuffer = gl.createBuffer();
+	particleTexCoords = [];
+	const particleOffsetBuffer = gl.createBuffer();
+	particleCenterOffsets = [];
+	{
+		let cycle = [-1, 1,
+					 -1, -1,
+					 1, 1,
+					 1, 1,
+					 1, -1,
+					 -1, -1,];
+		let texCoordsCycle = [0.0, 0.5,
+							  0.0, 0.0,
+							  0.5, 0.5,
+							  0.5, 0.5,
+							  0.5, 0.0,
+							  0.0, 0.0,];
+		for (let j=0; j<1; j++) {
+			for (let i=0; i<6; i++) {
+				particleCorners.push(cycle[i * 2]);
+				particleCorners.push(cycle[i * 2 + 1]);
+				particleTexCoords.push(texCoordsCycle[i * 2]);
+				particleTexCoords.push(texCoordsCycle[i * 2 + 1]);
+				particleCenterOffsets.push(Math.random() * 5);
+				particleCenterOffsets.push(Math.random() * 5);
+				particleCenterOffsets.push(Math.random() * 5);
+			}
+		}
+		setBufferData(particleCornerBuffer, particleCorners);
+		setBufferData(particleTexCoordBuffer, particleTexCoords);
+		setBufferData(particleOffsetBuffer, particleCenterOffsets);
+	}
+	
 	return {
 		"position": positionBuffer,
 		"color": colorOrTextureBuffer,
 		"texCoord": colorOrTextureBuffer,
 		"billboardPosition": billboardPosBuffer,
 		"billboardTexCoord": billboardTexCoordBuffer,
+		"particleOffset": particleOffsetBuffer,
+		"particleCorner": particleCornerBuffer,
+		"particleTexCoord": particleTexCoordBuffer,
 	}
 }
 
@@ -169,6 +220,16 @@ function flushUniforms() {
 		infoStuff.uniformLocations.bModelViewMatrix,
 		false,
 		billboardMVM);
+
+	gl.useProgram(particleShader);
+	gl.uniform3f(infoStuff.uniformLocations.particleEmitter, 0.0, 1.0, 0.0);
+	gl.uniformMatrix4fv(infoStuff.uniformLocations.pProjectionMatrix,
+		false,
+		projectionMatrix);
+	gl.uniformMatrix4fv(
+		infoStuff.uniformLocations.pModelViewMatrix,
+		false,
+		modelViewMatrix);
 	gl.useProgram(current);
 }
 
@@ -233,18 +294,18 @@ function finalInit() {
 	billboardMVM = glMatrix.mat4.create();
 
 	// set the attribute locations
-	createVertexAttribute(infoStuff.attribLocations.billboardPosition, buffers.billboardPosition);
+	// createVertexAttribute(infoStuff.attribLocations.billboardPosition, buffers.billboardPosition);
 
-	createVertexAttribute(infoStuff.attribLocations.vertexPosition, buffers.position);
+	// createVertexAttribute(infoStuff.attribLocations.vertexPosition, buffers.position);
 
-	if (settings.useTexture) {
-		createVertexAttribute(infoStuff.attribLocations.vertexTexCoord, buffers.texCoord,
-			2, gl.FLOAT, false, 0, 0);
-		createVertexAttribute(infoStuff.attribLocations.billboardTexCoord, buffers.billboardTexCoord,
-			2, gl.FLOAT, false, 0, 0);
-	} else {
-	createVertexAttribute(infoStuff.attribLocations.vertexColor, buffers.color,
-		4, gl.FLOAT, false, 0, 0);}
+	// if (settings.useTexture) {
+	// 	createVertexAttribute(infoStuff.attribLocations.vertexTexCoord, buffers.texCoord,
+	// 		2, gl.FLOAT, false, 0, 0);
+	// 	createVertexAttribute(infoStuff.attribLocations.billboardTexCoord, buffers.billboardTexCoord,
+	// 		2, gl.FLOAT, false, 0, 0);
+	// } else {
+	// createVertexAttribute(infoStuff.attribLocations.vertexColor, buffers.color,
+	// 	4, gl.FLOAT, false, 0, 0);}
 
 	// set the uniform things
 	gl.useProgram(shaderProgram)
@@ -316,11 +377,20 @@ function initGL() {
 	infoStuff = {
 		program: shaderProgram,
 		attribLocations: {
-			vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
-			vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
-			vertexTexCoord: gl.getAttribLocation(shaderProgram, "aTexCoord"),
-			billboardPosition: 6,
-			billboardTexCoord: 7,
+			shaderProgram: {
+				vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+				vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
+				vertexTexCoord: gl.getAttribLocation(shaderProgram, "aTexCoord"),
+			},
+			billboardShader: {
+				billboardPosition: gl.getAttribLocation(billboardShader, "aBillboardPos"),
+				billboardTexCoord: gl.getAttribLocation(billboardShader, "abTexCoord"),
+			},
+			particleShader: {
+				particleCenterOffset: gl.getAttribLocation(particleShader, "aParticleCenterOffset"),
+				particleCorner: gl.getAttribLocation(particleShader, "aParticleCorner"),
+				particleTexCoords: gl.getAttribLocation(particleShader, "aParticleTexCoords"),
+			}
 		},
 		uniformLocations: {
 			modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
@@ -328,11 +398,32 @@ function initGL() {
 			bProjectionMatrix: gl.getUniformLocation(billboardShader, 'uProjectionMatrix'),
 			bModelViewMatrix: gl.getUniformLocation(billboardShader, 'ubModelViewMatrix'),
 			texSampler: gl.getUniformLocation(shaderProgram, "uSampler"),
+			cameraPos: gl.getUniformLocation(shaderProgram, "uCameraPos"),
+			fogColor: gl.getUniformLocation(shaderProgram, "uFogColor"),
+			particleEmitter: gl.getUniformLocation(particleShader, "uParticleEmitter"),
+			pModelViewMatrix: gl.getUniformLocation(particleShader, "uModelViewMatrix"),
+			pProjectionMatrix: gl.getUniformLocation(particleShader, "uProjectionMatrix"),
 		}
-	}
+	};
 
 	buffers = initBuffers();
 	finalInit();
+	// some info for the vertex attributes
+	attributeInfo = {};
+	attributeInfo["shaderProgram"] = {
+		vertexPosition: [buffers.position],
+		vertexColor: [buffers.color, 4, gl.FLOAT, false, 0, 0],
+		vertexTexCoord: [buffers.texCoord, 2, gl.FLOAT, false, 0, 0],
+	};
+	attributeInfo["billboardShader"] = {
+		billboardPosition: [buffers.billboardPosition],
+		billboardTexCoord: [buffers.billboardTexCoord, 2, gl.FLOAT, false, 0, 0],
+	};
+	attributeInfo["particleShader"] = {
+		particleCenterOffset: [buffers.particleOffset],
+		particleCorner: [buffers.particleCorner, 2, gl.FLOAT, false, 0, 0],
+		particleTexCoords: [buffers.particleTexCoord, 2, gl.FLOAT, false, 0, 0],
+	}
 
 	window.addEventListener("keydown", onKeyDown);
 	window.addEventListener("keyup", onKeyUp);
