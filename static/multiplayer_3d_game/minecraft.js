@@ -1,5 +1,6 @@
 var chunks, gl;
 var debugDispNow = {"hi":"hi"};
+var locations = {};
 
 function fakePerlin(x, y) {
 	return [Math.sin((x + y) / 2)]
@@ -95,9 +96,35 @@ for (let x=-3; x<3; x++) {
 	}
 }
 
+function startGame() {
+	document.getElementById("homeDiv").style.display = "none";
+	canvas.requestPointerLock();
+	clearInterval(ambientHandle);
+}
+var alreadyHelped;
+function gameHelp() {
+	var h;
+	if (!alreadyHelped) {
+		h = document.getElementById('helpDiv');
+		h.style.display = "block";
+	}
+	console.log(h)
+	document.getElementById('helpDiv').scroll({
+		top: 1000,
+		left: 0,
+		behavior: "smooth"
+	});
+	alreadyHelped = true;
+}
+
 function divisionOnLoad(gl) {
 	noise.seed(6969); // the funny number
 	var values = Object.values(chunks);
+	canvas.width = parseInt(
+		document.defaultView.getComputedStyle(canvas, "wot do i put here").width.replace("px", ""), 10);
+	canvas.height = parseInt(
+		document.defaultView.getComputedStyle(canvas, "wot do i put here").height.replace("px", ""), 10);
+	gl.viewport(0, 0, canvas.width, canvas.height);
 
 	for (let c=0; c<values.length; c++) {
 		var chunk = values[c];
@@ -134,7 +161,7 @@ function divisionOnLoad(gl) {
 				  100, 0, 100,
 				  -100, 0, 100,
 				  -100, 0, -100],
-				  [0.9, 0.9,0.9, 0.9,0.9, 0.9,0.9, 0.9,0.9, 0.9,0.9, 0.9,])
+				  [0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,])
 	flush();
 	window.gl = gl;
 	canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
@@ -154,6 +181,8 @@ function debugRefresh() {
 function onCameraTurn(e) {
 	myPlayer.yaw   += e.movementX * 0.07;
 	myPlayer.pitch -= e.movementY * 0.07;
+	if (myPlayer.pitch > 89) { myPlayer.pitch = 89; }
+	if (myPlayer.pitch < -89) { myPlayer.pitch = -89; }
 
 	var front = glMatrix.vec3.create();
 	front[0] = Math.cos(glMatrix.glMatrix.toRadian(myPlayer.yaw)) * Math.cos(glMatrix.glMatrix.toRadian(myPlayer.pitch));
@@ -162,10 +191,25 @@ function onCameraTurn(e) {
 	glMatrix.vec3.normalize(myPlayer.cameraFront, front);
 }
 
+var ambientHandle;
+function onLoad() {
+	settings.useTexture = true;
+	settings.textStart = [0.5, 0.46875];
+	settings.charWidth = 0.03125;
+	settings.numCharsPerBreak = 10;
+	initGL("canvas");
+	ambientHandle = setInterval(function() {
+		onCameraTurn({"movementX": 1, "movementY": 0});
+	}, 10);
+}
+
+window.onload = onLoad;
+
 function loop() {
 	// wasd
 	// var playerVelXZ = Math.sqrt(myPlayer.userInputVelocity[0]**2 + myPlayer.userInputVelocity[2]**2);
 	// var tooFast = playerVelXZ > 0.02;
+
 	if(divisDownKeys[65]) { // a or <
 		var crossed = glMatrix.vec3.create();
 		var normalized = glMatrix.vec3.create();
@@ -225,29 +269,36 @@ function loop() {
 		// let distance1 = distance()
 		flush();
 	}
-	useShader(shaderProgram);
-	gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
-	var posPlusFront = glMatrix.vec3.create();
-	glMatrix.vec3.add(posPlusFront, myPlayer.cameraPos, myPlayer.cameraFront);
-	glMatrix.mat4.lookAt(modelViewMatrix,
-		myPlayer.cameraPos,
-		posPlusFront,
-		myPlayer.cameraUp);
-	flushUniforms();
-	// user-defined uniforms so flushUniforms() doesn't flush it
-	gl.uniform3f(infoStuff.uniformLocations.cameraPos, myPlayer.cameraPos[0], myPlayer.cameraPos[1], myPlayer.cameraPos[2]);
-	if (myPlayer.cameraPos[1] < 0) {
-		gl.uniform4f(infoStuff.uniformLocations.fogColor, 0.0, 0.0, 1.0, 1.0);
-	} else {
-		gl.uniform4f(infoStuff.uniformLocations.fogColor, 0.529, 0.808, 0.921, 1.0);
-	}
-	useShader(particleShader);
-	gl.drawArrays(gl.TRIANGLES, 0, particleCenterOffsets.length / 3);
+	{ // yum yum render em up
+		useShader(shaderProgram);
+		gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
+		var posPlusFront = glMatrix.vec3.create();
+		glMatrix.vec3.add(posPlusFront, myPlayer.cameraPos, myPlayer.cameraFront);
+		glMatrix.mat4.lookAt(modelViewMatrix,
+			myPlayer.cameraPos,
+			posPlusFront,
+			myPlayer.cameraUp);
+		flushUniforms();
+		// user-defined uniforms so flushUniforms() doesn't flush it
+		gl.uniform3f(infoStuff.uniformLocations.cameraPos, myPlayer.cameraPos[0], myPlayer.cameraPos[1], myPlayer.cameraPos[2]);
+		if (myPlayer.cameraPos[1] < 0) {
+			gl.uniform4f(infoStuff.uniformLocations.fogColor, 0.0, 0.0, 1.0, 1.0);
+		} else {
+			gl.uniform4f(infoStuff.uniformLocations.fogColor, 0.529, 0.808, 0.921, 1.0);
+		}
+		useShader(particleShader);
+		gl.drawArrays(gl.TRIANGLES, 0, particleCenterOffsets.length / 3);
 
-	useShader(billboardShader);
-	gl.disable(gl.DEPTH_TEST);
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
-	gl.enable(gl.DEPTH_TEST);
+		useShader(textShader);
+		gl.uniform4f(infoStuff.uniformLocations.tFogColor, 0.529, 0.808, 0.921, 1.0);
+		gl.drawArrays(gl.TRIANGLES, 0, textPositions.length / 2);
+
+		useShader(billboardShader);
+		gl.disable(gl.DEPTH_TEST);
+		gl.drawArrays(gl.TRIANGLES, 0, billboardPositions.length / 3);
+		gl.enable(gl.DEPTH_TEST);
+	}
+	debugDispNow["up"] = [myPlayer.cameraUp[0], myPlayer.cameraUp[1], myPlayer.cameraUp[2]];
 }
 
 window.setInterval(loop, 25);

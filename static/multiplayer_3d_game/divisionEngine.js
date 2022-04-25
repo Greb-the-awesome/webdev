@@ -7,7 +7,8 @@ var settings = {};
 var pushed = [];
 var attributeInfo, particleShader;
 var divisDownKeys = {};
-var particleTexCoords, particleCenterOffsets;
+var textShader;
+var particleTexCoords, particleCenterOffsets, textTexCoords, textPositions, textColors;
 
 // #4a412a
 
@@ -40,6 +41,8 @@ function initShaders() {
 	if (settings.useTexture) {
 		particleShader = compileShaders(particleVS, textureFS, "particleShader");
 		if (!gl.getProgramParameter(particleShader, gl.LINK_STATUS)) { alert("particle shaders failed lmao bc" + gl.getProgramInfoLog(particleShader)); }
+		textShader = compileShaders(textVS, textFS, "textShader");
+		if (!gl.getProgramParameter(textShader, gl.LINK_STATUS)) { alert("text shaders failed lmao bc" + gl.getProgramInfoLog(textShader)) }
 	}
 	return shaderProgram;
 }
@@ -100,33 +103,42 @@ function initBuffers() {
 	const particleOffsetBuffer = gl.createBuffer();
 	particleCenterOffsets = [];
 	{
-		let cycle = [-1, 1,
-					 -1, -1,
-					 1, 1,
-					 1, 1,
-					 1, -1,
-					 -1, -1,];
-		let texCoordsCycle = [0.0, 0.5,
-							  0.0, 0.0,
-							  0.5, 0.5,
-							  0.5, 0.5,
-							  0.5, 0.0,
-							  0.0, 0.0,];
-		for (let j=0; j<1; j++) {
+		let cycle = [-1.0, -1.0,
+					 1.0, -1.0,
+					 1.0, 1.0,
+					 -1.0, -1.0,
+					 1.0, 1.0,
+					 -1.0, 1.0];
+		let texCoordsCycle = [0.5, 1,
+							  0, 1,
+							  0, 0.5,
+							  0.5, 1,
+							  0, 0.5,
+							  0.5, 0.5];
+		for (let j=0; j<10; j++) {
+			var offsets = [Math.random() * 5,Math.random() * 5,Math.random() * 5];
 			for (let i=0; i<6; i++) {
 				particleCorners.push(cycle[i * 2]);
 				particleCorners.push(cycle[i * 2 + 1]);
 				particleTexCoords.push(texCoordsCycle[i * 2]);
 				particleTexCoords.push(texCoordsCycle[i * 2 + 1]);
-				particleCenterOffsets.push(Math.random() * 5);
-				particleCenterOffsets.push(Math.random() * 5);
-				particleCenterOffsets.push(Math.random() * 5);
+				particleCenterOffsets = particleCenterOffsets.concat(offsets);
 			}
 		}
-		setBufferData(particleCornerBuffer, particleCorners);
-		setBufferData(particleTexCoordBuffer, particleTexCoords);
-		setBufferData(particleOffsetBuffer, particleCenterOffsets);
 	}
+	setBufferData(particleCornerBuffer, particleCorners);
+	setBufferData(particleTexCoordBuffer, particleTexCoords);
+	setBufferData(particleOffsetBuffer, particleCenterOffsets);
+
+	const textPositionBuffer = gl.createBuffer();
+	textPositions = [];
+	setBufferData(textPositionBuffer, textPositions);
+	const textTexCoordBuffer = gl.createBuffer();
+	textTexCoords = [];
+	setBufferData(textTexCoordBuffer, textTexCoords);
+	const textColorBuffer = gl.createBuffer();
+	textColors = [];
+	setBufferData(textColorBuffer, textColors);
 	
 	return {
 		"position": positionBuffer,
@@ -137,6 +149,9 @@ function initBuffers() {
 		"particleOffset": particleOffsetBuffer,
 		"particleCorner": particleCornerBuffer,
 		"particleTexCoord": particleTexCoordBuffer,
+		"textPosition": textPositionBuffer,
+		"textTexCoord": textTexCoordBuffer,
+		"textColor": textColorBuffer,
 	}
 }
 
@@ -230,7 +245,63 @@ function flushUniforms() {
 		infoStuff.uniformLocations.pModelViewMatrix,
 		false,
 		modelViewMatrix);
+	var right = glMatrix.vec3.create();
+	glMatrix.vec3.cross(right, glMatrix.vec3.fromValues(0.0, 1.0, 0.0), myPlayer.cameraFront,);
+	glMatrix.vec3.normalize(right, right);
+	gl.uniform3f(infoStuff.uniformLocations.pCameraRight, right[0], right[1], right[2]);
+	gl.useProgram(textShader);
+	gl.uniformMatrix4fv(infoStuff.uniformLocations.tProjectionMatrix,
+		false,
+		projectionMatrix);
+	gl.uniformMatrix4fv(
+		infoStuff.uniformLocations.tModelViewMatrix,
+		false,
+		modelViewMatrix);
 	gl.useProgram(current);
+}
+var supporteds = [];
+{
+	let supportedString = "abcdefghijklmnopqrstuvwxyz";
+	for (let i=0; i<supportedString.length; i++) {
+		supporteds.push(supportedString[i]);
+	}
+}
+function addText(text, vertices, color) {
+	var unsupporteds = [];
+	for (let i=0; i<text.length; i++) {
+		var char = text[i];
+		if (!supporteds.includes(char)) { unsupporteds.push(char); }
+		else {
+			var position = supporteds.indexOf(char) * settings.charWidth + settings.textStart[0];
+			var head = i * 8;
+			textPositions = textPositions.concat([
+					-1.0 + head, -1.0,
+					 1.0 + head, -1.0,
+					 1.0 + head,  1.0,
+					-1.0 + head, -1.0,
+					 1.0 + head,  1.0,
+					-1.0 + head,  1.0]);
+			textTexCoords = textTexCoords.concat([
+					position, settings.textStart[1],
+					position + settings.charWidth, settings.textStart[1],
+					position + settings.charWidth, settings.textStart[1] + settings.charWidth,
+					position, settings.textStart[1],
+					position + settings.charWidth, settings.textStart[1] + settings.charWidth,
+					position, settings.textStart[1] + settings.charWidth]);
+			for (let j=0; j<6; j++) { textColors = textColors.concat(color); }
+			console.log("debug info: position = "+position+"\nadded textTexCoords = "+[
+					position, settings.textStart[1],
+					position + settings.charWidth, settings.textStart[1],
+					position + settings.charWidth, settings.textStart[1] + settings.charWidth,
+					position, settings.textStart[1],
+					position + settings.charWidth, settings.textStart[1] + settings.charWidth,
+					position, settings.textStart[1] + settings.charWidth]);
+		}
+	}
+	if (0 in unsupporteds) { console.warn("addText: unsupported characters: " + unsupporteds); }
+	setBufferData(buffers.textPosition, textPositions);
+	setBufferData(buffers.textColor, textColors);
+	setBufferData(buffers.textTexCoord, textTexCoords);
 }
 
 function loadTexture(url) { // MUST BE POWER OF 2 IMAGE
@@ -279,6 +350,8 @@ function finalInit() {
 	gl.enable(gl.DEPTH_TEST);
 	gl.depthFunc(gl.LEQUAL);
 
+	gl.enable(gl.BLEND);
+	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	projectionMatrix = glMatrix.mat4.create();
@@ -322,6 +395,7 @@ function finalInit() {
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 
 	gl.uniform1i(infoStuff.uniformLocations.texSampler, 0);
+	addText("aad", 0, [0, 1, 0, 1]);
 	flush();
 }
 
@@ -357,15 +431,28 @@ class Camera {
 	}
 }
 
-var shaderProgram;
+const D_ONE_POINT = function() { return glMatrix.vec3.fromValues(0,0,0); };
+const D_SQUARE_PLANE = function() {
+	return glMatrix.vec3.fromValues(Math.random(), Math.random(), Math.random());
+};
 
-function onLoad() {
-	settings.useTexture = true;
-	initGL();
+class ParticleSystem {
+	constructor(position, emitter, startVelocity, lifetime) {
+		this.position = position;
+		this.emitFunc = emitter;
+		this.startVelocity = startVelocity;
+		this.particleLifetime = lifetime;
+		for (let i=0; i<1000/*change later*/; i++) {
+
+		}
+	}
 }
 
-function initGL() {
-	canvas = document.getElementById("canvas");
+var shaderProgram;
+
+
+function initGL(canvName) {
+	canvas = document.getElementById(canvName);
 	gl = canvas.getContext("webgl");
 	if (gl === null || gl === undefined) { // no webgl for ye
 		window.alert("webgl failed lmao");
@@ -374,7 +461,7 @@ function initGL() {
 
 	shaderProgram = initShaders();
 
-	infoStuff = {
+	infoStuff = { // i really should dynamically generate this as it is getting cluttered but w h a t e v e r
 		program: shaderProgram,
 		attribLocations: {
 			shaderProgram: {
@@ -390,6 +477,11 @@ function initGL() {
 				particleCenterOffset: gl.getAttribLocation(particleShader, "aParticleCenterOffset"),
 				particleCorner: gl.getAttribLocation(particleShader, "aParticleCorner"),
 				particleTexCoords: gl.getAttribLocation(particleShader, "aParticleTexCoords"),
+			},
+			textShader: {
+				vertexPosition: gl.getAttribLocation(textShader, "aVertexPosition"),
+				vertexColor: gl.getAttribLocation(textShader, "aTextColor"),
+				vertexTexCoord: gl.getAttribLocation(textShader, "aTexCoord"),
 			}
 		},
 		uniformLocations: {
@@ -403,6 +495,11 @@ function initGL() {
 			particleEmitter: gl.getUniformLocation(particleShader, "uParticleEmitter"),
 			pModelViewMatrix: gl.getUniformLocation(particleShader, "uModelViewMatrix"),
 			pProjectionMatrix: gl.getUniformLocation(particleShader, "uProjectionMatrix"),
+			pCameraRight: gl.getUniformLocation(particleShader, "uCameraRight"),
+			tModelViewMatrix: gl.getUniformLocation(textShader, "uModelViewMatrix"),
+			tProjectionMatrix: gl.getUniformLocation(textShader, "uProjectionMatrix"),
+			tCameraPos: gl.getUniformLocation(textShader, "uCameraPos"),
+			tFogColor: gl.getUniformLocation(textShader, "uFogColor"),
 		}
 	};
 
@@ -423,6 +520,11 @@ function initGL() {
 		particleCenterOffset: [buffers.particleOffset],
 		particleCorner: [buffers.particleCorner, 2, gl.FLOAT, false, 0, 0],
 		particleTexCoords: [buffers.particleTexCoord, 2, gl.FLOAT, false, 0, 0],
+	};
+	attributeInfo["textShader"] = {
+		vertexPosition: [buffers.textPosition, 2, gl.FLOAT, false, 0, 0],
+		vertexColor: [buffers.textColor, 4, gl.FLOAT, false, 0, 0],
+		vertexTexCoord: [buffers.textTexCoord, 2, gl.FLOAT, false, 0, 0],
 	}
 
 	window.addEventListener("keydown", onKeyDown);
@@ -455,4 +557,3 @@ function onKeyUp(event) {
 }
 
 
-window.onload = onLoad;
