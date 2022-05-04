@@ -18,10 +18,10 @@
 	</head>
 	<body>
 		<canvas id="canvas" width="1000" height="1000" style="width: 100%; height:100%"></canvas>
-		<p id = "debugStuff" style="position: absolute;left:0;top:0;font-weight:bold;"></p>
+		<p id = "debugStuff" style="position: absolute;left:10;top:0;font-weight:bold;"></p>
 		<!-- ------home screen------- -->
 		<div class="homeDiv" id="homeDiv">
-			<div class="homeDivInner">
+			<div class="homeDivInner" id="homeDivInner">
 				<center>
 					<h1>jerries webGL game :D</h1>
 					<input type="text" id="nameBox" placeholder="Your Name">
@@ -34,6 +34,12 @@
 					</div>
 				</center>
 			</div>
+		</div>
+		<div id="pauseDiv" class="homeDivInner">
+			<center>
+				<h1>Game Paused</h1>
+				<p>Click outside this box to resume</p>
+			</center>
 		</div>
 		<!-- ------------------ -->
 	 <script type="text/javascript"

@@ -47,12 +47,14 @@ varying mediump float fogAmount;
 
 void main() {
 	gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+	gl_PointSize = 10.0;
 	texCoord = aTexCoord;
 	if (uCameraPos.y < 0.0) {
 		fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.08;
 	} else {
 		fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.05 - 1.0;
 	}
+	fogAmount = 0.0;
 }
 `
 const textureFS = `

@@ -213,7 +213,7 @@ function pushModelView() {
 }
 
 function popModelView() {
-	return pushed.pop();
+	modelViewMatrix = pushed.pop();
 }
 
 function flushUniforms() {

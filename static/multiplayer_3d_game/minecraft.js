@@ -48,7 +48,7 @@ class Chunk {
 		}
 		for (var x=coords[0]; x<10 + coords[0]; x++) {
 			for (var z=coords[1]; z<10 + coords[1]; z++) {
-				this.blocks[[x, z]] = new Block("a", // array is relative to world space
+				this.blocks[[x, z]] = new Block("beans", // array is relative to world space
 					[x - 0.5, this.depthMap[[(x - 0.5), (z - 0.5)]], z - 0.5],
 					[x - 0.5, this.depthMap[[(x - 0.5), (z + 0.5)]], z + 0.5],
 					[x + 0.5, this.depthMap[[(x + 0.5), (z + 0.5)]], z + 0.5],
@@ -90,8 +90,8 @@ let myPlayer = new MyPlayer();
 
 chunks = {};
 
-for (let x=-3; x<3; x++) {
-	for (let z=-3; z<3; z++) {
+for (let x=0; x<5; x++) {
+	for (let z=0; z<5; z++) {
 		chunks[[x * 10, z * 10]] = new Chunk([x * 10, z * 10]);
 	}
 }
@@ -108,13 +108,25 @@ function gameHelp() {
 		h = document.getElementById('helpDiv');
 		h.style.display = "block";
 	}
-	console.log(h)
-	document.getElementById('helpDiv').scroll({
+	document.getElementById('homeDivInner').scroll({
 		top: 1000,
 		left: 0,
 		behavior: "smooth"
 	});
 	alreadyHelped = true;
+}
+
+function pauseMenu() {
+
+	if (document.pointerLockElement === canvas || document.mozPointerLockElement === canvas) {
+		var a = document.getElementById('pauseDiv');
+		a.style.display = "none";
+		console.log("lock on")
+	} else {
+		var a = document.getElementById('pauseDiv');
+		a.style.display = "block";
+		console.log("lock off")
+	}
 }
 
 function divisionOnLoad(gl) {
@@ -125,6 +137,7 @@ function divisionOnLoad(gl) {
 	canvas.height = parseInt(
 		document.defaultView.getComputedStyle(canvas, "wot do i put here").height.replace("px", ""), 10);
 	gl.viewport(0, 0, canvas.width, canvas.height);
+	document.addEventListener("pointerlockchange", pauseMenu, false);
 
 	for (let c=0; c<values.length; c++) {
 		var chunk = values[c];
@@ -142,6 +155,13 @@ function divisionOnLoad(gl) {
 			    0.0, 0.5]);
 		}
 	}
+	locations["pointstart"] = positions.length/3;
+	for (let x=-50; x<50; x++) {
+		for (let z=-50; z<50; z++) {
+			addPositions([x, noise.simplex2(x/15, z/15), z], [0.3, 0.3]);
+		}
+	}
+	locations["pointlength"] = positions.length/3 - locations["pointstart"];
 	translateModelView(0.0, 0.0, -3.0);
 	addBillbPositions([-0.1, 0.1, -6.0,
 					   0.1, -0.1, -6.0,
@@ -155,13 +175,13 @@ function divisionOnLoad(gl) {
 					   0.5, 0.0,
 					   0.5, 0.5,
 					   1.0, 0.0,]);
-	addPositions([-100, 0, -100,
-				  100, 0, -100,
-				  100, 0, 100,
-				  100, 0, 100,
-				  -100, 0, 100,
-				  -100, 0, -100],
-				  [0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,])
+	// addPositions([-100, 0, -100,
+	// 			  100, 0, -100,
+	// 			  100, 0, 100,
+	// 			  100, 0, 100,
+	// 			  -100, 0, 100,
+	// 			  -100, 0, -100],
+	// 			  [0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,])
 	flush();
 	window.gl = gl;
 	canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
@@ -174,7 +194,12 @@ function divisionOnLoad(gl) {
 }
 
 function debugRefresh() {
-	document.getElementById("debugStuff").innerHTML = JSON.stringify(debugDispNow, null, 2);
+	var disp = "";
+	for (x in debugDispNow) {
+		var toAdd = "" + x + ": " + debugDispNow[x] + "<br>";
+		disp += toAdd;
+	}
+	document.getElementById("debugStuff").innerHTML = disp;
 }
 
 
@@ -205,6 +230,42 @@ function onLoad() {
 
 window.onload = onLoad;
 
+function perf(x) {
+	var before = Date.now();
+	for (let i=0; i<x; i++) {
+		//myPlayer.updatePos(); // would-be next position
+		debugDispNow["player pos"] = [myPlayer.hitPos[0].toFixed(2), myPlayer.hitPos[1].toFixed(2), myPlayer.hitPos[2].toFixed(2)];
+		let chunkPos = [Math.floor((myPlayer.hitPos[0] - 0.5) / 10) * 10, Math.floor((myPlayer.hitPos[2] - 0.5) / 10) * 10]; // x, z
+		debugDispNow["current chunk pos"] = chunkPos;
+		let blockPos = [Math.floor(myPlayer.hitPos[0] - 0.5),
+			Math.floor(myPlayer.hitPos[2] - 0.5)];
+		debugDispNow["current block pos"] = blockPos;
+		let currentBlock = chunks[chunkPos].blocks[blockPos];
+		let offset = [myPlayer.cameraPos[0] - blockPos[0] - 0.5, myPlayer.cameraPos[2] - blockPos[1] - 0.5];
+		debugDispNow["offset"] = [offset[0].toFixed(2), offset[1].toFixed(2)];
+		var a;
+		var distance2 = distance(offset[0], offset[1], 0, 1)/Math.SQRT2;
+		var distance4 = distance(offset[0], offset[1], 1, 0)/Math.SQRT2;
+		if (offset[0] + offset[1] > 1) {
+			debugDispNow["current triangle"] = "upper";
+			var distance3 = distance(offset[0], offset[1], 1, 1);
+			debugDispNow["distances"] = [distance2, distance3, distance4];
+			// myPlayer.hitPos[1] = (
+			// 	currentBlock.pos2[1] * distance2 + currentBlock.pos3[1] * distance3 + currentBlock.pos4[1] * distance4);
+		} else {
+			debugDispNow["current triangle"] = "lower";
+			var distance1 = distance(offset[0], offset[1], 0, 0);
+			// myPlayer.hitPos[1] = (
+			// 	currentBlock.pos2[1] * distance2 + currentBlock.pos1[1] * distance1 + currentBlock.pos4[1] * distance4);
+		}
+		glMatrix.vec3.add(myPlayer.cameraPos, myPlayer.hitPos, glMatrix.vec3.fromValues(0, 1.5, 0));
+	}
+	console.log(Date.now() - before);
+	before = Date.now();
+	for (let j=0; j<x; j++) {var a=noise.simplex2(x, 0);}
+	console.log(Date.now() - before);
+}
+var pointTranslate = glMatrix.vec3.fromValues(0, 0, 0);
 function loop() {
 	// wasd
 	// var playerVelXZ = Math.sqrt(myPlayer.userInputVelocity[0]**2 + myPlayer.userInputVelocity[2]**2);
@@ -238,40 +299,36 @@ function loop() {
 			myPlayer.userInputVelocity,
 			myPlayer.cameraFront,);
 	}
-	myPlayer.userInputVelocity[0] *= 0.1;
-	myPlayer.userInputVelocity[1] *= 0.1;
-	myPlayer.userInputVelocity[2] *= 0.1;
+	if (divisDownKeys[16]) {
+		myPlayer.userInputVelocity[0] *= 0.25;
+		myPlayer.userInputVelocity[1] *= 0.25;
+		myPlayer.userInputVelocity[2] *= 0.25;
+	} else {
+		myPlayer.userInputVelocity[0] *= 0.06;
+		myPlayer.userInputVelocity[1] *= 0.06;
+		myPlayer.userInputVelocity[2] *= 0.06;
+	}
+	if (divisDownKeys[38]) { pointTranslate[2] += 0.1; }
+	if (divisDownKeys[40]) { pointTranslate[2] -= 0.1; }
 
 	{ // collision detection :(
 		// myPlayer.velocity[1] -= 0.005; // ONLY IF PLAYER IS IN AIR
 		// get which chunk and block the playr is colliding with
 		myPlayer.updatePos(); // would-be next position
-		let chunkPos = [Math.floor(myPlayer.hitPos[0] / 10) * 10, Math.floor(myPlayer.hitPos[2] / 10) * 10]; // x, z
-		debugDispNow["current chunk pos"] = chunkPos;
-		let blockPos = [Math.floor(myPlayer.hitPos[0]),
-			Math.floor(myPlayer.hitPos[2])];
-		debugDispNow["current block pos"] = blockPos;
-		let currentBlock = chunks[chunkPos].blocks[blockPos];
-		let offset = [myPlayer.cameraPos[0] - blockPos[0], myPlayer.cameraPos[2] - blockPos[1]];
-		var a;
-		if (offset[0] + offset[1] > 1) {
-			debugDispNow["current triangle"] = "upper";
-		} else {debugDispNow["current triangle"] = "lower";}
-		// positions[64800] = myPlayer.cameraPos[0];positions[64801] = 0.0;positions[64802] = myPlayer.cameraPos[2];
-		// colors[86400] = 1.0;colors[86401] = 0.0;colors[86402] = 0.0;colors[86403] = 1.0;
+		noise.seed(6969);
+		//myPlayer.cameraPos[1] = -noise.simplex2((myPlayer.hitPos[0]+0.5)/15, (myPlayer.hitPos[2])/15+0.5) * 3;
+		myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 1.5;
 
-		// positions[64803] = myPlayer.cameraPos[0]+0.1;positions[64804] = 0.0;positions[64805] = myPlayer.cameraPos[2]+0.1;
-		// colors[86404] = 0.0;colors[86405] = 0.0;colors[86406] = 0.0;colors[86407] = 1.0;
-
-		// positions[64806] = myPlayer.cameraPos[0];positions[64807] = 0.0;positions[64808] = myPlayer.cameraPos[2]+0.1;
-		// colors[86408] = 0.0;colors[86409] = 0.0;colors[86410] = 0.0;colors[86411] = 1.0;
-
-		// let distance1 = distance()
 		flush();
 	}
 	{ // yum yum render em up
 		useShader(shaderProgram);
-		gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
+		gl.drawArrays(gl.TRIANGLES, 0, locations["pointstart"]);
+		pushModelView();
+		glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, pointTranslate);
+		flushUniforms();
+		gl.drawArrays(gl.POINTS, locations["pointstart"], locations["pointlength"]);
+		popModelView();
 		var posPlusFront = glMatrix.vec3.create();
 		glMatrix.vec3.add(posPlusFront, myPlayer.cameraPos, myPlayer.cameraFront);
 		glMatrix.mat4.lookAt(modelViewMatrix,
@@ -301,4 +358,4 @@ function loop() {
 	debugDispNow["up"] = [myPlayer.cameraUp[0], myPlayer.cameraUp[1], myPlayer.cameraUp[2]];
 }
 
-window.setInterval(loop, 25);
+window.setInterval(loop, 30);

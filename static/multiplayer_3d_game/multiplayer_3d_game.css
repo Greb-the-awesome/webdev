@@ -26,7 +26,7 @@
 	-ms-overflow-style: none;
 	scrollbar-width: none;
 }
-
+#pauseDiv {display: none;}
 .homeDivInner::-webkit-scrollbar {
 	display: none;
 }
@@ -55,4 +55,9 @@
 h1 {
 	font-family: "Open Sans";
 	font-size: 3rem;
+}
+
+p {
+	font-family: "Open Sans";
+	font-size: 1rem;
 }
