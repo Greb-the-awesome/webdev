@@ -39,21 +39,20 @@ class Chunk {
 	constructor(coords) {
 		this.blocks = {};
 		this.depthMap = {};
-		this.coords = coords;
-		// create a depth map
-		for (var x=coords[0] - 0.5; x<11 + coords[0] + 0.5; x++) {
-			for (var z=coords[1] - 0.5; z<11 + coords[1] + 0.5; z++) {
-				this.depthMap[[x, z]] = noise.simplex2(x / 15, z / 15) * 3;
+		for (let x=coords[0] - 0.5; x<coords[0] + 11.5; x++) {
+			for (let z=coords[1] - 0.5; z<coords[1] + 11.5; z++) {
+				this.depthMap[[x, z]] = noise.simplex2(x/15, z/15) * 3;
 			}
 		}
-		for (var x=coords[0]; x<10 + coords[0]; x++) {
-			for (var z=coords[1]; z<10 + coords[1]; z++) {
-				this.blocks[[x, z]] = new Block("beans", // array is relative to world space
+		for (let x=coords[0]; x<coords[0] + 10; x++) {
+			for (let z=coords[1]; z<coords[1] + 10; z++) {
+				this.blocks[[x, z]] = new Block("beanz", 
 					[x - 0.5, this.depthMap[[(x - 0.5), (z - 0.5)]], z - 0.5],
 					[x - 0.5, this.depthMap[[(x - 0.5), (z + 0.5)]], z + 0.5],
 					[x + 0.5, this.depthMap[[(x + 0.5), (z + 0.5)]], z + 0.5],
 					[x + 0.5, this.depthMap[[(x + 0.5), (z - 0.5)]], z - 0.5]
 				);
+
 			}
 		}
 	}
@@ -90,11 +89,6 @@ let myPlayer = new MyPlayer();
 
 chunks = {};
 
-for (let x=0; x<5; x++) {
-	for (let z=0; z<5; z++) {
-		chunks[[x * 10, z * 10]] = new Chunk([x * 10, z * 10]);
-	}
-}
 
 function startGame() {
 	document.getElementById("homeDiv").style.display = "none";
@@ -131,14 +125,18 @@ function pauseMenu() {
 
 function divisionOnLoad(gl) {
 	noise.seed(6969); // the funny number
-	var values = Object.values(chunks);
 	canvas.width = parseInt(
 		document.defaultView.getComputedStyle(canvas, "wot do i put here").width.replace("px", ""), 10);
 	canvas.height = parseInt(
 		document.defaultView.getComputedStyle(canvas, "wot do i put here").height.replace("px", ""), 10);
 	gl.viewport(0, 0, canvas.width, canvas.height);
 	document.addEventListener("pointerlockchange", pauseMenu, false);
-
+	for (let x=-3; x<3; x++) {
+		for (let z=-3; z<3; z++) {
+			chunks[[x * 10, z * 10]] = new Chunk([x * 10, z * 10]);
+		}
+	}
+	var values = Object.values(chunks);
 	for (let c=0; c<values.length; c++) {
 		var chunk = values[c];
 		var chunkBlocks = chunk.blocks;
@@ -155,13 +153,7 @@ function divisionOnLoad(gl) {
 			    0.0, 0.5]);
 		}
 	}
-	locations["pointstart"] = positions.length/3;
-	for (let x=-50; x<50; x++) {
-		for (let z=-50; z<50; z++) {
-			addPositions([x, noise.simplex2(x/15, z/15), z], [0.3, 0.3]);
-		}
-	}
-	locations["pointlength"] = positions.length/3 - locations["pointstart"];
+	flush();
 	translateModelView(0.0, 0.0, -3.0);
 	addBillbPositions([-0.1, 0.1, -6.0,
 					   0.1, -0.1, -6.0,
@@ -270,7 +262,7 @@ function loop() {
 	// wasd
 	// var playerVelXZ = Math.sqrt(myPlayer.userInputVelocity[0]**2 + myPlayer.userInputVelocity[2]**2);
 	// var tooFast = playerVelXZ > 0.02;
-
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	if(divisDownKeys[65]) { // a or <
 		var crossed = glMatrix.vec3.create();
 		var normalized = glMatrix.vec3.create();
@@ -304,31 +296,33 @@ function loop() {
 		myPlayer.userInputVelocity[1] *= 0.25;
 		myPlayer.userInputVelocity[2] *= 0.25;
 	} else {
-		myPlayer.userInputVelocity[0] *= 0.06;
-		myPlayer.userInputVelocity[1] *= 0.06;
-		myPlayer.userInputVelocity[2] *= 0.06;
+		myPlayer.userInputVelocity[0] *= 0.15;
+		myPlayer.userInputVelocity[1] *= 0.15;
+		myPlayer.userInputVelocity[2] *= 0.15;
 	}
 	if (divisDownKeys[38]) { pointTranslate[2] += 0.1; }
 	if (divisDownKeys[40]) { pointTranslate[2] -= 0.1; }
+	if (divisDownKeys[37]) { pointTranslate[0] += 0.1; }
+	if (divisDownKeys[39]) { pointTranslate[0] -= 0.1; }
 
 	{ // collision detection :(
 		// myPlayer.velocity[1] -= 0.005; // ONLY IF PLAYER IS IN AIR
 		// get which chunk and block the playr is colliding with
 		myPlayer.updatePos(); // would-be next position
 		noise.seed(6969);
-		//myPlayer.cameraPos[1] = -noise.simplex2((myPlayer.hitPos[0]+0.5)/15, (myPlayer.hitPos[2])/15+0.5) * 3;
-		myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 1.5;
+		var height = noise.simplex2((myPlayer.hitPos[0])/15, (myPlayer.hitPos[2])/15) * 3 + 2;
+		var speedMultiplier = myPlayer.hitPos[1] - height;
+		myPlayer.cameraPos[1] = height;
+		myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
+		//myPlayer.userInputVelocity[0] *= speedMultiplier;
+		//myPlayer.userInputVelocity[1] *= speedMultiplier;
 
 		flush();
 	}
 	{ // yum yum render em up
 		useShader(shaderProgram);
-		gl.drawArrays(gl.TRIANGLES, 0, locations["pointstart"]);
-		pushModelView();
-		glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, pointTranslate);
-		flushUniforms();
-		gl.drawArrays(gl.POINTS, locations["pointstart"], locations["pointlength"]);
-		popModelView();
+		gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
+
 		var posPlusFront = glMatrix.vec3.create();
 		glMatrix.vec3.add(posPlusFront, myPlayer.cameraPos, myPlayer.cameraFront);
 		glMatrix.mat4.lookAt(modelViewMatrix,
@@ -355,7 +349,6 @@ function loop() {
 		gl.drawArrays(gl.TRIANGLES, 0, billboardPositions.length / 3);
 		gl.enable(gl.DEPTH_TEST);
 	}
-	debugDispNow["up"] = [myPlayer.cameraUp[0], myPlayer.cameraUp[1], myPlayer.cameraUp[2]];
 }
 
-window.setInterval(loop, 30);
+window.setInterval(loop, 25);

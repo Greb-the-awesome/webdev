@@ -47,14 +47,13 @@ varying mediump float fogAmount;
 
 void main() {
 	gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-	gl_PointSize = 10.0;
-	texCoord = aTexCoord;
+	texCoord = aTexCoord;/*
 	if (uCameraPos.y < 0.0) {
 		fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.08;
 	} else {
 		fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.05 - 1.0;
-	}
-	fogAmount = 0.0;
+	}*/
+	fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.05 - 1.0;
 }
 `
 const textureFS = `
@@ -69,7 +68,7 @@ void main() {
 	if (col.a == 0.0) {
 		discard;
 	} else {
-		gl_FragColor = mix(col, uFogColor, clamp(fogAmount, 0.0, 1.0));
+		gl_FragColor = mix(col, vec4(0.529, 0.808, 0.921, 1.0), clamp(fogAmount, 0.0, 1.0)); // use uFogColor later when water physics actually make sense
 	}
 }
 `

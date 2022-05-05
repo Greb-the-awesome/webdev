@@ -345,7 +345,7 @@ function createVertexAttribute(location, buffer, numComponents = 3, type = gl.FL
 }
 
 function finalInit() {
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	gl.clearColor(0.529, 0.808, 0.921, 1.0);
 	gl.clearDepth(1.0);
 	gl.enable(gl.DEPTH_TEST);
 	gl.depthFunc(gl.LEQUAL);
