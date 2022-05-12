@@ -1,3 +1,7 @@
+// yes, I know the name of this file is minecraft.js.
+// I was going to make minecraft but then I had another idea
+// and I was too lazy to rename :/
+
 var chunks, gl;
 var debugDispNow = {"hi":"hi"};
 var locations = {};
@@ -12,26 +16,13 @@ function distance(x1, y1, x2, y2) {
 
 class Block {
 	constructor(what, pos1, pos2, pos3, pos4) {
-		this.what = what;
 		this.pos1 = pos1;
 		this.pos2 = pos2;
 		this.pos3 = pos3;
-		this.pos4 = pos4; /*
-		this.differences = [
-			this.pos1[1] - this.pos2[1],
-			this.pos1[1] - this.pos3[1],
-			this.pos1[1] - this.pos4[1],
-			this.pos2[1] - this.pos3[1],
-			this.pos2[1] - this.pos4[1],
-			this.pos3[1] - this.pos4[1]
-		];
-		this.diffSum = 0;
-		for (let i=0; i<this.differences.length; i++) {
-			this.diffSum += Math.abs(this.differences[i]);
-		}
-		this.lightness = this.diffSum / 6;
-		this.differences = false; // save on memory
-		*/
+		this.pos4 = pos4;
+		this.n1 = glMatrix.vec3.create();
+		
+		this.what = what;
 	}
 }
 
@@ -39,11 +30,13 @@ class Chunk {
 	constructor(coords) {
 		this.blocks = {};
 		this.depthMap = {};
+		this.normals = [];
 		for (let x=coords[0] - 0.5; x<coords[0] + 11.5; x++) {
 			for (let z=coords[1] - 0.5; z<coords[1] + 11.5; z++) {
 				this.depthMap[[x, z]] = noise.simplex2(x/15, z/15) * 3;
 			}
 		}
+		var toAdd = [];
 		for (let x=coords[0]; x<coords[0] + 10; x++) {
 			for (let z=coords[1]; z<coords[1] + 10; z++) {
 				this.blocks[[x, z]] = new Block("beanz", 
@@ -52,7 +45,7 @@ class Chunk {
 					[x + 0.5, this.depthMap[[(x + 0.5), (z + 0.5)]], z + 0.5],
 					[x + 0.5, this.depthMap[[(x + 0.5), (z - 0.5)]], z - 0.5]
 				);
-
+				this.normals = this.normals.concat([])
 			}
 		}
 	}
@@ -123,6 +116,13 @@ function pauseMenu() {
 	}
 }
 
+function mList(list, n) {
+	// multiply an array
+	var res = [];
+	for (let i=0; i<n; i++) {res=res.concat(list);}
+	return res;
+}
+
 function divisionOnLoad(gl) {
 	noise.seed(6969); // the funny number
 	canvas.width = parseInt(
@@ -150,7 +150,7 @@ function divisionOnLoad(gl) {
 			    0.5, 0.0,
 			    0.5, 0.0,
 			    0.5, 0.5,
-			    0.0, 0.5]);
+			    0.0, 0.5], [], mList([0,1,0], 6));
 		}
 	}
 	flush();
@@ -167,6 +167,18 @@ function divisionOnLoad(gl) {
 					   0.5, 0.0,
 					   0.5, 0.5,
 					   1.0, 0.0,]);
+
+	let req = new XMLHttpRequest();
+	req.open("GET", "/static/multiplayer_3d_game/cube.obj");
+	req.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			var data = loadObj(this.responseText, positions.length/3 -1);
+			console.log(data);
+			locations["arraysLength"] = positions.length/3;
+			addPositions(data.position, mList([0.99, 0.99],data.position.length/3), data.index);
+		}
+	}
+	req.send(null);
 	// addPositions([-100, 0, -100,
 	// 			  100, 0, -100,
 	// 			  100, 0, 100,
@@ -184,6 +196,8 @@ function divisionOnLoad(gl) {
 	//window.addEventListener("keyup", brake);
 	setInterval(debugRefresh, 10);
 }
+
+
 
 function debugRefresh() {
 	var disp = "";
@@ -214,6 +228,10 @@ function onLoad() {
 	settings.textStart = [0.5, 0.46875];
 	settings.charWidth = 0.03125;
 	settings.numCharsPerBreak = 10;
+	settings.useLighting = true; // useLighting true is not compatible with useTexture true just saying (cuz reasons)
+	settings.lightDir = glMatrix.vec3.fromValues(0.85, 0.8, 0.75);
+	settings.lightCol = glMatrix.vec3.fromValues(1, 1, 0.8);
+	settings.ambientLight = glMatrix.vec3.fromValues(0.1, 0.1, 0.1);
 	initGL("canvas");
 	ambientHandle = setInterval(function() {
 		onCameraTurn({"movementX": 1, "movementY": 0});
@@ -222,43 +240,10 @@ function onLoad() {
 
 window.onload = onLoad;
 
-function perf(x) {
-	var before = Date.now();
-	for (let i=0; i<x; i++) {
-		//myPlayer.updatePos(); // would-be next position
-		debugDispNow["player pos"] = [myPlayer.hitPos[0].toFixed(2), myPlayer.hitPos[1].toFixed(2), myPlayer.hitPos[2].toFixed(2)];
-		let chunkPos = [Math.floor((myPlayer.hitPos[0] - 0.5) / 10) * 10, Math.floor((myPlayer.hitPos[2] - 0.5) / 10) * 10]; // x, z
-		debugDispNow["current chunk pos"] = chunkPos;
-		let blockPos = [Math.floor(myPlayer.hitPos[0] - 0.5),
-			Math.floor(myPlayer.hitPos[2] - 0.5)];
-		debugDispNow["current block pos"] = blockPos;
-		let currentBlock = chunks[chunkPos].blocks[blockPos];
-		let offset = [myPlayer.cameraPos[0] - blockPos[0] - 0.5, myPlayer.cameraPos[2] - blockPos[1] - 0.5];
-		debugDispNow["offset"] = [offset[0].toFixed(2), offset[1].toFixed(2)];
-		var a;
-		var distance2 = distance(offset[0], offset[1], 0, 1)/Math.SQRT2;
-		var distance4 = distance(offset[0], offset[1], 1, 0)/Math.SQRT2;
-		if (offset[0] + offset[1] > 1) {
-			debugDispNow["current triangle"] = "upper";
-			var distance3 = distance(offset[0], offset[1], 1, 1);
-			debugDispNow["distances"] = [distance2, distance3, distance4];
-			// myPlayer.hitPos[1] = (
-			// 	currentBlock.pos2[1] * distance2 + currentBlock.pos3[1] * distance3 + currentBlock.pos4[1] * distance4);
-		} else {
-			debugDispNow["current triangle"] = "lower";
-			var distance1 = distance(offset[0], offset[1], 0, 0);
-			// myPlayer.hitPos[1] = (
-			// 	currentBlock.pos2[1] * distance2 + currentBlock.pos1[1] * distance1 + currentBlock.pos4[1] * distance4);
-		}
-		glMatrix.vec3.add(myPlayer.cameraPos, myPlayer.hitPos, glMatrix.vec3.fromValues(0, 1.5, 0));
-	}
-	console.log(Date.now() - before);
-	before = Date.now();
-	for (let j=0; j<x; j++) {var a=noise.simplex2(x, 0);}
-	console.log(Date.now() - before);
-}
-var pointTranslate = glMatrix.vec3.fromValues(0, 0, 0);
+var frameSum = 0;
+var numFrames = 0;
 function loop() {
+	var before = Date.now();
 	// wasd
 	// var playerVelXZ = Math.sqrt(myPlayer.userInputVelocity[0]**2 + myPlayer.userInputVelocity[2]**2);
 	// var tooFast = playerVelXZ > 0.02;
@@ -300,10 +285,6 @@ function loop() {
 		myPlayer.userInputVelocity[1] *= 0.15;
 		myPlayer.userInputVelocity[2] *= 0.15;
 	}
-	if (divisDownKeys[38]) { pointTranslate[2] += 0.1; }
-	if (divisDownKeys[40]) { pointTranslate[2] -= 0.1; }
-	if (divisDownKeys[37]) { pointTranslate[0] += 0.1; }
-	if (divisDownKeys[39]) { pointTranslate[0] -= 0.1; }
 
 	{ // collision detection :(
 		// myPlayer.velocity[1] -= 0.005; // ONLY IF PLAYER IS IN AIR
@@ -311,18 +292,19 @@ function loop() {
 		myPlayer.updatePos(); // would-be next position
 		noise.seed(6969);
 		var height = noise.simplex2((myPlayer.hitPos[0])/15, (myPlayer.hitPos[2])/15) * 3 + 2;
-		var speedMultiplier = myPlayer.hitPos[1] - height;
+		var speedMultiplier = myPlayer.hitPos[1] - height + 2;
+		debugDispNow["speed multiplier"] = speedMultiplier;
 		myPlayer.cameraPos[1] = height;
 		myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
-		//myPlayer.userInputVelocity[0] *= speedMultiplier;
-		//myPlayer.userInputVelocity[1] *= speedMultiplier;
+		// myPlayer.userInputVelocity[0] *= speedMultiplier;
+		// myPlayer.userInputVelocity[2] *= speedMultiplier;
 
 		flush();
 	}
 	{ // yum yum render em up
 		useShader(shaderProgram);
-		gl.drawArrays(gl.TRIANGLES, 0, positions.length / 3);
-
+		gl.drawArrays(gl.TRIANGLES, 0, locations["arraysLength"]);
+		gl.drawElements(gl.TRIANGLES, indexes.length, gl.UNSIGNED_INT, 0);
 		var posPlusFront = glMatrix.vec3.create();
 		glMatrix.vec3.add(posPlusFront, myPlayer.cameraPos, myPlayer.cameraFront);
 		glMatrix.mat4.lookAt(modelViewMatrix,
@@ -349,6 +331,14 @@ function loop() {
 		gl.drawArrays(gl.TRIANGLES, 0, billboardPositions.length / 3);
 		gl.enable(gl.DEPTH_TEST);
 	}
+	frameSum += Date.now() - before;
+	numFrames += 1;
 }
+
+window.setInterval(function() {
+	debugDispNow["avg frame time"] = frameSum / numFrames;
+	frameSum = 0;
+	numFrames = 0;
+}, 500);
 
 window.setInterval(loop, 25);

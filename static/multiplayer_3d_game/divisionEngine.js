@@ -1,8 +1,9 @@
 // WebGL boilerplate code.
 // or as I like to call it, a Semi-Abstract WebGL Interface.
 // proudly made by Greb. (with some assistance from MDN's tutorials) :D
+// also, this code really needs to be cleaned up a bit
 
-var canvas, gl, projectionMatrix, modelViewMatrix, infoStuff, buffers, positions, indexes, colors, texCoords, billboardShader, billboardPositions, billboardTexCoords, particleCorners;
+var canvas, gl, projectionMatrix, modelViewMatrix, infoStuff, buffers, positions, indexes, colors, texCoords, billboardShader, billboardPositions, billboardTexCoords, particleCorners, normals;
 var settings = {};
 var pushed = [];
 var attributeInfo, particleShader;
@@ -24,7 +25,10 @@ function compileShaders(vertex, frag, name) {
 }
 
 function initShaders() {
-	const shaderProgram = compileShaders(settings.useTexture?textureVS:vsSource, settings.useTexture?textureFS:fsSource, "shaderProgram");
+	var mainSource = vsSource;
+	if (settings.useTexture) {mainSource = textureVS;}
+	if (settings.useLighting) {mainSource = lightVS;}
+	const shaderProgram = compileShaders(mainSource, settings.useTexture?textureFS:fsSource, "shaderProgram");
 
 	if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
 		alert('shaders failed lmao bc ' + gl.getProgramInfoLog(shaderProgram));
@@ -70,9 +74,9 @@ function loadShader(type, source) {
 	return shader;
 }
 
-function setBufferData(buffer, data, type = Float32Array, mode = gl.STATIC_DRAW) {
-	gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new type(data), mode);
+function setBufferData(buffer, data, type = Float32Array, mode = gl.STATIC_DRAW, target = gl.ARRAY_BUFFER) {
+	gl.bindBuffer(target, buffer);
+	gl.bufferData(target, new type(data), mode);
 }
 
 function initBuffers() {
@@ -139,6 +143,14 @@ function initBuffers() {
 	const textColorBuffer = gl.createBuffer();
 	textColors = [];
 	setBufferData(textColorBuffer, textColors);
+
+	const normalBuffer = gl.createBuffer();
+	normals = [];
+	setBufferData(normalBuffer, normals);
+
+	const indexBuffer = gl.createBuffer();
+	indexes = [];
+	setBufferData(indexBuffer, indexes, Uint32Array, gl.STATIC_DRAW, gl.ELEMENT_ARRAY_BUFFER);
 	
 	return {
 		"position": positionBuffer,
@@ -152,16 +164,20 @@ function initBuffers() {
 		"textPosition": textPositionBuffer,
 		"textTexCoord": textTexCoordBuffer,
 		"textColor": textColorBuffer,
+		"normal": normalBuffer,
+		"index": indexBuffer,
 	}
 }
 
-function addPositions(pos, color) {
+function addPositions(pos, color, index = [], normal = []) {
 	positions = positions.concat(pos);
 	if (settings.useTexture) {
 		texCoords = texCoords.concat(color)
 	} else {
 		colors = colors.concat(color);
 	}
+	indexes = indexes.concat(index);
+	normals = normals.concat(normal);
 }
 
 function addBillbPositions(pos, texCoords = false) {
@@ -186,6 +202,10 @@ function flush() {
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffers.billboardPosition);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(billboardPositions), gl.STATIC_DRAW);
+
+	setBufferData(buffers.normal, normals);
+
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(indexes), gl.STATIC_DRAW);
 }
 
 function setPositions(pos) {
@@ -226,6 +246,13 @@ function flushUniforms() {
 		infoStuff.uniformLocations.modelViewMatrix,
 		false,
 		modelViewMatrix);
+	glMatrix.mat4.invert(normalMatrix, modelViewMatrix);
+	glMatrix.mat4.transpose(normalMatrix, normalMatrix);
+	gl.uniformMatrix4fv(infoStuff.uniformLocations.normalMatrix, false, normalMatrix);
+	gl.uniformMatrix3fv(infoStuff.uniformLocations.lightingInfo, false,
+		glMatrix.mat3.fromValues(settings.lightDir[0], settings.lightDir[1], settings.lightDir[2],
+		settings.lightCol[0], settings.lightCol[1], settings.lightCol[2],
+		settings.ambientLight[0], settings.ambientLight[1], settings.ambientLight[2]));
 
 	gl.useProgram(billboardShader)
 	gl.uniformMatrix4fv(infoStuff.uniformLocations.bProjectionMatrix,
@@ -363,6 +390,7 @@ function finalInit() {
 	);
 
 	modelViewMatrix = glMatrix.mat4.create();
+	normalMatrix = glMatrix.mat4.create();
 
 	billboardMVM = glMatrix.mat4.create();
 
@@ -448,6 +476,48 @@ class ParticleSystem {
 	}
 }
 
+function loadObj(text, offset=0) {
+	var lst = text.split("\n");
+	var verts = [];
+	var tex = [];
+	var idx = [];
+	for (let i=0; i<lst.length; i++) {
+		var line = lst[i];
+		if (line.startsWith("v " )) {
+			var a = line.split(" ");
+			verts = verts.concat([parseFloat(a[1]), parseFloat(a[2]), parseFloat(a[3])]);
+		}
+		else if (line.startsWith("vt ")) {
+			var a = line.split(" ");
+			tex = tex.concat([parseFloat(a[1]), parseFloat(a[2])]);
+		} else if (line.startsWith("f")) {
+			var a = line.slice(2, line.length).split(" "); // ["x/y/z", "a/b/c", "p/q/r"]
+			var b = a.map(x=>{
+				var splitd = x.split("/");
+				return splitd.map(y=>{return parseInt(y)+offset;});
+			}); // [[x, y, z], [a, b, c], [p, q, r]]
+			b.forEach(el => {
+				if (idx.includes(el)) {
+					idx.push(el);
+				} else {
+					var vertHead = idx.length * 3 + 1;
+					var texHead = idx.length * 2 + 1;
+					verts = verts.concat([verts[vertHead], verts[vertHead + 1], verts[vertHead + 2]]);
+					tex = tex.concat([tex[texHead], tex[texHead + 1]]);
+					idx = idx.concat([verts.length/3+1, verts.length/3+2, verts.length/3+3])
+				}
+			})
+
+			// if (a.length == 3) {
+			// 	idx = idx.concat(b);
+			// } else {
+			// 	idx = idx.concat([b[0], b[1], b[3], b[1], b[2], b[3]]);
+			// }
+		}
+	}
+	return {"index": idx, "position": verts};
+}
+
 var shaderProgram;
 
 
@@ -456,6 +526,10 @@ function initGL(canvName) {
 	gl = canvas.getContext("webgl");
 	if (gl === null || gl === undefined) { // no webgl for ye
 		window.alert("webgl failed lmao");
+		return;
+	}
+	if (gl.getExtension("OES_element_index_uint") == null) {
+		window.alert("your browser doesn't support this game. cope harder.");
 		return;
 	}
 
@@ -468,6 +542,7 @@ function initGL(canvName) {
 				vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
 				vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
 				vertexTexCoord: gl.getAttribLocation(shaderProgram, "aTexCoord"),
+				vertexNormal: gl.getAttribLocation(shaderProgram, "aVertexNormal"),
 			},
 			billboardShader: {
 				billboardPosition: gl.getAttribLocation(billboardShader, "aBillboardPos"),
@@ -487,6 +562,8 @@ function initGL(canvName) {
 		uniformLocations: {
 			modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
 			projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
+			normalMatrix: gl.getUniformLocation(shaderProgram, "uNormalMatrix"),
+			lightingInfo: gl.getUniformLocation(shaderProgram, "uLightingInfo"),
 			bProjectionMatrix: gl.getUniformLocation(billboardShader, 'uProjectionMatrix'),
 			bModelViewMatrix: gl.getUniformLocation(billboardShader, 'ubModelViewMatrix'),
 			texSampler: gl.getUniformLocation(shaderProgram, "uSampler"),
@@ -511,6 +588,7 @@ function initGL(canvName) {
 		vertexPosition: [buffers.position],
 		vertexColor: [buffers.color, 4, gl.FLOAT, false, 0, 0],
 		vertexTexCoord: [buffers.texCoord, 2, gl.FLOAT, false, 0, 0],
+		vertexNormal: [buffers.normal]
 	};
 	attributeInfo["billboardShader"] = {
 		billboardPosition: [buffers.billboardPosition],
