@@ -13,15 +13,24 @@ function fakePerlin(x, y) {
 function distance(x1, y1, x2, y2) {
 	return Math.sqrt((x2-x1)**2 + (y2-y1)**2);
 }
-
+var normalRef = [null, ["pos2","pos4"], ["pos3","pos1"], ["pos4","pos2"], ["pos1","pos3"]];
 class Block {
 	constructor(what, pos1, pos2, pos3, pos4) {
 		this.pos1 = pos1;
 		this.pos2 = pos2;
 		this.pos3 = pos3;
 		this.pos4 = pos4;
-		this.n1 = glMatrix.vec3.create();
-		
+		this.normals = [];
+		for (let i=1; i<5; i++) { // start from 1 because this.pos[1,2,3,4] starts from 1
+			var ref = normalRef[i];
+			var vec1 = glMatrix.vec3.create();
+			var vec2 = glMatrix.vec3.create();
+			glMatrix.vec3.subtract(vec1, this[ref[0]], this["pos"+i]);
+			glMatrix.vec3.subtract(vec2, this[ref[1]], this["pos"+i]);
+			var n = glMatrix.vec3.create();
+			glMatrix.vec3.cross(n, vec1, vec2);
+			this.normals[i-1] = [n[0], n[1], n[2]];
+		}
 		this.what = what;
 	}
 }
@@ -131,8 +140,8 @@ function divisionOnLoad(gl) {
 		document.defaultView.getComputedStyle(canvas, "wot do i put here").height.replace("px", ""), 10);
 	gl.viewport(0, 0, canvas.width, canvas.height);
 	document.addEventListener("pointerlockchange", pauseMenu, false);
-	for (let x=-3; x<3; x++) {
-		for (let z=-3; z<3; z++) {
+	for (let x=0; x<3; x++) {
+		for (let z=0; z<3; z++) {
 			chunks[[x * 10, z * 10]] = new Chunk([x * 10, z * 10]);
 		}
 	}
@@ -143,14 +152,16 @@ function divisionOnLoad(gl) {
 		for (const blockPos in chunkBlocks) {
 			var block = chunkBlocks[blockPos];
 			var triang1 = block.pos1.concat(block.pos2.concat(block.pos3));
+			var n1 = block.normals[0].concat(block.normals[1].concat(block.normals[2]));
 			var triang2 = block.pos3.concat(block.pos4.concat(block.pos1));
+			var n2 = block.normals[2].concat(block.normals[3].concat(block.normals[0]));
 			addPositions(triang1.concat(triang2),
 			   [0.0, 0.5,
 			    0.0, 0.0,
 			    0.5, 0.0,
 			    0.5, 0.0,
 			    0.5, 0.5,
-			    0.0, 0.5], [], mList([0,1,0], 6));
+			    0.0, 0.5], [], n1.concat(n2));
 		}
 	}
 	flush();
@@ -175,7 +186,7 @@ function divisionOnLoad(gl) {
 			var data = loadObj(this.responseText, positions.length/3 -1);
 			console.log(data);
 			locations["arraysLength"] = positions.length/3;
-			addPositions(data.position, mList([0.99, 0.99],data.position.length/3), data.index);
+			addPositions(data.position, mList([0.99, 0.99],data.position.length/3), mList([0,1,0],data.position.length/3), data.index);
 		}
 	}
 	req.send(null);
@@ -185,7 +196,7 @@ function divisionOnLoad(gl) {
 	// 			  100, 0, 100,
 	// 			  -100, 0, 100,
 	// 			  -100, 0, -100],
-	// 			  [0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,])
+	// 			  [0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,]) // remember to include normals
 	flush();
 	window.gl = gl;
 	canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
@@ -231,7 +242,7 @@ function onLoad() {
 	settings.useLighting = true; // useLighting true is not compatible with useTexture true just saying (cuz reasons)
 	settings.lightDir = glMatrix.vec3.fromValues(0.85, 0.8, 0.75);
 	settings.lightCol = glMatrix.vec3.fromValues(1, 1, 0.8);
-	settings.ambientLight = glMatrix.vec3.fromValues(0.1, 0.1, 0.1);
+	settings.ambientLight = glMatrix.vec3.fromValues(0.4, 0.4, 0.4);
 	initGL("canvas");
 	ambientHandle = setInterval(function() {
 		onCameraTurn({"movementX": 1, "movementY": 0});
@@ -294,7 +305,7 @@ function loop() {
 		var height = noise.simplex2((myPlayer.hitPos[0])/15, (myPlayer.hitPos[2])/15) * 3 + 2;
 		var speedMultiplier = myPlayer.hitPos[1] - height + 2;
 		debugDispNow["speed multiplier"] = speedMultiplier;
-		myPlayer.cameraPos[1] = height;
+		//myPlayer.cameraPos[1] = height;
 		myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
 		// myPlayer.userInputVelocity[0] *= speedMultiplier;
 		// myPlayer.userInputVelocity[2] *= speedMultiplier;
@@ -331,6 +342,7 @@ function loop() {
 		gl.drawArrays(gl.TRIANGLES, 0, billboardPositions.length / 3);
 		gl.enable(gl.DEPTH_TEST);
 	}
+	var time = Date.now() * 0.002;
 	frameSum += Date.now() - before;
 	numFrames += 1;
 }

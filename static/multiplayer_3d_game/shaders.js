@@ -84,7 +84,7 @@ void main() {
 	fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.05 - 1.0;
 	highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
 	highp float directional = max(dot(transformedNormal.xyz, uLightingInfo[0]), 0.0);
-	vLighting = uLightingInfo[2] + (uLightingInfo[1] * directional);
+	vLighting = uLightingInfo[2] + (uLightingInfo[1] * directional * 0.65);
 }
 `
 const textureFS = `

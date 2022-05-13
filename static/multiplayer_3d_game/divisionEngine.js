@@ -246,7 +246,7 @@ function flushUniforms() {
 		infoStuff.uniformLocations.modelViewMatrix,
 		false,
 		modelViewMatrix);
-	glMatrix.mat4.invert(normalMatrix, modelViewMatrix);
+	//glMatrix.mat4.invert(normalMatrix, modelViewMatrix);
 	glMatrix.mat4.transpose(normalMatrix, normalMatrix);
 	gl.uniformMatrix4fv(infoStuff.uniformLocations.normalMatrix, false, normalMatrix);
 	gl.uniformMatrix3fv(infoStuff.uniformLocations.lightingInfo, false,
@@ -481,6 +481,9 @@ function loadObj(text, offset=0) {
 	var verts = [];
 	var tex = [];
 	var idx = [];
+	var outTex = [];
+	var outVert = [];
+	var outIdx = [];
 	for (let i=0; i<lst.length; i++) {
 		var line = lst[i];
 		if (line.startsWith("v " )) {
@@ -496,15 +499,16 @@ function loadObj(text, offset=0) {
 				var splitd = x.split("/");
 				return splitd.map(y=>{return parseInt(y)+offset;});
 			}); // [[x, y, z], [a, b, c], [p, q, r]]
+			idx = idx.concat(b);
 			b.forEach(el => {
 				if (idx.includes(el)) {
-					idx.push(el);
+					idx = idx.concat(el);
 				} else {
 					var vertHead = idx.length * 3 + 1;
 					var texHead = idx.length * 2 + 1;
-					verts = verts.concat([verts[vertHead], verts[vertHead + 1], verts[vertHead + 2]]);
-					tex = tex.concat([tex[texHead], tex[texHead + 1]]);
-					idx = idx.concat([verts.length/3+1, verts.length/3+2, verts.length/3+3])
+					outVert = verts.concat([verts[el[0][0]], verts[el[0][1]], verts[el[0][2]]]);
+					outTex = tex.concat([tex[el[1][0]], tex[el[1][1]]]);
+					outIdx = idx.concat([verts.length/3-1, verts.length/3, verts.length/3+1]);
 				}
 			})
 
@@ -515,7 +519,8 @@ function loadObj(text, offset=0) {
 			// }
 		}
 	}
-	return {"index": idx, "position": verts};
+	for (let a=0; a<idx.length;)
+	return {"index": outIdx, "position": verts};
 }
 
 var shaderProgram;
