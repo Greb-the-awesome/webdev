@@ -2,20 +2,14 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>mammal game thing</title>
+	<title>jerry's tetris</title>
 </head>
 <body>
-	<div id="canvContainer">
-			<button class="choose-class-button" id="chooseClassStrongman">Strongman</button>
-			<button class="choose-class-button" id="chooseClassThinman">Thinman</button>
-			<button class="choose-class-button" id="chooseClassThirdclass">Third class</button>
-			<button class="regular-button-red" id="startGame">Start Game →</button>
-			<form id="frm1">
-				<input type="text" name="cmd" value="">
-			</form>
-		</div>
-	<canvas id="canv" width="400" height="300">yer browser dont support canvas, are you from like 2000BC?</canvas>
+	<center>
+		<canvas id="canv" width="300" height="450" style="margin:5rem;border-style:solid;">
+		yer browser dont support canvas, are you from like 2000BC?</canvas>
+	</center>
+	<p id="debugr"></p>
 </body>
 <script type="text/javascript" src="{{url_for('static', filename='mammalgame/main.js')}}"></script>
-<script type="text/javascript" src = "{{url_for('static', filename='mammalgame/halpers.js')}}"></script>
 </html>

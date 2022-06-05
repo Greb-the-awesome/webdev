@@ -60,7 +60,7 @@ def resetFool():
 	global foolz
 	foolz = 0
 
-@app.route('/game')
+@app.route('/tetris')
 def game():
 	return render_template('mammalgame.html')
 

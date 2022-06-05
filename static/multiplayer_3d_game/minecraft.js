@@ -5,6 +5,7 @@
 var chunks, gl;
 var debugDispNow = {"hi":"hi"};
 var locations = {};
+var objData = [];
 
 function fakePerlin(x, y) {
 	return [Math.sin((x + y) / 2)]
@@ -42,7 +43,7 @@ class Chunk {
 		this.normals = [];
 		for (let x=coords[0] - 0.5; x<coords[0] + 11.5; x++) {
 			for (let z=coords[1] - 0.5; z<coords[1] + 11.5; z++) {
-				this.depthMap[[x, z]] = noise.simplex2(x/15, z/15) * 3;
+				this.depthMap[[x, z]] = getTerrain(x, z);
 			}
 		}
 		var toAdd = [];
@@ -113,7 +114,6 @@ function gameHelp() {
 }
 
 function pauseMenu() {
-
 	if (document.pointerLockElement === canvas || document.mozPointerLockElement === canvas) {
 		var a = document.getElementById('pauseDiv');
 		a.style.display = "none";
@@ -125,13 +125,19 @@ function pauseMenu() {
 	}
 }
 
+function getTerrain(x, z) {
+	function clamp(val, low, high) {return Math.min(Math.max(val, low), high);}
+	var multiplier = clamp((x/6)**2 + (z/6) **2, 0, 4);
+	return (noise.simplex2(x/15, z/15)) * (noise.simplex2(x/40,z/40)) * multiplier + multiplier - 3;
+}
+
 function mList(list, n) {
 	// multiply an array
 	var res = [];
 	for (let i=0; i<n; i++) {res=res.concat(list);}
 	return res;
 }
-
+var assdfd;
 function divisionOnLoad(gl) {
 	noise.seed(6969); // the funny number
 	canvas.width = parseInt(
@@ -140,8 +146,8 @@ function divisionOnLoad(gl) {
 		document.defaultView.getComputedStyle(canvas, "wot do i put here").height.replace("px", ""), 10);
 	gl.viewport(0, 0, canvas.width, canvas.height);
 	document.addEventListener("pointerlockchange", pauseMenu, false);
-	for (let x=0; x<3; x++) {
-		for (let z=0; z<3; z++) {
+	for (let x=-3; x<3; x++) {
+		for (let z=-3; z<3; z++) {
 			chunks[[x * 10, z * 10]] = new Chunk([x * 10, z * 10]);
 		}
 	}
@@ -179,17 +185,27 @@ function divisionOnLoad(gl) {
 					   0.5, 0.5,
 					   1.0, 0.0,]);
 
-	let req = new XMLHttpRequest();
-	req.open("GET", "/static/multiplayer_3d_game/cube.obj");
-	req.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			var data = loadObj(this.responseText, positions.length/3 -1);
-			console.log(data);
-			locations["arraysLength"] = positions.length/3;
-			addPositions(data.position, mList([0.99, 0.99],data.position.length/3), mList([0,1,0],data.position.length/3), data.index);
-		}
-	}
-	req.send(null);
+	request("/static/multiplayer_3d_game/objs.obj", function(txt) { // jimmy rigged but it works
+		var data = parseOBJ(txt);
+		request("/static/multiplayer_3d_game/objs.mtl", function(mats) {
+			var materials = parseMTL(mats);
+			for (const geom of data.geometries) {
+				objData.push({
+					"materialSpec": materials[geom.material],
+					"start": objInfos.position.length/3,
+					"num": geom.data.position.length/3
+				});
+				addObjPositions(geom.data.position,
+					mList(materials[geom.material].diffuseColor.concat([1.0]),geom.data.position.length/3),
+					geom.data.normal);
+				console.log("geom ", geom);
+			}
+			console.log("objinfo ", objInfos)
+			flushObj();
+		});
+		console.log("objdata", objData);
+		locations["arraysLength"] = positions.length/3;
+	});
 	// addPositions([-100, 0, -100,
 	// 			  100, 0, -100,
 	// 			  100, 0, 100,
@@ -199,12 +215,12 @@ function divisionOnLoad(gl) {
 	// 			  [0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,]) // remember to include normals
 	flush();
 	window.gl = gl;
+	assdfd = new ParticleSystem([2.47-2.5, 1.23, 6.96-2.5], D_SQUARE_PLANE, 0, 0, [0.58, 0.7], 0.238);
 	canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
 	canvas.onclick = function() {canvas.requestPointerLock();};
 	document.exitPointerLock = document.exitPointerLock ||
                            document.mozExitPointerLock;
 	canvas.addEventListener("mousemove", onCameraTurn);
-	//window.addEventListener("keyup", brake);
 	setInterval(debugRefresh, 10);
 }
 
@@ -302,20 +318,17 @@ function loop() {
 		// get which chunk and block the playr is colliding with
 		myPlayer.updatePos(); // would-be next position
 		noise.seed(6969);
-		var height = noise.simplex2((myPlayer.hitPos[0])/15, (myPlayer.hitPos[2])/15) * 3 + 2;
+		var x = myPlayer.cameraPos[0];
+		var z = myPlayer.cameraPos[2];
+		var height = getTerrain(x, z) + 2;
 		var speedMultiplier = myPlayer.hitPos[1] - height + 2;
 		debugDispNow["speed multiplier"] = speedMultiplier;
 		//myPlayer.cameraPos[1] = height;
 		myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
 		// myPlayer.userInputVelocity[0] *= speedMultiplier;
 		// myPlayer.userInputVelocity[2] *= speedMultiplier;
-
-		flush();
 	}
 	{ // yum yum render em up
-		useShader(shaderProgram);
-		gl.drawArrays(gl.TRIANGLES, 0, locations["arraysLength"]);
-		gl.drawElements(gl.TRIANGLES, indexes.length, gl.UNSIGNED_INT, 0);
 		var posPlusFront = glMatrix.vec3.create();
 		glMatrix.vec3.add(posPlusFront, myPlayer.cameraPos, myPlayer.cameraFront);
 		glMatrix.mat4.lookAt(modelViewMatrix,
@@ -323,6 +336,8 @@ function loop() {
 			posPlusFront,
 			myPlayer.cameraUp);
 		flushUniforms();
+		useShader(shaderProgram);
+		gl.drawArrays(gl.TRIANGLES, 0, positions.length/3);
 		// user-defined uniforms so flushUniforms() doesn't flush it
 		gl.uniform3f(infoStuff.uniformLocations.cameraPos, myPlayer.cameraPos[0], myPlayer.cameraPos[1], myPlayer.cameraPos[2]);
 		if (myPlayer.cameraPos[1] < 0) {
@@ -337,12 +352,20 @@ function loop() {
 		gl.uniform4f(infoStuff.uniformLocations.tFogColor, 0.529, 0.808, 0.921, 1.0);
 		gl.drawArrays(gl.TRIANGLES, 0, textPositions.length / 2);
 
+		useShader(objShader);
+		for (const thing of objData) {
+			settings.ambientLight = thing.materialSpec.ambientColor;
+			flushUniforms();
+			gl.drawArrays(gl.TRIANGLES, thing.start, thing.num)
+		}
+		settings.ambientLight = glMatrix.vec3.fromValues(0.4, 0.4, 0.4);
+		debugDispNow["player pos"] = [...myPlayer.cameraPos];
+
 		useShader(billboardShader);
 		gl.disable(gl.DEPTH_TEST);
 		gl.drawArrays(gl.TRIANGLES, 0, billboardPositions.length / 3);
 		gl.enable(gl.DEPTH_TEST);
 	}
-	var time = Date.now() * 0.002;
 	frameSum += Date.now() - before;
 	numFrames += 1;
 }

@@ -1,77 +1,111 @@
-// var decls
-var loadedImgs = {
-	"background" : false,
-	"bricks" : false,
-	"player" : false
-};
-var downKeys = {};
-var canvasWidth, canvasHeight, widthInc, heightInc, ctx, canvas, player, 
-backgroundImg, bricksImg, playerImg, woodArmorImg;
-
-Math.PIE = Math.PI;
-var itemImgs = {};
-var itemList = [];
-var canMove = {
-	"w" : true, "a" : true, "s" : true, "d" : true
+var canvas, ctx;
+var grids = []; // each array inside this array is a row
+const WIDTH = 300;
+const HEIGHT = 450;
+const BLOCKWIDTH = 30;
+var currentPentomonio = [];
+var pID;
+var debugDispNow = {};
+var pentomonios = [
+[[0,0],[0,1],[0,2],[0,3]],
+[[0,0],[0,1],[1,0],[1,1]]
+]; // y, x
+var centers = [
+[0, 1],
+[0, 0]
+];
+// 10 wide, 15 high
+for (let i=0; i<15; i++) {
+	var toPush = [];
+	for (let j=0; j<10; j++) {toPush.push(true);}
+	grids.push(toPush);
 }
-
-function main() {
-	// resize canvas
-	var style = document.documentElement;
-	canvasHeight = style.clientHeight;
-	canvasWidth = style.clientWidth;
-	heightInc = canvasHeight / 100;
-	widthInc = canvasWidth / 100;
-
-	// customary canvas stuff
+function onKeyDown(e) {
+	var key = e.key;
+	if (key == "ArrowLeft") {
+		for (el of currentPentomonio) {el[1] -= 1;}
+	} else if (key == "ArrowRight") {
+		for (el of currentPentomonio) {el[1] += 1;}
+	} else if (key == " ") {genPentomonio();}
+	else if (key == "ArrowUp") {
+		for (el of currentPentomonio) {
+			var relativePos = currentPentomonio.map(function(a) {
+				return [a[0] - centers[pID][0], a[1] - centers[pID][1]];
+			});
+			relativePos = relativePos.map(function(a) { return [-a[1], a[0]];/*rotation*/ });
+			
+		}
+	}
+}
+function debugRefresh() {
+	document.getElementById("debugr").innerHTML = JSON.stringify(debugDispNow);
+}
+function onLoad() {
 	canvas = document.getElementById("canv");
 	ctx = canvas.getContext("2d");
-	canvas.width = canvasWidth;
-	canvas.height = canvasHeight;
-	ctx.font = (heightInc * 5) + "px calibri";
+	setInterval(loop, 20);
+	setInterval(debugRefresh, 100);
+	addEventListener("keydown", onKeyDown);
+}
 
-	// loading screen
-	ctx.textAlign = "center";
-	ctx.fillText("Loading...", widthInc * 50, heightInc * 25);
+function mList(list, n) {
+	// multiply an array
+	var res = [];
+	for (let i=0; i<n; i++) {res=res.concat(list);}
+	return res;
+}
 
-	// ecoutez bien
-	window.addEventListener("keydown", onKeyDown);
-	window.addEventListener("keyup", onKeyUp);
-
-	window.setInterval(function() {
-		for (let i=0; i<loadedImgs.length(); i++) {
-			if ()
+function genPentomonio() {
+	pID = Math.floor(Math.random() * pentomonios.length)
+	var which = pentomonios[pID];
+	currentPentomonio = which;
+}
+var frameNumber = 0;
+function loop() {
+	frameNumber += 1;
+	ctx.clearRect(0, 0, WIDTH, HEIGHT);
+	var filled = true;
+	for (let y=0; y<grids.length; y++) { // we don't need .length but whatever bro
+		var row = grids[y];
+		for (let x=0; x<row.length; x++) {
+			var block = row[x];
+			if (block) {
+				ctx.fillRect(x*BLOCKWIDTH, y*BLOCKWIDTH, BLOCKWIDTH, BLOCKWIDTH);
+			} else {filled = false;
+			}
 		}
-	}, 10);
+		if (filled) {
+			grids.splice(y, 1);
+			grids.unshift(mList([false], 10));
+		}
+		filled = true;
+	}
+	for (el of currentPentomonio) {
+		ctx.fillRect(el[1]*BLOCKWIDTH, el[0]*BLOCKWIDTH, BLOCKWIDTH, BLOCKWIDTH);
+	}
+	if (frameNumber == 20) {
+		frameNumber = 0;
+		var gotToBottom = false;
+		var obstructed = false;
+		for (el of currentPentomonio) {
+			if (el[0] > 13) {
+				gotToBottom = true;
+			}
+			try {
+				if (grids[el[0]+1][el[1]]) {
+					obstructed = true;
+				}
+			} catch (TypeError) {}
+		}
+		if (!gotToBottom && !obstructed) {
+			currentPentomonio = currentPentomonio.map( a=>{return [a[0]+1, a[1]];} );
+		} else {
+			for (el of currentPentomonio) {
+				grids[el[0]][el[1]] = true;
+			}
+			genPentomonio();
+		}
+	}
 }
 
-function loadImgs() {
-	// background
-	backgroundImg = new Image();
-	backgroundImg.src = "static/dungeon_crawler/images/flare.png";
-	backgroundImg.onload = function() {
-		loadedImgs["background"] = true;
-	};
-
-	// sprites
-	// walls
-	bricksImg = new Image();
-	bricksImg.src = "static/dungeon_crawler/images/bricks.png";
-	bricksImg.onload = function() {
-		loadedImgs["bricks"] = true;
-	};
-
-	// other
-	playerImg = new Image();
-	playerImg.src = "static/dungeon_crawler/images/ploir.png";
-	playerImg.onload = function() {
-		loadedImgs["player"] = true;
-	};
-
-	// items
-	woodArmorImg = new Image();
-	woodArmorImg.src = "static/dungeon_crawler/images/armorWooden.png";
-	woodArmorImg.onload = function() {
-		loadedImgs["wood armor"] = true;
-	};
-}
+window.onload = onLoad;
