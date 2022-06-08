@@ -157,7 +157,7 @@ void main() {
 `;
 
 const particleVS = `
-// attribute float aParticleLifetime;
+attribute vec3 aParticleVelocity;
 attribute vec3 aParticleCenterOffset;
 attribute vec2 aParticleCorner;
 attribute vec2 aParticleTexCoords;
@@ -174,9 +174,8 @@ varying lowp float size;
 
 void main() {
 	float time = mod(uTime, aLifetime);
-	vec3 velocity = vec3(0.0, 1.0, 0.0);
 	vec4 position = vec4(
-		uParticleEmitter + aParticleCenterOffset + (time * velocity), 1.0
+		uParticleEmitter + aParticleCenterOffset + (time * aParticleVelocity), 1.0
 	);
 	vec3 rightVec = uCameraRight;
 	vec3 upVec = vec3(uModelViewMatrix[0].y, uModelViewMatrix[1].y, uModelViewMatrix[2].y);

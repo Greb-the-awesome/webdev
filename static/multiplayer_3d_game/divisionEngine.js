@@ -9,10 +9,12 @@ var pushed = [];
 var attributeInfo, particleShader;
 var divisDownKeys = {};
 var textShader;
-var particleTexCoords, particleCenterOffsets, textTexCoords, textPositions, textColors, particleTimeOffsets;
+var particleTexCoords, particleCenterOffsets, textTexCoords, textPositions, textColors, particleLifetimes;
+var particleVelocities;
 var objShader;
 var objInfos = {"position": [], "color": [], "normal": []};
 var theTime = 0;
+var activeUnit = 0;
 setInterval(function() {theTime += 0.03;}, 10);
 
 // #4a412a
@@ -114,40 +116,12 @@ function initBuffers() { // i should dynamically generate the buffers too cuz th
 	particleTexCoords = [];
 	const particleOffsetBuffer = gl.createBuffer();
 	particleCenterOffsets = [];
-	var numParticles = 10;
-	{
-		let cycle = [-1.0, -1.0,
-					 1.0, -1.0,
-					 1.0, 1.0,
-					 -1.0, -1.0,
-					 1.0, 1.0,
-					 -1.0, 1.0];
-		let texCoordsCycle = [0.5, 1,
-							  0, 1,
-							  0, 0.5,
-							  0.5, 1,
-							  0, 0.5,
-							  0.5, 0.5];
-		for (let j=0; j<numParticles; j++) {
-			var offsets = [Math.random() * 5,0,Math.random() * 5];
-			for (let i=0; i<6; i++) {
-				particleCorners.push(cycle[i * 2]);
-				particleCorners.push(cycle[i * 2 + 1]);
-				particleTexCoords.push(texCoordsCycle[i * 2]);
-				particleTexCoords.push(texCoordsCycle[i * 2 + 1]);
-				particleCenterOffsets = particleCenterOffsets.concat(offsets);
-			}
-		}
-	}
-	const timeOffsetBuffer = gl.createBuffer();
-	particleTimeOffsets = [];
-	for (let i=0; i<numParticles; i++) {
-		var copeHarder = Math.random()*10; // humorous variable names XD
-		for (let cope=0; cope<6; cope++) {
-			particleTimeOffsets.push(copeHarder);
-		}
-	}
-	setBufferData(timeOffsetBuffer, particleTimeOffsets);
+	const particleLifetimeBuffer = gl.createBuffer();
+	particleLifetimes = [];
+	const particleVelocityBuffer = gl.createBuffer();
+	particleVelocities = [];
+	setBufferData(particleVelocityBuffer, particleVelocities);
+	setBufferData(particleLifetimeBuffer, particleLifetimes);
 	setBufferData(particleCornerBuffer, particleCorners);
 	setBufferData(particleTexCoordBuffer, particleTexCoords);
 	setBufferData(particleOffsetBuffer, particleCenterOffsets);
@@ -186,7 +160,8 @@ function initBuffers() { // i should dynamically generate the buffers too cuz th
 		"particleOffset": particleOffsetBuffer,
 		"particleCorner": particleCornerBuffer,
 		"particleTexCoord": particleTexCoordBuffer,
-		"timeOffset": timeOffsetBuffer,
+		"lifetime": particleLifetimeBuffer,
+		"particleVel": particleVelocityBuffer,
 		"textPosition": textPositionBuffer,
 		"textTexCoord": textTexCoordBuffer,
 		"textColor": textColorBuffer,
@@ -314,7 +289,6 @@ function flushUniforms() {
 		billboardMVM);
 
 	gl.useProgram(particleShader);
-	gl.uniform3f(infoStuff.uniformLocations.particleEmitter, 0.0, 1.0, 0.0);
 	gl.uniformMatrix4fv(infoStuff.uniformLocations.pProjectionMatrix,
 		false,
 		projectionMatrix);
@@ -327,7 +301,7 @@ function flushUniforms() {
 	glMatrix.vec3.normalize(right, right);
 	gl.uniform3f(infoStuff.uniformLocations.pCameraRight, right[0], right[1], right[2]);
 	gl.uniform1f(infoStuff.uniformLocations.pTime, theTime);
-	gl.uniform1i(infoStuff.uniformLocations.pSampler, 0);
+	gl.uniform1i(infoStuff.uniformLocations.pSampler, activeUnit);
 	gl.useProgram(textShader);
 	gl.uniformMatrix4fv(infoStuff.uniformLocations.tProjectionMatrix,
 		false,
@@ -411,6 +385,11 @@ function loadTexture(url) { // MUST BE POWER OF 2 IMAGE
 	return tex;
 }
 
+function bindTexture(tex, unit = 0) {
+	gl.activeTexture(gl["TEXTURE"+unit]);
+	gl.bindTexture(gl.TEXTURE_2D, tex);
+}
+
 function createVertexAttribute(location, buffer, numComponents = 3, type = gl.FLOAT, normalize = false, stride = 0, offset = 0) {
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 	gl.vertexAttribPointer(
@@ -460,7 +439,6 @@ function finalInit() {
 	console.log(texture)
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 
-	gl.uniform1i(infoStuff.uniformLocations.texSampler, 0);
 	addText("aad", 0, [0, 1, 0, 1]);
 	flush();
 }
@@ -517,14 +495,16 @@ class ParticleSystem { // yet another jimmy-rigged contraption
 							  1, 1,
 							  0, 0,
 							  1, 0];
+		this.start = particleCenterOffsets.length/3;
+		this.velocities = [];
+		// offset the texture coordinates
 		for (let a=0; a<this.texCoordsCycle.length; a+=2) {
 			this.texCoordsCycle[a] *= texCoordDimension;
 			this.texCoordsCycle[a+1] *= texCoordDimension;
 			this.texCoordsCycle[a] += texCoordStart[0];
 			this.texCoordsCycle[a+1]+=  texCoordStart[1];
 		}
-		var numParticles = 100;
-		// do something to use texCoordStart and texCoordDimension
+		var numParticles = 30;
 		for (let j=0; j<numParticles/*change later*/; j++) {
 			this.cycle = [-1.0, -1.0,
 						 1.0, -1.0,
@@ -532,28 +512,22 @@ class ParticleSystem { // yet another jimmy-rigged contraption
 						 -1.0, -1.0,
 						 1.0, 1.0,
 						 -1.0, 1.0];
-			var offset = [position[0],position[1],position[2]];
 			var computed = this.emitFunc();
-			for (let x=0; x<3; x++) {
-				offset[x] += computed[x];
-			}
+			var lifetime = Math.random()*5+5;
+			var vel = [Math.random()-0.5, Math.random()+0.5, Math.random()-0.5];
 			for (let i=0; i<6; i++) {
 				// init the values
+				particleLifetimes.push(lifetime);
+				particleVelocities = particleVelocities.concat(vel);
 				this.particleCorners.push(this.cycle[i * 2]);
 				this.particleCorners.push(this.cycle[i * 2 + 1]);
 				this.particleTexCoords.push(this.texCoordsCycle[i * 2]);
 				this.particleTexCoords.push(this.texCoordsCycle[i * 2 + 1]);
-				this.particleCenterOffsets = this.particleCenterOffsets.concat(offset);
-			}
-			for (let i=0; i<numParticles; i++) {
-				var copeHarder = Math.random()*10;
-				for (let cope=0; cope<6; cope++) {
-					particleTimeOffsets.push(copeHarder);
-				}
+				this.particleCenterOffsets = this.particleCenterOffsets.concat(computed);
 			}
 		}
-		setBufferData(buffers.timeOffset, particleTimeOffsets);
-		this.start = particleCenterOffsets.length/3;
+		setBufferData(buffers.particleVel, particleVelocities);
+		setBufferData(buffers.lifetime, particleLifetimes);
 		particleCorners = particleCorners.concat(this.particleCorners);
 		particleTexCoords = particleTexCoords.concat(this.particleTexCoords);
 		particleCenterOffsets = particleCenterOffsets.concat(this.particleCenterOffsets);
@@ -561,6 +535,10 @@ class ParticleSystem { // yet another jimmy-rigged contraption
 		setBufferData(buffers.particleTexCoord, particleTexCoords);
 		setBufferData(buffers.particleOffset, particleCenterOffsets);
 		this.num = particleCenterOffsets.length/3 - this.start;
+	}
+	render() {
+		gl.uniform3f(infoStuff.uniformLocations.particleEmitter, ...this.position);
+		gl.drawArrays(gl.TRIANGLES, this.start, this.num);
 	}
 }
 
@@ -778,7 +756,8 @@ function initGL(canvName) {
 				particleCenterOffset: gl.getAttribLocation(particleShader, "aParticleCenterOffset"),
 				particleCorner: gl.getAttribLocation(particleShader, "aParticleCorner"),
 				particleTexCoords: gl.getAttribLocation(particleShader, "aParticleTexCoords"),
-				timeOffset: gl.getAttribLocation(particleShader, "aTimeOffset"),
+				lifetime: gl.getAttribLocation(particleShader, "aLifetime"),
+				velocity: gl.getAttribLocation(particleShader, "aParticleVelocity"),
 			},
 			textShader: {
 				vertexPosition: gl.getAttribLocation(textShader, "aVertexPosition"),
@@ -834,7 +813,8 @@ function initGL(canvName) {
 		particleCenterOffset: [buffers.particleOffset],
 		particleCorner: [buffers.particleCorner, 2, gl.FLOAT, false, 0, 0],
 		particleTexCoords: [buffers.particleTexCoord, 2, gl.FLOAT, false, 0, 0],
-		timeOffset: [buffers.timeOffset, 1, gl.FLOAT, false, 0, 0],
+		lifetime: [buffers.lifetime, 1, gl.FLOAT, false, 0, 0],
+		velocity: [buffers.particleVel, 3, gl.FLOAT, false, 0, 0],
 	};
 	attributeInfo["textShader"] = {
 		vertexPosition: [buffers.textPosition, 2, gl.FLOAT, false, 0, 0],

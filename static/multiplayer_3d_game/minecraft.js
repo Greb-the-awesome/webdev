@@ -185,9 +185,9 @@ function divisionOnLoad(gl) {
 					   0.5, 0.5,
 					   1.0, 0.0,]);
 
-	request("/static/multiplayer_3d_game/objs.obj", function(txt) { // jimmy rigged but it works
+	request("/static/multiplayer_3d_game/corn.obj", function(txt) { // jimmy rigged but it works
 		var data = parseOBJ(txt);
-		request("/static/multiplayer_3d_game/objs.mtl", function(mats) {
+		request("/static/multiplayer_3d_game/corn.mtl", function(mats) {
 			var materials = parseMTL(mats);
 			for (const geom of data.geometries) {
 				objData.push({
@@ -198,12 +198,12 @@ function divisionOnLoad(gl) {
 				addObjPositions(geom.data.position,
 					mList(materials[geom.material].diffuseColor.concat([1.0]),geom.data.position.length/3),
 					geom.data.normal);
-				console.log("geom ", geom);
+				//console.log("geom ", geom);
 			}
-			console.log("objinfo ", objInfos)
+			//console.log("objinfo ", objInfos)
 			flushObj();
 		});
-		console.log("objdata", objData);
+		//console.log("objdata", objData);
 		locations["arraysLength"] = positions.length/3;
 	});
 	// addPositions([-100, 0, -100,
@@ -215,15 +215,15 @@ function divisionOnLoad(gl) {
 	// 			  [0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,]) // remember to include normals
 	flush();
 	window.gl = gl;
-	assdfd = new ParticleSystem([2.47-2.5, 1.23, 6.96-2.5], D_SQUARE_PLANE, 0, 0, [0.58, 0.7], 0.238);
+	//assdfd = new ParticleSystem([2.47-2.5, 1.23, 6.96-2.5], D_SQUARE_PLANE, 0, 0, [0.73, 0.746], 0.218);
+	assdfd = new ParticleSystem([1.01-2.5, 1.75, -9.82-2.5], D_SQUARE_PLANE, 0, 0, [0.558, 0.652], 0.125);
 	canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
 	canvas.onclick = function() {canvas.requestPointerLock();};
 	document.exitPointerLock = document.exitPointerLock ||
                            document.mozExitPointerLock;
 	canvas.addEventListener("mousemove", onCameraTurn);
-	setInterval(debugRefresh, 10);
+	setInterval(debugRefresh, 20);
 }
-
 
 
 function debugRefresh() {
@@ -271,10 +271,10 @@ var frameSum = 0;
 var numFrames = 0;
 function loop() {
 	var before = Date.now();
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	// wasd
 	// var playerVelXZ = Math.sqrt(myPlayer.userInputVelocity[0]**2 + myPlayer.userInputVelocity[2]**2);
 	// var tooFast = playerVelXZ > 0.02;
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	if(divisDownKeys[65]) { // a or <
 		var crossed = glMatrix.vec3.create();
 		var normalized = glMatrix.vec3.create();
@@ -317,7 +317,6 @@ function loop() {
 		// myPlayer.velocity[1] -= 0.005; // ONLY IF PLAYER IS IN AIR
 		// get which chunk and block the playr is colliding with
 		myPlayer.updatePos(); // would-be next position
-		noise.seed(6969);
 		var x = myPlayer.cameraPos[0];
 		var z = myPlayer.cameraPos[2];
 		var height = getTerrain(x, z) + 2;
@@ -336,6 +335,7 @@ function loop() {
 			posPlusFront,
 			myPlayer.cameraUp);
 		flushUniforms();
+
 		useShader(shaderProgram);
 		gl.drawArrays(gl.TRIANGLES, 0, positions.length/3);
 		// user-defined uniforms so flushUniforms() doesn't flush it
@@ -345,8 +345,6 @@ function loop() {
 		} else {
 			gl.uniform4f(infoStuff.uniformLocations.fogColor, 0.529, 0.808, 0.921, 1.0);
 		}
-		useShader(particleShader);
-		gl.drawArrays(gl.TRIANGLES, 0, particleCenterOffsets.length / 3);
 
 		useShader(textShader);
 		gl.uniform4f(infoStuff.uniformLocations.tFogColor, 0.529, 0.808, 0.921, 1.0);
@@ -361,8 +359,12 @@ function loop() {
 		settings.ambientLight = glMatrix.vec3.fromValues(0.4, 0.4, 0.4);
 		debugDispNow["player pos"] = [...myPlayer.cameraPos];
 
-		useShader(billboardShader);
+		useShader(particleShader);
+		assdfd.render();
+		//assdfd2.render();
+
 		gl.disable(gl.DEPTH_TEST);
+		useShader(billboardShader);
 		gl.drawArrays(gl.TRIANGLES, 0, billboardPositions.length / 3);
 		gl.enable(gl.DEPTH_TEST);
 	}
