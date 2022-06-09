@@ -350,12 +350,12 @@ function loop() {
 		gl.uniform4f(infoStuff.uniformLocations.tFogColor, 0.529, 0.808, 0.921, 1.0);
 		gl.drawArrays(gl.TRIANGLES, 0, textPositions.length / 2);
 
-		useShader(objShader);
-		for (const thing of objData) {
-			settings.ambientLight = thing.materialSpec.ambientColor;
-			flushUniforms();
-			gl.drawArrays(gl.TRIANGLES, thing.start, thing.num)
-		}
+		// useShader(objShader);
+		// for (const thing of objData) {
+		// 	settings.ambientLight = thing.materialSpec.ambientColor;
+		// 	flushUniforms();
+		// 	gl.drawArrays(gl.TRIANGLES, thing.start, thing.num)
+		// }
 		settings.ambientLight = glMatrix.vec3.fromValues(0.4, 0.4, 0.4);
 		debugDispNow["player pos"] = [...myPlayer.cameraPos];
 
