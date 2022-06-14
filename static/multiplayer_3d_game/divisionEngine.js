@@ -15,6 +15,18 @@ var objShader;
 var objInfos = {"position": [], "color": [], "normal": []};
 var theTime = 0;
 var activeUnit = 0;
+var renderBuffers = { // for now, render buffers are only available for two shaders cuz yeah
+	"shaderProgram": [],
+	"objShader": [],
+};
+var cube = [-1.0, -1.0, 1.0,  1.0, -1.0, 1.0,  1.0, 1.0, 1.0,  -1.0, -1.0, 1.0,  1.0, 1.0, 1.0,  -1.0,  1.0,  1.0,
+			 -1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  1.0, 1.0, -1.0,  -1.0, -1.0, -1.0,  1.0, 1.0, -1.0,  1.0, -1.0, -1.0,
+			 -1.0, 1.0, -1.0,  -1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  -1.0, 1.0, -1.0,  1.0, 1.0, 1.0,  1.0, 1.0, -1.0,
+			 -1.0, -1.0, -1.0,  1.0, -1.0, -1.0,  1.0, -1.0, 1.0,  -1.0, -1.0, -1.0,  1.0, -1.0, 1.0,  -1.0, -1.0, 1.0,
+			 1.0, -1.0, -1.0,  1.0, 1.0, -1.0,  1.0, 1.0, 1.0,  1.0, -1.0, -1.0,  1.0, 1.0, 1.0,  1.0, -1.0, 1.0,
+			 -1.0, -1.0, -1.0,  -1.0, -1.0,  1.0,  -1.0, 1.0, 1.0,  -1.0, -1.0, -1.0,  -1.0, 1.0, 1.0,  -1.0,  1.0, -1.0,
+];
+
 setInterval(function() {theTime += 0.03;}, 10);
 
 // #4a412a
@@ -414,7 +426,7 @@ function finalInit() {
 
 	projectionMatrix = glMatrix.mat4.create();
 	glMatrix.mat4.perspective(projectionMatrix,
-		45 * Math.PI / 180, // fov
+		60 * Math.PI / 180, // fov
 		gl.canvas.clientWidth / gl.canvas.clientHeight, // aspect
 		0.1, // zNear
 		150.0 // zFar
@@ -540,6 +552,51 @@ class ParticleSystem { // yet another jimmy-rigged contraption
 		gl.uniform3f(infoStuff.uniformLocations.particleEmitter, ...this.position);
 		gl.drawArrays(gl.TRIANGLES, this.start, this.num);
 	}
+}
+
+function createRenderBuffer(prog) { // (sarcasm) original idea: multiple buffers for rendering
+	// creates an empty render buffer.
+	var toUse = renderBuffers[prog.name];
+	var loc = toUse.length;
+	var info = attributeInfo[prog.name];
+	var toPush = {};
+	for (attrib in info) {
+		toPush[attrib] = [gl.createBuffer(), []];
+		setBufferData(toPush[attrib][0], defaultRB[attrib]);
+	}
+	toUse.push(toPush);
+	return loc;
+}
+function mList(list, n) {
+	// multiply an array
+	var res = [];
+	for (let i=0; i<n; i++) {res=res.concat(list);}
+	return res;
+}
+var defaultRB = {
+	vertexPosition: cube,
+	vertexTexCoord: mList([0,0.3], 72),
+	vertexNormal: mList([0,1,0], 108),
+	vertexColor: "cope"
+}
+function useRenderBuffer(loc, program) { // doesn't call gl.useProgram so u gotta be careful
+	var toUse = renderBuffers[program.name][loc];
+	var info = attributeInfo[program.name];
+	var locations = infoStuff.attribLocations[program.name];
+	for (attrib in info) {
+		createVertexAttribute(locations[attrib], toUse[attrib][0], ...info[attrib].slice(1, info[attrib].length));
+	}
+}
+
+function flushRB(loc, program) {
+	var toUse = renderBuffers[program.name][loc];
+	for (attrib in toUse) {
+		setBufferData(toUse[attrib][0], toUse[attrib][1]);
+	}
+}
+
+function getRBdata(loc, program) { // get the data for a render buffer so u can edit it
+	return renderBuffers[program.name][loc];
 }
 
 function parseOBJ(text) { // credits to webglfundamentals.org for this code cuz im too small brain
