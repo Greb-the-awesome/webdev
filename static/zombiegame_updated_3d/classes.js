@@ -16,6 +16,8 @@ class MyPlayer {
 		this.userInputVelocity = glMatrix.vec3.fromValues(0.0, 0.0, 0.0);
 
 		this.acceleration = 0.000000002; // + 0.02 per frame
+
+		this.health = 100;
 	}
 	updatePos() {
 		glMatrix.vec3.add(this.cameraPos, this.cameraPos, this.velocity);
@@ -58,7 +60,10 @@ class Bullet {
 		return _aList(cube, this.pos[0], this.pos[1], this.pos[2]);
 	}
 }
-
+var epsilon = 1;
+function closeTo(a, b) {
+	return Math.abs(a - b) < epsilon;
+}
 class Zombie {
 	constructor(pos) {
 		this.pos = pos;
@@ -66,8 +71,12 @@ class Zombie {
 	}
 	updatePos() {
 		// player speed (walking) is 0.136/frame so zombie is 0.14 (so u can only run to escape zombie)
-		if (myPlayer.cameraPos[0] > this.pos[0]) { this.pos[0] += 0.14; } else { this.pos[0] -= 0.14; }
-		if (myPlayer.cameraPos[2] > this.pos[2]) { this.pos[2] += 0.14; } else { this.pos[2] -= 0.14; }
+		if (myPlayer.cameraPos[0] > this.pos[0] && !closeTo(myPlayer.cameraPos[0], this.pos[0])) { this.pos[0] += 0.14; }
+		else { this.pos[0] -= 0.14; }
+
+		if (myPlayer.cameraPos[2] > this.pos[2] && !closeTo(myPlayer.cameraPos[2], this.pos[2])) { this.pos[2] += 0.14; }
+		else { this.pos[2] -= 0.14; }
+
 		this.pos[1] = getTerrain(this.pos[0], this.pos[2]);
 		return _aList(zombiePos.position, this.pos[0], this.pos[1], this.pos[2]);
 	}

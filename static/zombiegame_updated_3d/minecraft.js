@@ -129,6 +129,9 @@ function loadObj(url, mtlUrl, callback) {
 }
 
 var assdfd;
+var WORLDEND = 3;
+var WORLDSTART = -3;
+var overlay, oCtx;
 function divisionOnLoad(gl) {
 	noise.seed(6969); // the funny number
 	// size the canvas
@@ -138,11 +141,17 @@ function divisionOnLoad(gl) {
 		document.defaultView.getComputedStyle(canvas, "wot do i put here").height.replace("px", ""), 10);
 	gl.viewport(0, 0, canvas.width, canvas.height);
 
+	overlay = document.getElementById("overlay");
+	overlay.width = canvas.width;
+	overlay.height = canvas.height;
+	oCtx = overlay.getContext("2d");
+	oCtx.fillStyle = "#00DDDD";
+
 	document.addEventListener("pointerlockchange", pauseMenu, false);
 	
 	// terrain gen
-	for (let x=-3; x<3; x++) {
-		for (let z=-3; z<3; z++) {
+	for (let x=WORLDSTART; x<WORLDEND; x++) {
+		for (let z=WORLDSTART; z<WORLDEND; z++) {
 			chunks[[x * 10, z * 10]] = new Chunk([x * 10, z * 10]);
 		}
 	}
@@ -182,7 +191,6 @@ function divisionOnLoad(gl) {
 	loadObj("/static/multiplayer_3d_game/zombie.obj", "/static/multiplayer_3d_game/zombie.mtl", function(res) {
 		zombiePos = res;
 		addObjPositions(res.position, res.color, res.normal);
-		new Zombie([0, 0, 0]);
 		flushObj();
 	});
 	
@@ -217,10 +225,15 @@ function debugRefresh() {
 	document.getElementById("debugStuff").innerHTML = disp;
 }
 
+function ded() {
+	window.clearInterval(mainHandle);
+	oCtx.font = "40px Open Sans";
+	oCtx.fillText("you died lmao", overlay.width * 0.3, overlay.height * 0.4);
+}
 
 function onCameraTurn(e) {
-	myPlayer.yaw   += e.movementX * 0.07;
-	myPlayer.pitch -= e.movementY * 0.07;
+	myPlayer.yaw   += e.movementX * 0.1;
+	myPlayer.pitch -= e.movementY * 0.1;
 	if (myPlayer.pitch > 89) { myPlayer.pitch = 89; }
 	if (myPlayer.pitch < -89) { myPlayer.pitch = -89; }
 
@@ -262,6 +275,7 @@ var numFrames = 0;
 function loop() {
 	var before = Date.now();
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	oCtx.clearRect(0, 0, overlay.width, overlay.height);
 	// wasd
 	// var playerVelXZ = Math.sqrt(myPlayer.userInputVelocity[0]**2 + myPlayer.userInputVelocity[2]**2);
 	// var tooFast = playerVelXZ > 0.02;
@@ -324,7 +338,8 @@ function loop() {
 				if (checkCollision([zomb.pos[0],zomb.pos[1]+3,zomb.pos[2]], bullet.pos, [1,2,1], [1,1,1])) {zombies.splice(zombNum, 1);}
 				zombNum++;
 			}
-			if (bullet.pos[0] > 200 || bullet.pos[0] < -200 || bullet.pos[2] > 200 || bullet.pos[2] < -200) {
+			if (bullet.pos[0] > 200 || bullet.pos[0] < -200 || bullet.pos[2] > 200 || bullet.pos[2] < -200 ||
+				bullet.pos[1] < getTerrain(bullet.pos[0], bullet.pos[2])) {
 				bullets.splice(bulletNum, 1);
 			} else {
 				finalBullet = finalBullet.concat(bullet.updatePos());
@@ -336,13 +351,23 @@ function loop() {
 		buffer.vertexNormal[1] = mList([0, 1, 0], buffer.vertexPosition[1].length);
 		flushRB(0, shaderProgram);
 		objInfos.position = [];
+		objInfos.color = [];
+		objInfos.normal = [];
 		for (zombie of zombies) {
 			objInfos.position = objInfos.position.concat(zombie.updatePos());
+			objInfos.color = objInfos.color.concat(zombiePos.color);
+			objInfos.normal = objInfos.normal.concat(zombiePos.normal);
+			if (checkCollision(myPlayer.cameraPos, [zombie.pos[0],zombie.pos[1]+3,zombie.pos[2]], [1, 1.6, 1], [1.5,2,1.5])) {
+				myPlayer.health -= 1;
+			}
 		}
+		if (myPlayer.health < 0) {ded();}
+		debugDispNow["health"] = myPlayer.health;
 		flushObj();
 	}
-	if (Math.floor(Math.random() * 40) == 8) {
-		new Zombie([Math.random() * 30, 0, Math.random() * 30]);
+	if (Math.floor(Math.random() * 80) == 8) {
+		var worldwidth = (WORLDEND - WORLDSTART) * 10;
+		new Zombie([Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10]);
 	}
 	{ // yum yum render em up
 		var posPlusFront = glMatrix.vec3.create();
@@ -382,6 +407,9 @@ function loop() {
 		useShader(billboardShader);
 		gl.drawArrays(gl.TRIANGLES, 0, billboardPositions.length / 3);
 		gl.enable(gl.DEPTH_TEST);
+
+		oCtx.fillRect(overlay.width * 0.3, overlay.height * 0.9, overlay.width * 0.4*myPlayer.health/100, overlay.height * 0.09);
+		oCtx.strokeRect(overlay.width * 0.3, overlay.height * 0.9, overlay.width * 0.4, overlay.height * 0.09);
 	}
 	frameSum += Date.now() - before;
 	numFrames += 1;
@@ -392,5 +420,4 @@ window.setInterval(function() {
 	frameSum = 0;
 	numFrames = 0;
 }, 500);
-
-window.setInterval(loop, 25);
+var mainHandle = window.setInterval(loop, 25);
