@@ -83,7 +83,7 @@ class MyPlayer {
 
 		this.health = 100;
 		this.takingDamage = false;
-		this.inv = [new Item([0,10,0], "AA-12", [266/texW, 0], {damage:10}, false), false, false, false];
+		this.inv = [new Item([0,10,0], "AA-12", [266/texW, 0], {damage:20}, false), false, false, false];
 		this.selected = 0;
 	}
 	updatePos() {
