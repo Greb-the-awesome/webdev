@@ -186,6 +186,30 @@ void main() {
 	size = (10.0 - time) / 10.0;
 }
 `;//uModelViewMatrix[0].y, uModelViewMatrix[1].y, uModelViewMatrix[2].y
+const realBillboardVS = /*lmao*/`
+attribute vec3 aCenterOffset;
+attribute vec3 aCorner;
+attribute vec2 aTexCoord;
+
+uniform mat4 uModelViewMatrix;
+uniform mat4 uProjectionMatrix;
+
+varying vec2 texCoord;
+varying float fogAmount;
+varying vec3 vLighting;
+
+void main() {
+	vec4 position = vec4(aCenterOffset, 1.0);
+	vec3 right = vec3(uModelViewMatrix[0].x, uModelViewMatrix[1].x, uModelViewMatrix[2].x);
+	vec3 up = vec3(uModelViewMatrix[0].y, uModelViewMatrix[1].y, uModelViewMatrix[2].y);
+	position.xyz += (right * aCorner.x) + (up * aCorner.y);
+	fogAmount = -(uModelViewMatrix * position).z * 0.05 - 1.0;
+	fogAmount = 0.0;
+	texCoord = aTexCoord;
+	vLighting = vec3(1.0, 1.0, 1.0);
+	gl_Position = uProjectionMatrix * uModelViewMatrix * position;
+}
+`;
 const particleFS = `
 precision mediump float;
 varying highp vec2 texCoord;

@@ -11,8 +11,9 @@ var divisDownKeys = {};
 var textShader;
 var particleTexCoords, particleCenterOffsets, textTexCoords, textPositions, textColors, particleLifetimes;
 var particleVelocities;
-var objShader;
+var objShader, realBillboardShader;
 var objInfos = {"position": [], "color": [], "normal": []};
+var realBillboardData = {"offset": [], "corner": [], "texCoord": []};
 var theTime = 0;
 var activeUnit = 0;
 var renderBuffers = { // for now, render buffers are only available for two shaders cuz yeah
@@ -69,6 +70,9 @@ function initShaders() {
 	// ---------obj files---------
 	objShader = compileShaders(lightColorVS, fsSource, "objShader");
 	if (!gl.getProgramParameter(objShader, gl.LINK_STATUS)) { alert("obj shaders failed lmao bc" + gl.getProgramInfoLog(objShader)); }
+	// ------real billboards------
+	realBillboardShader = compileShaders(realBillboardVS, textureFS, "realBillboardShader__");
+	if (!gl.getProgramParameter(realBillboardShader, gl.LINK_STATUS)) { alert("billb shaders failed lmao bc" + gl.getProgramInfoLog(realBillboardShader)); }
 	return shaderProgram;
 }
 
@@ -159,6 +163,13 @@ function initBuffers() { // i should dynamically generate the buffers too cuz th
 		setBufferData(objBuffers[prop], objInfos[prop]);
 	}
 
+	const realBillboardBuffers = {
+		"offset": gl.createBuffer(),
+		"corner": gl.createBuffer(),
+		"texCoord": gl.createBuffer()
+	};
+	for (let prop in realBillboardBuffers) {setBufferData(realBillboardBuffers[prop], realBillboardData[prop]);}
+
 	const indexBuffer = gl.createBuffer();
 	indexes = [];
 	setBufferData(indexBuffer, indexes, Uint32Array, gl.STATIC_DRAW, gl.ELEMENT_ARRAY_BUFFER);
@@ -179,6 +190,7 @@ function initBuffers() { // i should dynamically generate the buffers too cuz th
 		"textColor": textColorBuffer,
 		"normal": normalBuffer,
 		"obj": objBuffers,
+		"realBillb": realBillboardBuffers,
 		"index": indexBuffer,
 	}
 }
@@ -232,6 +244,12 @@ function flush() {
 function flushObj() {
 	for (let prop in buffers.obj) {
 		setBufferData(buffers.obj[prop], objInfos[prop]);
+	}
+}
+
+function flushRealBillb() {
+	for (let prop in buffers.realBillb) {
+		setBufferData(buffers.realBillb[prop], realBillboardData[prop]);
 	}
 }
 
@@ -320,6 +338,14 @@ function flushUniforms() {
 		projectionMatrix);
 	gl.uniformMatrix4fv(
 		infoStuff.uniformLocations.tModelViewMatrix,
+		false,
+		modelViewMatrix);
+	gl.useProgram(realBillboardShader);
+	gl.uniformMatrix4fv(infoStuff.uniformLocations.rbProj,
+		false,
+		projectionMatrix);
+	gl.uniformMatrix4fv(
+		infoStuff.uniformLocations.rbMVM,
 		false,
 		modelViewMatrix);
 	gl.useProgram(current);
@@ -825,6 +851,11 @@ function initGL(canvName) {
 				vertexPosition: gl.getAttribLocation(objShader, "aVertexPosition"),
 				vertexNormal: gl.getAttribLocation(objShader, "aVertexNormal"),
 				vertexColor: gl.getAttribLocation(objShader, "aColor"),
+			},
+			realBillboardShader__: {
+				centerOffset: gl.getAttribLocation(realBillboardShader, "aCenterOffset"),
+				corner: gl.getAttribLocation(realBillboardShader, "aCorner"),
+				texCoord: gl.getAttribLocation(realBillboardShader, "aTexCoord"),
 			}
 		},
 		uniformLocations: {
@@ -849,6 +880,8 @@ function initGL(canvName) {
 			oMVM: gl.getUniformLocation(objShader, "uModelViewMatrix"),
 			oPmatrix: gl.getUniformLocation(objShader, "uProjectionMatrix"),
 			oLightingInfo: gl.getUniformLocation(objShader, "uLightingInfo"),
+			rbMVM: gl.getUniformLocation(realBillboardShader, "uModelViewMatrix"),
+			rbProj: gl.getUniformLocation(realBillboardShader, "uProjectionMatrix"),
 		}
 	};
 
@@ -882,6 +915,11 @@ function initGL(canvName) {
 		vertexPosition: [buffers.obj.position],
 		vertexNormal: [buffers.obj.normal],
 		vertexColor: [buffers.obj.color, 4, gl.FLOAT, false, 0, 0],
+	};
+	attributeInfo["realBillboardShader__"] = {
+		centerOffset: [buffers.realBillb.offset],
+		corner: [buffers.realBillb.corner, 2, gl.FLOAT, false, 0, 0],
+		texCoord: [buffers.realBillb.texCoord, 2, gl.FLOAT, false, 0, 0],
 	};
 
 	window.addEventListener("keydown", onKeyDown);
