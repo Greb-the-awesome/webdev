@@ -196,7 +196,7 @@ function divisionOnLoad(gl) {
 	});
 	flushRealBillb();
 
-	setTimeout(()=>{bindTexture(loadTexture("/static/zombiegame_updated_3d/grass.png"), 0)}, 100);
+	setTimeout(()=>{bindTexture(loadTexture("/static/zombiegame_updated_3d/grass.png"), 0)}, 500);
 	oTex = new Image();
 	oTex.src = "/static/zombiegame_updated_3d/grass.png";
 	
