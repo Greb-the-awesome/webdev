@@ -346,7 +346,7 @@ function getDifficulty(t) {
 function mix(a, b, amount) {
 	return a * (1 - amount) + b * amount;
 }
-var DAYLENGTH = 480; // 2min
+var DAYLENGTH = 4000; // 2min
 var COLORLENGTH = DAYLENGTH / 8; // the time each color lasts for
 function loop() {
 	var before = Date.now();
