@@ -56,6 +56,7 @@ void main() {
 	}*/
 	fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.05 - 1.0;
 	vLighting = vec3(1.0, 1.0, 1.0);
+
 }
 `
 const lightVS = `
@@ -84,6 +85,7 @@ void main() {
 	highp vec4 transformedNormal = vec4(aVertexNormal, 1.0);
 	highp float directional = max(dot(transformedNormal.xyz, uLightingInfo[0]), 0.0);
 	vLighting = uLightingInfo[2] + (uLightingInfo[1] * directional * 0.65);
+	gl_PointSize = 100.0;
 }
 `;
 const lightColorVS = `
@@ -126,7 +128,7 @@ void main() {
 	if (gl_FragCoord.z < 0.0) {discard;}
 	lowp vec4 col = texture2D(uSampler, texCoord);
 	col = vec4(col.rgb * vLighting, col.a);
-	col = mix(col, vec4(0.529, 0.808, 0.921, 1.0), clamp(fogAmount, 0.0, 1.0)); // use uFogColor later when water physics actually make sense
+	col = mix(col, uFogColor, clamp(fogAmount, 0.0, 1.0)); // use uFogColor later when water physics actually make sense
 	if (col.a == 0.0) {
 		discard;
 	} else {

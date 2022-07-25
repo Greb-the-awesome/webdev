@@ -34,7 +34,7 @@ for (let a=0; a<zombieBarRemaining.length; a+=2) {
 var texCoordDimension = 100/texW; // if at any point I don't use a square texture then it will fail soooooooo
 
 class Item {
-	constructor(pos, name, texCoordStart, specs, add = true) {
+	constructor(pos, name, texCoordStart, specs, add = true, despawn = true) {
 		this.name = name;
 		this.pos = pos;
 		this.texCoordsCycle = [1, 1,
@@ -62,9 +62,10 @@ class Item {
 		}
 		this.specs = specs;
 		this.texCoordStart = texCoordStart;
+		this.timer = despawn?1000:Infinity;
+		this.roundsRemaining = this.specs.capacity;
 	}
 }
-items.push(new Item([0,10,0], "oda", [266/texW, 0], {damage:100}));
 class MyPlayer {
 	constructor() {
 		// thanks to learnOpenGL.com for these values cos dumb at linear algebra :D
@@ -82,8 +83,11 @@ class MyPlayer {
 		this.acceleration = 0.000000002; // + 0.02 per frame
 
 		this.health = 100;
+		this.stamina = 100;
 		this.takingDamage = false;
-		this.inv = [new Item([0,10,0], "AA-12", [266/texW, 0], {damage:20}, false), false, false, false];
+		this.firingDelay = false;
+		this.reloading = false;
+		this.inv = [new Item([0,10,0], "GL Gun", [266/texW, 300/texH], {damage:20,delay:100,reloadTime:1000,capacity:20}, false), false, false, false];
 		this.selected = 0;
 	}
 	updatePos() {
@@ -91,14 +95,28 @@ class MyPlayer {
 		glMatrix.vec3.add(this.cameraPos, this.cameraPos, this.userInputVelocity);
 		glMatrix.vec3.add(this.hitPos, this.hitPos, this.velocity);
 		glMatrix.vec3.add(this.hitPos, this.hitPos, this.userInputVelocity);
+		// some other housekeeping
+		this.invSelect = this.inv[this.selected];
 	}
 	shoot() {
-		var distanceFromPlayer = 2;
-		var bulletPos = glMatrix.vec3.create();
-		var multipliedFront = glMatrix.vec3.fromValues(
-			this.cameraFront[0]*distanceFromPlayer, this.cameraFront[1]*distanceFromPlayer, this.cameraFront[2]*distanceFromPlayer);
-		glMatrix.vec3.add(bulletPos, this.cameraPos, multipliedFront);
-		new Bullet(bulletPos, this.cameraFront, this.inv[this.selected].specs.damage);
+		if (!this.firingDelay && !this.reloading && myPlayer.invSelect) {
+			this.invSelect.roundsRemaining--;
+			var distanceFromPlayer = 2;
+			var bulletPos = glMatrix.vec3.create();
+			var multipliedFront = glMatrix.vec3.fromValues(
+				this.cameraFront[0]*distanceFromPlayer, this.cameraFront[1]*distanceFromPlayer, this.cameraFront[2]*distanceFromPlayer);
+			glMatrix.vec3.add(bulletPos, this.cameraPos, multipliedFront);
+			new Bullet(bulletPos, this.cameraFront, this.invSelect.specs.damage);
+			this.firingDelay = true;
+			billbOffsets[2] += 0.3;
+			setTimeout(()=>billbOffsets[2]-=0.3, this.invSelect.specs.delay/2)
+			setTimeout(()=>{myPlayer.firingDelay = false;}, this.invSelect.specs.delay);
+			if (this.invSelect.roundsRemaining == 0) {
+				this.reloading = true; setTimeout(()=>{
+					myPlayer.reloading = false;myPlayer.invSelect.roundsRemaining = myPlayer.invSelect.specs.capacity;
+				}, this.invSelect.specs.reloadTime);
+			}
+		}
 	}
 }
 function _aList(lst, x, y, z) {

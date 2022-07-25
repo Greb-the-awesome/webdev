@@ -241,6 +241,13 @@ function flush() {
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(indexes), gl.STATIC_DRAW);
 }
 
+function flushBillb() { // flushes ONLY the (fake) billboards
+	gl.bindBuffer(gl.ARRAY_BUFFER, buffers.billboardTexCoord);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(billboardTexCoords), gl.STATIC_DRAW);
+	gl.bindBuffer(gl.ARRAY_BUFFER, buffers.billboardPosition);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(billboardPositions), gl.STATIC_DRAW);
+}
+
 function flushObj() {
 	for (let prop in buffers.obj) {
 		setBufferData(buffers.obj[prop], objInfos[prop]);
@@ -477,7 +484,7 @@ function finalInit() {
 	console.log(texture)
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 
-	addText("aad", 0, [0, 1, 0, 1]);
+	// addText("aad", 0, [0, 1, 0, 1]);
 	flush();
 }
 
@@ -779,6 +786,7 @@ function request(url, callback) {
 	}
 	req.send(null);
 }
+
 function parseMTL(text) { // I wrote this mtl parser myself but it kinda sux
 	var splitd = text.split("\n");
 	var materials = {};

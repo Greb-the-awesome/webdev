@@ -9,6 +9,18 @@ var bullets = [];
 var zombiePos;
 var zombies = [];
 var oTex;
+var skyColors = [ // each one lasts for around 1/8 of a day
+[0.529, 0.807, 0.921], // sky blue: morning
+[0.784, 0.976, 0.98], // a bit lighter: noon
+[0.529, 0.807, 0.921], // sky blue: afternoon
+[0.98, 0.513, 0.078], // orange: sunset
+[0.337, 0.482, 0.749], // dusk
+[0.086, 0.211, 0.439], // midnight
+[0.337, 0.482, 0.749], // dawn
+[0.968, 0.105, 0.278], // sunrise
+[0.529, 0.807, 0.921] // morning again
+]
+var gameTime = 0;
 console.log("main script loaded.");
 function fakePerlin(x, y) {
 	return [Math.sin((x + y) / 2)]
@@ -71,12 +83,13 @@ class OtherPlayer {
 let myPlayer = new MyPlayer();
 
 chunks = {};
-
+var gamestart = false;
 
 function startGame() {
 	document.getElementById("homeDiv").style.display = "none";
 	canvas.requestPointerLock();
 	clearInterval(ambientHandle);
+	gamestart = true;
 }
 var alreadyHelped;
 function gameHelp() {
@@ -101,7 +114,7 @@ function pauseMenu() {
 	} else {
 		var a = document.getElementById('pauseDiv');
 		a.style.display = "block";
-		console.log("lock off")
+		console.log("lock off");
 	}
 }
 
@@ -132,7 +145,9 @@ function loadObj(url, mtlUrl, callback) {
 var assdfd;
 var WORLDEND = 3;
 var WORLDSTART = -3;
+var worldwidth = (WORLDEND - WORLDSTART) * 10;
 var overlay, oCtx;
+var mouseDown = false;
 function divisionOnLoad(gl) {
 	noise.seed(6969); // the funny number
 	// size the canvas
@@ -147,6 +162,7 @@ function divisionOnLoad(gl) {
 	overlay.height = canvas.height;
 	oCtx = overlay.getContext("2d");
 	oCtx.fillStyle = "rgb(0, 255, 255)";
+	oCtx.font = "30px Open Sans";
 
 	document.addEventListener("pointerlockchange", pauseMenu, false);
 	
@@ -175,20 +191,20 @@ function divisionOnLoad(gl) {
 			    0.0, 128/texH], [], n1.concat(n2));
 		}
 	}
+	for (let i=0; i<30; i++) {
+		var offsets = [Math.random() * worldwidth * 1.5 - WORLDEND * 12.5, Math.random() * 10 + 10, Math.random() * worldwidth * 1.5 - WORLDEND * 12.5];
+		var scale = [Math.random() * 10, Math.random(), Math.random() * 10];
+		var toAdd = [];
+		var cloud = cube;
+		for (let j=0; j<cloud.length; j+=3) {
+			toAdd.push(cloud[j] * scale[0] + offsets[0]);
+			toAdd.push(cloud[j+1] * scale[1] + offsets[1]);
+			toAdd.push(cloud[j+2] * scale[2] + offsets[2]);
+		}
+		addPositions(toAdd, mList([239/texW, 249/texH], toAdd.length/3*2), [], mList([0,1,0], toAdd.length/3));
+	}
+	refreshBillbs();
 	flush();
-	// crosshair
-	addBillbPositions([-0.1, 0.1, -4,
-					   0.1, -0.1, -4,
-					   0.1, 0.1, -4,
-					   -0.1, -0.1, -4,
-					   -0.1, 0.1, -4,
-					   0.1, -0.1, -4,],
-					   [128/texW, 128/texH,
-					    256/texW, 0.0,
-					   256/texW, 128/texH,
-					   128/texW, 0.0,
-					   128/texW, 128/texW,
-					   256/texW, 0.0,]);
 	loadObj("/static/multiplayer_3d_game/zombie.obj", "/static/multiplayer_3d_game/zombie.mtl", function(res) {
 		zombiePos = res;
 		addObjPositions(res.position, res.color, res.normal);
@@ -207,6 +223,7 @@ function divisionOnLoad(gl) {
 	// 			  -100, 0, 100,
 	// 			  -100, 0, -100],
 	// 			  [0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,0.99, 0.99,]) // remember to include normals
+	refreshBillbs(0);
 	flush();
 	window.gl = gl;
 	//assdfd = new ParticleSystem([2.47-2.5, 1.23, 6.96-2.5], D_SQUARE_PLANE, 0, 0, [0.73, 0.746], 0.218);
@@ -216,7 +233,8 @@ function divisionOnLoad(gl) {
 	document.exitPointerLock = document.exitPointerLock ||
                            document.mozExitPointerLock;
 	canvas.addEventListener("mousemove", onCameraTurn);
-	canvas.addEventListener("click", ()=>myPlayer.shoot());
+	canvas.addEventListener("mousedown", ()=>{mouseDown = true;});
+	canvas.addEventListener("mouseup", ()=>{mouseDown = false;});
 	canvas.addEventListener("wheel", e=>{
 		if (e.deltaY > 0) {
 			if (myPlayer.selected == 3) {myPlayer.selected = 0;} else {myPlayer.selected += 1;}
@@ -228,7 +246,33 @@ function divisionOnLoad(gl) {
 	createRenderBuffer(shaderProgram);
 	setInterval(debugRefresh, 20);
 }
-
+var billbOffsets = [-2,-0.7,-2];
+function refreshBillbs() {
+	billboardPositions = [];
+	billboardTexCoords = [];
+	var pos = [1,-1,-1, 1,-1,1, 1,1,1, 1,-1,-1, 1,1,1, 1,1,-1];
+	for (let i=0; i<pos.length; i+=3) {
+		pos[i] += billbOffsets[0];
+		pos[i+1] += billbOffsets[1];
+		pos[i+2] += billbOffsets[2];
+	}
+	var tex = myPlayer.inv[myPlayer.selected].texCoordsCycle;
+	addBillbPositions(pos, tex);
+	// crosshair
+	addBillbPositions([-0.1, 0.1, -4,
+					   0.1, -0.1, -4,
+					   0.1, 0.1, -4,
+					   -0.1, -0.1, -4,
+					   -0.1, 0.1, -4,
+					   0.1, -0.1, -4,],
+					   [128/texW, 128/texH,
+					    256/texW, 0.0,
+					   256/texW, 128/texH,
+					   128/texW, 0.0,
+					   128/texW, 128/texW,
+					   256/texW, 0.0,]);
+	flushBillb();
+}
 
 function debugRefresh() {
 	var disp = "";
@@ -286,14 +330,48 @@ window.onload = onLoad;
 var buffer;
 var frameSum = 0;
 var numFrames = 0;
+function dropItems(goodWeapon) {
+	var eligible = []; // rarer weapons will be in this array less
+	for (var weapon of weapons) {
+		if (goodWeapon && weapon[1] > 4 && Math.floor(Math.random() * 2) == 0) { // goodWeapon gives rare weapons an advantage
+			eligible.push(weapon[0]);
+		}
+		if (Math.floor(Math.random() * weapon[1]) == 0) {eligible.push(weapon[0]);}
+	}
+	return eligible[Math.floor(Math.random() * eligible.length)];
+}
+function getDifficulty(t) {
+	return 4 / (2 * Math.abs(t - Math.floor(t + 0.5)) * (Math.cbrt(t - 1) + 3)) - 0.5;
+}
+function mix(a, b, amount) {
+	return a * (1 - amount) + b * amount;
+}
+var DAYLENGTH = 480; // 2min
+var COLORLENGTH = DAYLENGTH / 8; // the time each color lasts for
 function loop() {
 	var before = Date.now();
+	gameTime += 1;
+	var askPickUp = false;
+	myPlayer.takingDamage = false;
+
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	oCtx.clearRect(0, 0, overlay.width, overlay.height);
-	myPlayer.takingDamage = false;
-	// wasd
-	// var playerVelXZ = Math.sqrt(myPlayer.userInputVelocity[0]**2 + myPlayer.userInputVelocity[2]**2);
-	// var tooFast = playerVelXZ > 0.02;
+	
+	// color calcs
+	var m = gameTime % DAYLENGTH;
+	var dayNum = Math.floor(gameTime / DAYLENGTH);
+	var amount = (m % COLORLENGTH) / COLORLENGTH;
+	var ind = Math.floor(m/COLORLENGTH);
+	debugDispNow["day number"] = dayNum;
+	var color1 = skyColors[ind];
+	var color2 = skyColors[ind+1];
+	var c = [mix(color1[0], color2[0], amount), mix(color1[1], color2[1], amount), mix(color1[2], color2[2], amount)];
+	gl.clearColor(c[0], c[1], c[2], 1.0);
+	var adj = m - 1 * COLORLENGTH; // bc the sun position is a bit wank
+	var sunPosition = [Math.sin(adj / DAYLENGTH * 2 * Math.PI) * 50, Math.cos(adj / DAYLENGTH * 2 * Math.PI) * 30, 0];
+
+	
+	if (mouseDown) {myPlayer.shoot();}
 	if(divisDownKeys[65]) { // a or <
 		var crossed = glMatrix.vec3.create();
 		var normalized = glMatrix.vec3.create();
@@ -322,16 +400,22 @@ function loop() {
 			myPlayer.userInputVelocity,
 			myPlayer.cameraFront,);
 	}
-	if (divisDownKeys[16]) {
+	if (divisDownKeys[16] && myPlayer.stamina > 60) {
 		myPlayer.userInputVelocity[0] *= 0.25;
 		myPlayer.userInputVelocity[1] *= 0.25;
 		myPlayer.userInputVelocity[2] *= 0.25;
-	} else {
+	} else if (myPlayer.stamina > 40) {
 		myPlayer.userInputVelocity[0] *= 0.15;
 		myPlayer.userInputVelocity[1] *= 0.15;
 		myPlayer.userInputVelocity[2] *= 0.15;
+	} else { // stamina rlly low
+		myPlayer.userInputVelocity[0] *= 0.08;
+		myPlayer.userInputVelocity[1] *= 0.08;
+		myPlayer.userInputVelocity[2] *= 0.08;
 	}
+
 	buffer = getRBdata(0, shaderProgram);
+
 	{ // collision detection :(
 		// myPlayer.velocity[1] -= 0.005; // ONLY IF PLAYER IS IN AIR
 		// get which chunk and block the playr is colliding with
@@ -339,43 +423,65 @@ function loop() {
 		var x = myPlayer.cameraPos[0];
 		var z = myPlayer.cameraPos[2];
 		var height = getTerrain(x, z) + 2;
-		var speedMultiplier = myPlayer.hitPos[1] - height + 2;
+		var speedMultiplier = (myPlayer.hitPos[1] - height + 2 - 0.1) * 2;
+		if (speedMultiplier < -0.21) {
+			myPlayer.stamina += speedMultiplier;
+		} else if (myPlayer.stamina < 100) {
+			if (speedMultiplier < -0.030) {myPlayer.stamina += 0.25;} else {myPlayer.stamina += 0.15;}}
 		debugDispNow["speed multiplier"] = speedMultiplier;
-		//myPlayer.cameraPos[1] = height;
+		myPlayer.cameraPos[1] = height;
 		myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
 		// myPlayer.userInputVelocity[0] *= speedMultiplier;
 		// myPlayer.userInputVelocity[2] *= speedMultiplier;
+	}
+	{ // game thingies
 		var finalBullet = [];
+		// check zombies colliding bullets + update bullets
 		var bulletNum = 0;
 		for (bullet of bullets) {
 			var zombNum = 0;
 			for (zomb of zombies) {
-				if (checkCollision([zomb.pos[0],zomb.pos[1]+3,zomb.pos[2]], bullet.pos, [1,2,1], [1,1,1])) {
+				if (checkCollision([zomb.pos[0],zomb.pos[1]+3,zomb.pos[2]], bullet.pos, [2,4,2], [1,1,1])) {
 					zomb.health -= bullet.damage;
-					if (zomb.health <= 0) {zombies.splice(zombNum, 1);}
+					if (zomb.health <= 0) {
+						if (Math.random() > 0.6) {
+							var toDrop = dropItems(dayNum < 2);
+							items.push(new Item([zomb.pos[0], zomb.pos[1]+1, zomb.pos[2]], toDrop.name, toDrop.texCoordStart, toDrop.specs));
+						}
+						zombies.splice(zombNum, 1);
+					}
 				}
 				zombNum++;
 			}
 			if (bullet.pos[0] > 200 || bullet.pos[0] < -200 || bullet.pos[2] > 200 || bullet.pos[2] < -200 ||
-				bullet.pos[1] < getTerrain(bullet.pos[0], bullet.pos[2])) {
+				bullet.pos[1] < getTerrain(bullet.pos[0], bullet.pos[2]) || bullet.pos[1] > 100) {
 				bullets.splice(bulletNum, 1);
 			} else {
 				finalBullet = finalBullet.concat(bullet.updatePos());
 			}
 			bulletNum += 1;
 		}
+		// update items
 		var itemNum = 0;
+		askPickUp = false;
 		for (var item of items) {
+			item.timer--;
+			if (item.timer <= 0) {items.splice(itemNum, 1);continue;} // despawn
 			if (checkCollision(item.pos, myPlayer.hitPos, [2,2,2], [2,2,2])) {
-				var alreadyPicked = false;
-				for (let i=0; i<myPlayer.inv.length; i++) {
-					if (!myPlayer.inv[i] && !alreadyPicked) {myPlayer.inv[i] = item; alreadyPicked = true;} // pick it up
+				for (var i=0; i<myPlayer.inv.length; i++) {
+					if (!myPlayer.inv[i]) {myPlayer.inv[i] = item; items.splice(itemNum, 1); break;} // pick it up
 				}
-				items.splice(itemNum, 1);
-				console.log('item hit');
+				if (i == 4) { // no empty space
+					askPickUp = true;
+					if (divisDownKeys[81]) {myPlayer.inv[myPlayer.selected] = item; items.splice(itemNum, 1);}
+				}
 			}
 			itemNum++;
 		}
+
+		// update buffers
+
+		// items
 		realBillboardData.offset = []; realBillboardData.texCoord = []; realBillboardData.corner = [];
 		for (var item of items) {
 			realBillboardData.texCoord = realBillboardData.texCoord.concat(item.texCoordsCycle);
@@ -383,10 +489,14 @@ function loop() {
 			realBillboardData.corner = realBillboardData.corner.concat(item.cycle);
 		}
 		
+		// bullets + sun
 		buffer.vertexPosition[1] = finalBullet;
-		buffer.vertexTexCoord[1] = mList([71/texW,161/texH], buffer.vertexPosition[1].length*2/3); // do some changes cuz there's more than 72
-		buffer.vertexNormal[1] = mList([0, 1, 0], buffer.vertexPosition[1].length);
+		buffer.vertexTexCoord[1] = mList([71/texW,161/texH], buffer.vertexPosition[1].length*2/3);
+		buffer.vertexNormal[1] = mList([0, 1, 0], buffer.vertexPosition[1].length+1);
+		buffer.vertexPosition[1] = buffer.vertexPosition[1].concat(sunPosition);
+		buffer.vertexTexCoord[1] = buffer.vertexTexCoord[1].concat([231/texW, 250/texH]);
 
+		// update zombies
 		objInfos.position = [];
 		objInfos.color = [];
 		objInfos.normal = [];
@@ -411,17 +521,19 @@ function loop() {
 				myPlayer.takingDamage = true;
 			}
 		}
-		useShader(realBillboardShader);
-		flushRealBillb();
-		gl.drawArrays(gl.TRIANGLES, 0, realBillboardData.corner.length/2);
-		flushRB(0, shaderProgram);
-		if (myPlayer.health < 0) {ded();}
+
+		// spawn zombies
+		if (Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2) {
+			new Zombie([Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10]);
+		}
+		if (myPlayer.health < 0) {ded();} // oof
 		debugDispNow["health"] = myPlayer.health;
+
+		// flush
+		flushRB(0, shaderProgram);
+		flushRealBillb();
 		flushObj();
-	}
-	if (Math.floor(Math.random() * 60) == 8) {
-		var worldwidth = (WORLDEND - WORLDSTART) * 10;
-		new Zombie([Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10]);
+		refreshBillbs();	
 	}
 	{ // yum yum render em up
 		var posPlusFront = glMatrix.vec3.create();
@@ -430,19 +542,24 @@ function loop() {
 			myPlayer.cameraPos,
 			posPlusFront,
 			myPlayer.cameraUp);
+		settings.lightCol = glMatrix.vec3.fromValues(...c);
 		flushUniforms();
 
-		useShader(shaderProgram);
+		useShader(realBillboardShader);
+		gl.drawArrays(gl.TRIANGLES, 0, realBillboardData.corner.length/2);
+
+		gl.useProgram(shaderProgram);
+		useRenderBuffer(0, shaderProgram);
+		gl.drawArrays(gl.TRIANGLES, 0, buffer.vertexPosition[1].length/3 - 1);
+		gl.uniform4f(infoStuff.uniformLocations.fogColor, 1.0, 1.0, 0.0, 1.0);
+		gl.drawArrays(gl.POINTS, buffer.vertexPosition[1].length/3 - 1, 1);
+		gl.uniform4f(infoStuff.uniformLocations.fogColor, c[0], c[1], c[2], 1.0);
+
+		useShader(shaderProgram); // switch to the main renderbuffer
 		gl.drawArrays(gl.TRIANGLES, 0, positions.length/3);
 		// user-defined uniforms so flushUniforms() doesn't flush it
 		gl.uniform3f(infoStuff.uniformLocations.cameraPos, myPlayer.cameraPos[0], myPlayer.cameraPos[1], myPlayer.cameraPos[2]);
-		if (myPlayer.cameraPos[1] < 0) {
-			gl.uniform4f(infoStuff.uniformLocations.fogColor, 0.0, 0.0, 1.0, 1.0);
-		} else {
-			gl.uniform4f(infoStuff.uniformLocations.fogColor, 0.529, 0.808, 0.921, 1.0);
-		}
-		useRenderBuffer(0, shaderProgram);
-		gl.drawArrays(gl.TRIANGLES, 0, buffer.vertexPosition[1].length/3);
+		
 
 		useShader(textShader);
 		gl.uniform4f(infoStuff.uniformLocations.tFogColor, 0.529, 0.808, 0.921, 1.0);
@@ -466,6 +583,7 @@ function loop() {
 		else {oCtx.fillStyle = "rgb(0, 255, 255)"}
 		oCtx.fillRect(overlay.width * 0.3, overlay.height * 0.94, overlay.width * 0.4*myPlayer.health/100, overlay.height * 0.05);
 		oCtx.strokeRect(overlay.width * 0.3, overlay.height * 0.94, overlay.width * 0.4, overlay.height * 0.05);
+		oCtx.strokeRect(overlay.width * 0.3, overlay.height * 0.75, overlay.width * 0.4, overlay.height * 0.03);
 		// inv: one square is 0.1 wide and high, and 0.02 space between squares
 		oCtx.strokeRect(overlay.width * 0.36, overlay.height * 0.79, overlay.width * 0.28, overlay.height * 0.14);
 		var selectNum = 0;
@@ -481,6 +599,13 @@ function loop() {
 			selectNum += 1;
 		}
 		oCtx.lineWidth = 1;
+		if (myPlayer.reloading) {oCtx.fillText("Reloading", overlay.width * 0.4, overlay.height * 0.6);}
+		oCtx.fillText("Current Item: "+myPlayer.inv[myPlayer.selected].name, overlay.width * 0.4, overlay.height * 0.7);
+		oCtx.fillText(""+myPlayer.invSelect.roundsRemaining+"/"+myPlayer.invSelect.specs.capacity, overlay.width * 0.45, overlay.height * 0.74);
+		if (askPickUp) {oCtx.fillText("q to pick up", overlay.width * 0.4, overlay.height * 0.5)}
+		oCtx.fillStyle = "rgb(200, 150, 0)";
+		oCtx.fillRect(overlay.width * 0.3, overlay.height * 0.75, overlay.width * 0.4 * myPlayer.stamina/100, overlay.height * 0.03);
+		oCtx.fillText("Day #: " + dayNum, overlay.width * 0.85, overlay.height * 0.1);
 	}
 	frameSum += Date.now() - before;
 	numFrames += 1;
@@ -491,4 +616,5 @@ window.setInterval(function() {
 	frameSum = 0;
 	numFrames = 0;
 }, 500);
-var mainHandle = window.setInterval(loop, 25);
+
+mainHandle = window.setInterval(loop, 25);
