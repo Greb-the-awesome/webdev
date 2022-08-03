@@ -82,7 +82,7 @@ class MyPlayer {
 
 		this.acceleration = 0.000000002; // + 0.02 per frame
 
-		this.health = Infinity;
+		this.health = 100;
 		this.stamina = 100;
 		this.takingDamage = false;
 		this.firingDelay = false;
