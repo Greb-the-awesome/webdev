@@ -6,7 +6,7 @@
 var canvas, gl, projectionMatrix, modelViewMatrix, infoStuff, buffers, positions, indexes, colors, texCoords, billboardShader, billboardPositions, billboardTexCoords, particleCorners, normals;
 var settings = {};
 var pushed = [];
-var attributeInfo, particleShader;
+var attributeInfo, particleShader, transformShader;
 var divisDownKeys = {};
 var textShader;
 var particleTexCoords, particleCenterOffsets, textTexCoords, textPositions, textColors, particleLifetimes;
@@ -20,6 +20,7 @@ var renderBuffers = { // for now, render buffers are only available for two shad
 	"shaderProgram": [],
 	"objShader": [],
 };
+var transformInfos = {"position": [], "color": [], "normal": [], "rot": [], "translate": []};
 var cube = [-1.0, -1.0, 1.0,  1.0, -1.0, 1.0,  1.0, 1.0, 1.0,  -1.0, -1.0, 1.0,  1.0, 1.0, 1.0,  -1.0,  1.0,  1.0,
 			 -1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  1.0, 1.0, -1.0,  -1.0, -1.0, -1.0,  1.0, 1.0, -1.0,  1.0, -1.0, -1.0,
 			 -1.0, 1.0, -1.0,  -1.0, 1.0, 1.0,  1.0, 1.0, 1.0,  -1.0, 1.0, -1.0,  1.0, 1.0, 1.0,  1.0, 1.0, -1.0,
@@ -73,6 +74,10 @@ function initShaders() {
 	// ------real billboards------
 	realBillboardShader = compileShaders(realBillboardVS, textureFS, "realBillboardShader__");
 	if (!gl.getProgramParameter(realBillboardShader, gl.LINK_STATUS)) { alert("billb shaders failed lmao bc" + gl.getProgramInfoLog(realBillboardShader)); }
+
+	// ---transform shaders ig?---
+	transformShader = compileShaders(lightColorTransfVS, fsSource, "transformShader");
+	if (!gl.getProgramParameter(transformShader, gl.LINK_STATUS)) { alert("transform shaders failed lmao bc" + gl.getProgramInfoLog(transformShader)); }
 	return shaderProgram;
 }
 
@@ -163,6 +168,15 @@ function initBuffers() { // i should dynamically generate the buffers too cuz th
 		setBufferData(objBuffers[prop], objInfos[prop]);
 	}
 
+	const transfBuffers = {"position": gl.createBuffer(),
+						"color": gl.createBuffer(),
+						"normal": gl.createBuffer(),
+					    "rot": gl.createBuffer(),
+					    "translate": gl.createBuffer()};
+	for (let prop in transfBuffers) {
+		setBufferData(transfBuffers[prop], transformInfos[prop]);
+	}
+
 	const realBillboardBuffers = {
 		"offset": gl.createBuffer(),
 		"corner": gl.createBuffer(),
@@ -191,6 +205,7 @@ function initBuffers() { // i should dynamically generate the buffers too cuz th
 		"normal": normalBuffer,
 		"obj": objBuffers,
 		"realBillb": realBillboardBuffers,
+		"transf": transfBuffers,
 		"index": indexBuffer,
 	}
 }
@@ -204,6 +219,20 @@ function addPositions(pos, color, index = [], normal = []) {
 	}
 	indexes = indexes.concat(index);
 	normals = normals.concat(normal);
+}
+
+function addTransformedPositions(pos, color, normal, rotate, translate) {
+	transformInfos.position = transformInfos.position.concat(pos);
+	transformInfos.color = transformInfos.color.concat(color);
+	transformInfos.normal = transformInfos.normal.concat(normal);
+	transformInfos.rot = transformInfos.rot.concat(rotate);
+	transformInfos.translate = transformInfos.translate.concat(translate);
+}
+
+function flushTransformedPositions() {
+	for (let prop in buffers.transf) {
+		setBufferData(buffers.transf[prop], transformInfos[prop]);
+	}
 }
 
 function addBillbPositions(pos, texCoords = false) {
@@ -355,6 +384,19 @@ function flushUniforms() {
 		infoStuff.uniformLocations.rbMVM,
 		false,
 		modelViewMatrix);
+	gl.useProgram(transformShader);
+	gl.uniformMatrix4fv(infoStuff.uniformLocations.trProj,
+		false,
+		projectionMatrix);
+	gl.uniformMatrix4fv(
+		infoStuff.uniformLocations.trMVM,
+		false,
+		modelViewMatrix);
+	gl.uniformMatrix3fv(infoStuff.uniformLocations.trLightingInfo, false,
+		glMatrix.mat3.fromValues(settings.lightDir[0], settings.lightDir[1], settings.lightDir[2],
+		settings.lightCol[0], settings.lightCol[1], settings.lightCol[2],
+		settings.ambientLight[0], settings.ambientLight[1], settings.ambientLight[2]));
+
 	gl.useProgram(current);
 }
 var supporteds = [];
@@ -864,6 +906,13 @@ function initGL(canvName) {
 				centerOffset: gl.getAttribLocation(realBillboardShader, "aCenterOffset"),
 				corner: gl.getAttribLocation(realBillboardShader, "aCorner"),
 				texCoord: gl.getAttribLocation(realBillboardShader, "aTexCoord"),
+			},
+			transformShader: {
+				vertexPosition: gl.getAttribLocation(transformShader, "aVertexPosition"),
+				vertexNormal: gl.getAttribLocation(transformShader, "aVertexNormal"),
+				vertexColor: gl.getAttribLocation(transformShader, "aColor"),
+				rotation: gl.getAttribLocation(transformShader, "aYRot"),
+				translation: gl.getAttribLocation(transformShader, "aTranslation"),
 			}
 		},
 		uniformLocations: {
@@ -890,6 +939,9 @@ function initGL(canvName) {
 			oLightingInfo: gl.getUniformLocation(objShader, "uLightingInfo"),
 			rbMVM: gl.getUniformLocation(realBillboardShader, "uModelViewMatrix"),
 			rbProj: gl.getUniformLocation(realBillboardShader, "uProjectionMatrix"),
+			trMVM: gl.getUniformLocation(transformShader, "uModelViewMatrix"),
+			trProj: gl.getUniformLocation(transformShader, "uProjectionMatrix"),
+			trLightingInfo: gl.getUniformLocation(transformShader, "uLightingInfo")
 		}
 	};
 
@@ -928,6 +980,13 @@ function initGL(canvName) {
 		centerOffset: [buffers.realBillb.offset],
 		corner: [buffers.realBillb.corner, 2, gl.FLOAT, false, 0, 0],
 		texCoord: [buffers.realBillb.texCoord, 2, gl.FLOAT, false, 0, 0],
+	};
+	attributeInfo["transformShader"] = {
+		vertexPosition: [buffers.transf.position],
+		vertexNormal: [buffers.transf.normal],
+		vertexColor: [buffers.transf.color, 4, gl.FLOAT, false, 0, 0],
+		rotation: [buffers.transf.rot, 1, gl.FLOAT, false, 0, 0],
+		translation: [buffers.transf.translate]
 	};
 
 	window.addEventListener("keydown", onKeyDown);

@@ -82,11 +82,12 @@ class MyPlayer {
 
 		this.acceleration = 0.000000002; // + 0.02 per frame
 
-		this.health = 100;
+		this.health = Infinity;
 		this.stamina = 100;
 		this.takingDamage = false;
 		this.firingDelay = false;
 		this.reloading = false;
+		this.inAir = false;
 		this.inv = [new Item([0,10,0], "GL Gun", [266/texW, 300/texH], {damage:20,delay:100,reloadTime:1000,capacity:20}, false), false, false, false];
 		this.selected = 0;
 	}
@@ -119,15 +120,8 @@ class MyPlayer {
 		}
 	}
 }
-function _aList(lst, x, y, z) {
-	var res = JSON.parse(JSON.stringify(lst)); // copy it
-	for (let i=0; i<lst.length; i+=3) {
-		res[i] += x;
-		res[i+1] += y;
-		res[i+2] += z;
-	}
-	return res;
-}
+
+
 class Bullet {
 	constructor(pos, front, damage) {
 		this.front = glMatrix.vec3.fromValues(front[0], front[1], front[2]);
@@ -150,23 +144,50 @@ var epsilon = 1;
 function closeTo(a, b) {
 	return Math.abs(a - b) < epsilon;
 }
+var rads = {
+	45: Math.PI/4,
+	90: Math.PI/2,
+	135: Math.PI*0.75,
+	180: Math.PI,
+	225: Math.PI*1.25,
+	270: Math.PI*1.5,
+	315: Math.PI*1.75
+};
 class Zombie {
-	constructor(pos) {
+	constructor(pos, model, damage, health) {
 		this.pos = pos;
-		this.health = 100;
+		this.health = health;
+		this.angle = 0;
+		this.model = model;
+		this.damage = damage;
 		zombies.push(this);
 	}
 	updatePos() {
 		// player speed (walking) is 0.136/frame so zombie is 0.14 (so u can only run to escape zombie)
+		var moveForward = 0; var moveSideways = 0;
 		if (!closeTo(myPlayer.cameraPos[0], this.pos[0])) {
-			if (myPlayer.cameraPos[0] > this.pos[0]) { this.pos[0] += 0.14; } else { this.pos[0] -= 0.14; }
+			if (myPlayer.cameraPos[0] > this.pos[0]) { this.pos[0] += 0.14; moveForward = 1; }
+			else { this.pos[0] -= 0.14; moveForward = 2; }
 		}
 
 		if (!closeTo(myPlayer.cameraPos[2], this.pos[2])) {
-			if (myPlayer.cameraPos[2] > this.pos[2]) { this.pos[2] += 0.14; } else { this.pos[2] -= 0.14; }
+			if (myPlayer.cameraPos[2] > this.pos[2]) { this.pos[2] += 0.14; moveSideways = 1; }
+			else { this.pos[2] -= 0.14; moveSideways = 2; }
 		}
 
 		this.pos[1] = getTerrain(this.pos[0], this.pos[2]);
-		return _aList(zombiePos.position, this.pos[0], this.pos[1], this.pos[2]);
+		if (moveForward == 1) {
+			if (!moveSideways) {this.angle = rads[180];}
+			else if (moveSideways == 1) {this.angle = rads[135];}
+			else if (moveSideways == 2) {this.angle = rads[225];}
+		} else if (moveForward == 2) {
+			if (!moveSideways) {this.angle = 0;}
+			else if (moveSideways == 1) {this.angle = rads[45];}
+			else if (moveSideways == 2) {this.angle = rads[315];}
+		} else if (moveForward == 0) {
+			if (moveSideways == 1) {this.angle = rads[90];}
+			else if (moveSideways == 2) {this.angle = rads[270];}
+		}
+		return this.angle;
 	}
 }

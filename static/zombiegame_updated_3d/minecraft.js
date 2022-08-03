@@ -6,7 +6,7 @@ var chunks, gl;
 var debugDispNow = {"hi":"hi"};
 var locations = {};
 var bullets = [];
-var zombiePos;
+var zombiePos, bossPos;
 var zombies = [];
 var oTex;
 var skyColors = [ // each one lasts for around 1/8 of a day
@@ -85,6 +85,16 @@ let myPlayer = new MyPlayer();
 chunks = {};
 var gamestart = false;
 
+function _aList(lst, x, y, z) {
+	var res = JSON.parse(JSON.stringify(lst)); // copy it
+	for (let i=0; i<lst.length; i+=3) {
+		res[i] += x;
+		res[i+1] += y;
+		res[i+2] += z;
+	}
+	return res;
+}
+
 function startGame() {
 	document.getElementById("homeDiv").style.display = "none";
 	canvas.requestPointerLock();
@@ -119,6 +129,9 @@ function pauseMenu() {
 }
 
 function getTerrain(x, z) {
+	if (x > WORLDEND * 10 || x < WORLDSTART * 10 || z > WORLDEND * 10 || z < WORLDSTART * 10) { // out of bounds
+		return -Infinity;
+	}
 	function clamp(val, low, high) {return Math.min(Math.max(val, low), high);}
 	var multiplier = clamp((x/6)**2 + (z/6) **2, 0, 4);
 	return (noise.simplex2(x/15, z/15)) * (noise.simplex2(x/40,z/40)) * multiplier + multiplier - 3;
@@ -207,8 +220,9 @@ function divisionOnLoad(gl) {
 	flush();
 	loadObj("/static/multiplayer_3d_game/zombie.obj", "/static/multiplayer_3d_game/zombie.mtl", function(res) {
 		zombiePos = res;
-		addObjPositions(res.position, res.color, res.normal);
-		flushObj();
+	});
+	loadObj("/static/multiplayer_3d_game/zombieboss.obj", "/static/multiplayer_3d_game/zombieboss.mtl", function(res) {
+		bossPos = res;
 	});
 	flushRealBillb();
 
@@ -245,6 +259,8 @@ function divisionOnLoad(gl) {
 	});
 	createRenderBuffer(shaderProgram);
 	setInterval(debugRefresh, 20);
+	addTransformedPositions(cube, mList([1,1,1,1],cube.length/3), mList([0,1,0],cube.length/3), mList([10],cube.length/3), mList([0,10,0],cube.length/3));
+	flushTransformedPositions();
 }
 var billbOffsets = [-2,-0.7,-2];
 function refreshBillbs() {
@@ -333,7 +349,7 @@ var numFrames = 0;
 function dropItems(goodWeapon) {
 	var eligible = []; // rarer weapons will be in this array less
 	for (var weapon of weapons) {
-		if (goodWeapon && weapon[1] > 4 && Math.floor(Math.random() * 2) == 0) { // goodWeapon gives rare weapons an advantage
+		if (goodWeapon && weapon[1] > 4 && Math.floor(Math.random() * 3) == 0) { // goodWeapon gives rare weapons an advantage
 			eligible.push(weapon[0]);
 		}
 		if (Math.floor(Math.random() * weapon[1]) == 0) {eligible.push(weapon[0]);}
@@ -341,7 +357,7 @@ function dropItems(goodWeapon) {
 	return eligible[Math.floor(Math.random() * eligible.length)];
 }
 function getDifficulty(t) {
-	return 4 / (2 * Math.abs(t - Math.floor(t + 0.5)) * (Math.cbrt(t - 1) + 3)) - 0.5;
+	return 1 / (2 * Math.abs(t - Math.floor(t + 0.5)) * Math.sqrt(t * 2));
 }
 function mix(a, b, amount) {
 	return a * (1 - amount) + b * amount;
@@ -400,6 +416,10 @@ function loop() {
 			myPlayer.userInputVelocity,
 			myPlayer.cameraFront,);
 	}
+	if (divisDownKeys[32] && !myPlayer.inAir) {
+		myPlayer.velocity[1] = 0.25;
+		myPlayer.inAir = true;
+	}
 	if (divisDownKeys[16] && myPlayer.stamina > 60) {
 		myPlayer.userInputVelocity[0] *= 0.25;
 		myPlayer.userInputVelocity[1] *= 0.25;
@@ -417,20 +437,30 @@ function loop() {
 	buffer = getRBdata(0, shaderProgram);
 
 	{ // collision detection :(
-		// myPlayer.velocity[1] -= 0.005; // ONLY IF PLAYER IS IN AIR
-		// get which chunk and block the playr is colliding with
 		myPlayer.updatePos(); // would-be next position
 		var x = myPlayer.cameraPos[0];
 		var z = myPlayer.cameraPos[2];
 		var height = getTerrain(x, z) + 2;
-		var speedMultiplier = (myPlayer.hitPos[1] - height + 2 - 0.1) * 2;
-		if (speedMultiplier < -0.21) {
-			myPlayer.stamina += speedMultiplier;
-		} else if (myPlayer.stamina < 100) {
-			if (speedMultiplier < -0.030) {myPlayer.stamina += 0.25;} else {myPlayer.stamina += 0.15;}}
-		debugDispNow["speed multiplier"] = speedMultiplier;
-		myPlayer.cameraPos[1] = height;
+
+		if (height == -Infinity) {myPlayer.inAir = true;}
+
+		if (myPlayer.inAir) {myPlayer.velocity[1] -= 0.008;} else {
+			var speedMultiplier = (myPlayer.hitPos[1] - height + 2 - 0.1) * 2;
+			if (speedMultiplier < -0.21) {
+				myPlayer.stamina += speedMultiplier;
+			} else if (myPlayer.stamina < 100) {
+				if (speedMultiplier < -0.030) {myPlayer.stamina += 0.25;} else {myPlayer.stamina += 0.15;}
+			}
+			myPlayer.cameraPos[1] = height;
+			debugDispNow["speed multiplier"] = speedMultiplier;
+		}
+		if (myPlayer.hitPos[1] < height - 1 && myPlayer.hitPos[1] > height - 2) {
+			myPlayer.inAir = false;
+			myPlayer.velocity[1] = 0;
+		}
 		myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
+		if (myPlayer.hitPos[1] < -50) {ded();}
+		//
 		// myPlayer.userInputVelocity[0] *= speedMultiplier;
 		// myPlayer.userInputVelocity[2] *= speedMultiplier;
 	}
@@ -497,13 +527,17 @@ function loop() {
 		buffer.vertexTexCoord[1] = buffer.vertexTexCoord[1].concat([231/texW, 250/texH]);
 
 		// update zombies
-		objInfos.position = [];
-		objInfos.color = [];
-		objInfos.normal = [];
+		transformInfos.position = [];
+		transformInfos.color = [];
+		transformInfos.normal = [];
+		transformInfos.rot = [];
+		transformInfos.translate = [];
 		for (zombie of zombies) {
-			objInfos.position = objInfos.position.concat(zombie.updatePos());
-			objInfos.color = objInfos.color.concat(zombiePos.color);
-			objInfos.normal = objInfos.normal.concat(zombiePos.normal);
+			transformInfos.position = transformInfos.position.concat(zombie.model.position);
+			transformInfos.color = transformInfos.color.concat(zombie.model.color);
+			transformInfos.normal = transformInfos.normal.concat(zombie.model.normal);
+			transformInfos.rot = transformInfos.rot.concat(mList([zombie.updatePos()], zombie.model.position.length/3));
+			transformInfos.translate = transformInfos.translate.concat(mList(zombie.pos, zombie.model.position.length/3));
 			// bar outline
 			realBillboardData.texCoord = realBillboardData.texCoord.concat(zombieBarTexCoord);
 			realBillboardData.corner = realBillboardData.corner.concat(zombieBarPos);
@@ -517,14 +551,18 @@ function loop() {
 			realBillboardData.texCoord = realBillboardData.texCoord.concat(mList([71/texW,161/texH], 6)); // change order
 			
 			if (checkCollision(myPlayer.cameraPos, [zombie.pos[0],zombie.pos[1]+3,zombie.pos[2]], [1, 1.6, 1], [1.5,2,1.5])) {
-				myPlayer.health -= 1;
+				myPlayer.health -= zombie.damage;
 				myPlayer.takingDamage = true;
 			}
 		}
+		flushTransformedPositions();
 
 		// spawn zombies
 		if (Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2) {
-			new Zombie([Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10]);
+			new Zombie([Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10], zombiePos, 1, 100);
+		}
+		if (m == 3000) { // dun dun dun da boss comin'
+			new Zombie([0,0,0], bossPos, 10, 250);
 		}
 		if (myPlayer.health < 0) {ded();} // oof
 		debugDispNow["health"] = myPlayer.health;
@@ -573,6 +611,9 @@ function loop() {
 		useShader(particleShader);
 		assdfd.render();
 		//assdfd2.render();
+
+		useShader(transformShader);
+		gl.drawArrays(gl.TRIANGLES, 0, transformInfos.position.length / 3);
 
 		gl.disable(gl.DEPTH_TEST);
 		useShader(billboardShader);

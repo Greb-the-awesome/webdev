@@ -116,6 +116,44 @@ void main() {
 	vColor = mix(vColor, vec4(0.529, 0.808, 0.921, 1.0), clamp(fogAmount, 0.0, 1.0));
 }
 `;
+const lightColorTransfVS = `
+attribute vec4 aVertexPosition;
+attribute vec3 aVertexNormal;
+attribute vec4 aColor;
+attribute float aYRot; // rotate around (0,0,0)
+attribute vec3 aTranslation; // translate da point
+
+uniform mat4 uModelViewMatrix;
+uniform mat4 uProjectionMatrix;
+uniform vec3 uCameraPos;
+uniform mat3 uLightingInfo; // 1st row is light direction, 2nd is color, 3rd is ambient light
+
+varying lowp vec4 vColor;
+
+vec4 rotate(vec4 pos, float rads) {
+	return vec4(pos[2] * sin(rads) + pos[0] * cos(rads),
+		pos[1],
+		pos[2] * cos(rads) - pos[0] * sin(rads), 1.0);
+}
+
+void main() {
+	vec4 transformed = rotate(aVertexPosition, aYRot);
+	transformed.xyz += aTranslation;
+	gl_Position = uProjectionMatrix * uModelViewMatrix * transformed;
+	/*
+	if (uCameraPos.y < 0.0) {
+		fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.08;
+	} else {
+		fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.05 - 1.0;
+	}*/
+	mediump float fogAmount = -(uModelViewMatrix * transformed).z * 0.05 - 1.0;
+	highp vec4 transformedNormal = rotate(vec4(aVertexNormal.xyz, 1.0), aYRot);
+	highp float directional = max(dot(transformedNormal.xyz, uLightingInfo[0]), 0.0);
+	highp vec3 vLighting = uLightingInfo[2] + (uLightingInfo[1] * directional * 0.65);
+	vColor = vec4(aColor.rgb * vLighting, aColor.a); // I really should mix it in the frag shader, but I'm trying to use fsSource so w h a t e v e r
+	vColor = mix(vColor, vec4(0.529, 0.808, 0.921, 1.0), clamp(fogAmount, 0.0, 1.0));
+}
+`;
 const textureFS = `
 precision mediump float;
 varying highp vec2 texCoord;
