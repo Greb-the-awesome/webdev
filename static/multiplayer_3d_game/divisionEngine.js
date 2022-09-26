@@ -522,9 +522,9 @@ function finalInit() {
 		false,
 		modelViewMatrix);
 	gl.activeTexture(gl.TEXTURE0);
-	var texture = loadTexture("/static/multiplayer_3d_game/grass.png");
-	console.log(texture)
-	gl.bindTexture(gl.TEXTURE_2D, texture);
+	//var texture = loadTexture("/static/multiplayer_3d_game/grass.png");
+	//console.log(texture)
+	//gl.bindTexture(gl.TEXTURE_2D, texture);
 
 	// addText("aad", 0, [0, 1, 0, 1]);
 	flush();
@@ -989,8 +989,6 @@ function initGL(canvName) {
 		translation: [buffers.transf.translate]
 	};
 
-	window.addEventListener("keydown", onKeyDown);
-	window.addEventListener("keyup", onKeyUp);
 
 	// complicated stoufvves
 	// var cameraPos = glMatrix.vec3.fromValues(0.0, 0.0, 0.0);
@@ -1005,15 +1003,4 @@ function initGL(canvName) {
 
 
 	divisionOnLoad(gl);
-}
-
-
-function onKeyDown(event) {
-	var keyCode = event.keyCode;
-	divisDownKeys[keyCode] = true;
-}
-
-function onKeyUp(event) {
-	keyCode = event.keyCode;
-	divisDownKeys[keyCode] = false;
 }

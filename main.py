@@ -86,27 +86,11 @@ def sports():
 
 @app.route("/postScores")
 def postScores():
-	name = request.args.get("name")
-	score = request.args.get("score")
-	scores[score] = name
-	f = open("leader.txt", "w")
-	f.write(json.dumps(scores))
-	f.close()
 	return "ok sir"
 
 @app.route("/leaderboard")
 def leader():
-	leader_string = ""
-	f = open("leader.txt", "r")
-	x = json.loads(f.read())
-	f.close()
-	keys_x = list(x.keys())
-	for y in range(0, len(keys_x)): # turn em to floats
-		keys_x[y] = float(keys_x[y])
-
-	for z in keys_x:
-		leader_string += f"{x[str(z)]}"
-	return render_template("leaderboard.html", leader_string = leader_string)
+	return "srry but the leaderboard was discontinued"
 
 @app.route("/zombiewars")
 def zombiewars():
@@ -115,13 +99,6 @@ def zombiewars():
 @app.route("/zombiewars3d")
 def zombiewars3d():
 	return render_template("zombiewars3d.html", rand_num = time.time())
-
-@app.route("/lmao/you/cant/see/this/ehe")
-def lmao():
-	f = open("leader.txt", "r")
-	x = f.read()
-	f.close()
-	return x
 
 @socketio.on("message")
 def handleMsg(texts):
@@ -135,5 +112,4 @@ def handleMsg(texts):
 def handle_404(e):
 	return '<center><h1>Oh No!</h1><br><p>An error 404 occured.</p></center>'
 
-if __name__ == "__main__":
-	socketio.run(app)
+socketio.run(app)

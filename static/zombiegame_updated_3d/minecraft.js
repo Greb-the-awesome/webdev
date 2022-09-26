@@ -6,9 +6,9 @@ var chunks, gl;
 var debugDispNow = {"hi":"hi"};
 var locations = {};
 var bullets = [];
-var zombiePos, bossPos;
 var zombies = [];
 var oTex;
+var useSound = true;
 var skyColors = [ // each one lasts for around 1/8 of a day
 [0.529, 0.807, 0.921], // sky blue: morning
 [0.784, 0.976, 0.98], // a bit lighter: noon
@@ -21,13 +21,11 @@ var skyColors = [ // each one lasts for around 1/8 of a day
 [0.529, 0.807, 0.921] // morning again
 ]
 var gameTime = 0;
+var playerStats = {zombiesKilled: 0,};
 console.log("main script loaded.");
+var models = {};
 function fakePerlin(x, y) {
 	return [Math.sin((x + y) / 2)]
-}
-
-function distance(x1, y1, x2, y2) {
-	return Math.sqrt((x2-x1)**2 + (y2-y1)**2);
 }
 var normalRef = [null, ["pos2","pos4"], ["pos3","pos1"], ["pos4","pos2"], ["pos1","pos3"]];
 class Block {
@@ -95,11 +93,12 @@ function _aList(lst, x, y, z) {
 	return res;
 }
 
+var a = new Audio("/static/radio.mp3");
+
 function startGame() {
 	document.getElementById("homeDiv").style.display = "none";
 	canvas.requestPointerLock();
 	clearInterval(ambientHandle);
-	gamestart = true;
 }
 var alreadyHelped;
 function gameHelp() {
@@ -120,12 +119,21 @@ function pauseMenu() {
 	if (document.pointerLockElement === canvas || document.mozPointerLockElement === canvas) {
 		var a = document.getElementById('pauseDiv');
 		a.style.display = "none";
-		console.log("lock on")
+		console.log("lock on");
+		if (gamestart) {mainHandle = setInterval(loop, 25);}
+		gamestart = true;
 	} else {
 		var a = document.getElementById('pauseDiv');
 		a.style.display = "block";
 		console.log("lock off");
+		if (gamestart) {clearInterval(mainHandle);}
 	}
+}
+
+function toggleVolume() {
+	useSound = !useSound;
+	if (useSound) {document.getElementById('volumeButton').src = "/static/zombiegame_updated_3d/volume on.png";}
+	else {document.getElementById('volumeButton').src = "/static/zombiegame_updated_3d/volume off.jpg";}
 }
 
 function getTerrain(x, z) {
@@ -185,48 +193,14 @@ function divisionOnLoad(gl) {
 			chunks[[x * 10, z * 10]] = new Chunk([x * 10, z * 10]);
 		}
 	}
-	var values = Object.values(chunks);
-	for (let c=0; c<values.length; c++) {
-		var chunk = values[c];
-		var chunkBlocks = chunk.blocks;
-		for (const blockPos in chunkBlocks) {
-			var block = chunkBlocks[blockPos];
-			var triang1 = block.pos1.concat(block.pos2.concat(block.pos3));
-			var n1 = block.normals[0].concat(block.normals[1].concat(block.normals[2]));
-			var triang2 = block.pos3.concat(block.pos4.concat(block.pos1));
-			var n2 = block.normals[2].concat(block.normals[3].concat(block.normals[0]));
-			addPositions(triang1.concat(triang2),
-			   [0.0, 128/texH,
-			    0.0, 0.0,
-			    128/texW, 0.0,
-			    128/texW, 0.0,
-			    128/texW, 128/texH,
-			    0.0, 128/texH], [], n1.concat(n2));
-		}
-	}
-	for (let i=0; i<30; i++) {
-		var offsets = [Math.random() * worldwidth * 1.5 - WORLDEND * 12.5, Math.random() * 10 + 10, Math.random() * worldwidth * 1.5 - WORLDEND * 12.5];
-		var scale = [Math.random() * 10, Math.random(), Math.random() * 10];
-		var toAdd = [];
-		var cloud = cube;
-		for (let j=0; j<cloud.length; j+=3) {
-			toAdd.push(cloud[j] * scale[0] + offsets[0]);
-			toAdd.push(cloud[j+1] * scale[1] + offsets[1]);
-			toAdd.push(cloud[j+2] * scale[2] + offsets[2]);
-		}
-		addPositions(toAdd, mList([239/texW, 249/texH], toAdd.length/3*2), [], mList([0,1,0], toAdd.length/3));
-	}
+	serializeChunks();
+	genClouds();
 	refreshBillbs();
 	flush();
-	loadObj("/static/multiplayer_3d_game/zombie.obj", "/static/multiplayer_3d_game/zombie.mtl", function(res) {
-		zombiePos = res;
-	});
-	loadObj("/static/multiplayer_3d_game/zombieboss.obj", "/static/multiplayer_3d_game/zombieboss.mtl", function(res) {
-		bossPos = res;
-	});
+	loadModels();
 	flushRealBillb();
 
-	setTimeout(()=>{bindTexture(loadTexture("/static/zombiegame_updated_3d/grass.png"), 0)}, 500);
+	bindTexture(loadTexture("/static/zombiegame_updated_3d/grass.png"), 0);
 	oTex = new Image();
 	oTex.src = "/static/zombiegame_updated_3d/grass.png";
 	
@@ -303,6 +277,8 @@ function ded() {
 	window.clearInterval(mainHandle);
 	oCtx.font = "40px Open Sans";
 	oCtx.fillText("you died lmao", overlay.width * 0.3, overlay.height * 0.4);
+	a.currentTime = 18;
+	a.play()
 }
 
 function onCameraTurn(e) {
@@ -387,8 +363,8 @@ function loop() {
 	var sunPosition = [Math.sin(adj / DAYLENGTH * 2 * Math.PI) * 50, Math.cos(adj / DAYLENGTH * 2 * Math.PI) * 30, 0];
 
 	
-	if (mouseDown) {myPlayer.shoot();}
-	if(divisDownKeys[65]) { // a or <
+	if (mouseDown || divisDownKeys["KeyE"]) {myPlayer.shoot();}
+	if(divisDownKeys["KeyA"]) { // a or <
 		var crossed = glMatrix.vec3.create();
 		var normalized = glMatrix.vec3.create();
 		glMatrix.vec3.cross(crossed, myPlayer.cameraFront, myPlayer.cameraUp);
@@ -397,7 +373,7 @@ function loop() {
 			myPlayer.userInputVelocity,
 			normalized);
 	}
-	if(divisDownKeys[68]) { // d or >
+	if(divisDownKeys["KeyD"]) { // d or >
 		var crossed = glMatrix.vec3.create();
 		var normalized = glMatrix.vec3.create();
 		glMatrix.vec3.cross(crossed, myPlayer.cameraFront, myPlayer.cameraUp);
@@ -406,21 +382,21 @@ function loop() {
 			myPlayer.userInputVelocity,
 			normalized);
 	}
-	if(divisDownKeys[87]) { // w or ^
+	if(divisDownKeys["KeyW"]) { // w or ^
 		glMatrix.vec3.add(myPlayer.userInputVelocity,
 			myPlayer.cameraFront,
 			myPlayer.userInputVelocity);
 	}
-	if(divisDownKeys[83]) { // s or down
+	if(divisDownKeys["KeyS"]) { // s or down
 		glMatrix.vec3.subtract(myPlayer.userInputVelocity,
 			myPlayer.userInputVelocity,
 			myPlayer.cameraFront,);
 	}
-	if (divisDownKeys[32] && !myPlayer.inAir) {
+	if (divisDownKeys["Space"] && !myPlayer.inAir) {
 		myPlayer.velocity[1] = 0.25;
 		myPlayer.inAir = true;
 	}
-	if (divisDownKeys[16] && myPlayer.stamina > 60) {
+	if (divisDownKeys["ShiftLeft"] && myPlayer.stamina > 60) {
 		myPlayer.userInputVelocity[0] *= 0.25;
 		myPlayer.userInputVelocity[1] *= 0.25;
 		myPlayer.userInputVelocity[2] *= 0.25;
@@ -433,145 +409,23 @@ function loop() {
 		myPlayer.userInputVelocity[1] *= 0.08;
 		myPlayer.userInputVelocity[2] *= 0.08;
 	}
+	processArrowKeys();
 
-	buffer = getRBdata(0, shaderProgram);
-
-	{ // collision detection :(
-		myPlayer.updatePos(); // would-be next position
-		var x = myPlayer.cameraPos[0];
-		var z = myPlayer.cameraPos[2];
-		var height = getTerrain(x, z) + 2;
-
-		if (height == -Infinity) {myPlayer.inAir = true;}
-
-		if (myPlayer.inAir) {myPlayer.velocity[1] -= 0.008;} else {
-			var speedMultiplier = (myPlayer.hitPos[1] - height + 2 - 0.1) * 2;
-			if (speedMultiplier < -0.21) {
-				myPlayer.stamina += speedMultiplier;
-			} else if (myPlayer.stamina < 100) {
-				if (speedMultiplier < -0.030) {myPlayer.stamina += 0.25;} else {myPlayer.stamina += 0.15;}
-			}
-			myPlayer.cameraPos[1] = height;
-			debugDispNow["speed multiplier"] = speedMultiplier;
-		}
-		if (myPlayer.hitPos[1] < height - 1 && myPlayer.hitPos[1] > height - 2) {
-			myPlayer.inAir = false;
-			myPlayer.velocity[1] = 0;
-		}
-		myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
-		if (myPlayer.hitPos[1] < -50) {ded();}
-		//
-		// myPlayer.userInputVelocity[0] *= speedMultiplier;
-		// myPlayer.userInputVelocity[2] *= speedMultiplier;
-	}
+	physicsUpdate();
+	var buffer = getRBdata(0, shaderProgram);
 	{ // game thingies
-		var finalBullet = [];
-		// check zombies colliding bullets + update bullets
-		var bulletNum = 0;
-		for (bullet of bullets) {
-			var zombNum = 0;
-			for (zomb of zombies) {
-				if (checkCollision([zomb.pos[0],zomb.pos[1]+3,zomb.pos[2]], bullet.pos, [2,4,2], [1,1,1])) {
-					zomb.health -= bullet.damage;
-					if (zomb.health <= 0) {
-						if (Math.random() > 0.6) {
-							var toDrop = dropItems(dayNum < 2);
-							items.push(new Item([zomb.pos[0], zomb.pos[1]+1, zomb.pos[2]], toDrop.name, toDrop.texCoordStart, toDrop.specs));
-						}
-						zombies.splice(zombNum, 1);
-					}
-				}
-				zombNum++;
-			}
-			if (bullet.pos[0] > 200 || bullet.pos[0] < -200 || bullet.pos[2] > 200 || bullet.pos[2] < -200 ||
-				bullet.pos[1] < getTerrain(bullet.pos[0], bullet.pos[2]) || bullet.pos[1] > 100) {
-				bullets.splice(bulletNum, 1);
-			} else {
-				finalBullet = finalBullet.concat(bullet.updatePos());
-			}
-			bulletNum += 1;
-		}
-		// update items
-		var itemNum = 0;
-		askPickUp = false;
-		for (var item of items) {
-			item.timer--;
-			if (item.timer <= 0) {items.splice(itemNum, 1);continue;} // despawn
-			if (checkCollision(item.pos, myPlayer.hitPos, [2,2,2], [2,2,2])) {
-				for (var i=0; i<myPlayer.inv.length; i++) {
-					if (!myPlayer.inv[i]) {myPlayer.inv[i] = item; items.splice(itemNum, 1); break;} // pick it up
-				}
-				if (i == 4) { // no empty space
-					askPickUp = true;
-					if (divisDownKeys[81]) {myPlayer.inv[myPlayer.selected] = item; items.splice(itemNum, 1);}
-				}
-			}
-			itemNum++;
-		}
-
-		// update buffers
-
-		// items
-		realBillboardData.offset = []; realBillboardData.texCoord = []; realBillboardData.corner = [];
-		for (var item of items) {
-			realBillboardData.texCoord = realBillboardData.texCoord.concat(item.texCoordsCycle);
-			for (let i=0; i<6; i++) {realBillboardData.offset = realBillboardData.offset.concat(item.pos);}
-			realBillboardData.corner = realBillboardData.corner.concat(item.cycle);
-		}
-		
-		// bullets + sun
-		buffer.vertexPosition[1] = finalBullet;
-		buffer.vertexTexCoord[1] = mList([71/texW,161/texH], buffer.vertexPosition[1].length*2/3);
-		buffer.vertexNormal[1] = mList([0, 1, 0], buffer.vertexPosition[1].length+1);
+		bulletsUpdate(buffer, dayNum);
+		askPickUp = itemsUpdate();
+		zombiesUpdate();
+		// sun
 		buffer.vertexPosition[1] = buffer.vertexPosition[1].concat(sunPosition);
 		buffer.vertexTexCoord[1] = buffer.vertexTexCoord[1].concat([231/texW, 250/texH]);
-
-		// update zombies
-		transformInfos.position = [];
-		transformInfos.color = [];
-		transformInfos.normal = [];
-		transformInfos.rot = [];
-		transformInfos.translate = [];
-		for (zombie of zombies) {
-			transformInfos.position = transformInfos.position.concat(zombie.model.position);
-			transformInfos.color = transformInfos.color.concat(zombie.model.color);
-			transformInfos.normal = transformInfos.normal.concat(zombie.model.normal);
-			transformInfos.rot = transformInfos.rot.concat(mList([zombie.updatePos()], zombie.model.position.length/3));
-			transformInfos.translate = transformInfos.translate.concat(mList(zombie.pos, zombie.model.position.length/3));
-			// bar outline
-			realBillboardData.texCoord = realBillboardData.texCoord.concat(zombieBarTexCoord);
-			realBillboardData.corner = realBillboardData.corner.concat(zombieBarPos);
-			for (let x=0; x<12; x++) {realBillboardData.offset = realBillboardData.offset.concat([
-				zombie.pos[0], zombie.pos[1] + 3, zombie.pos[2]]);}
-			// bar fill
-			for (let a=0; a<zombieBarRemaining.length; a+=2) {
-				realBillboardData.corner.push(zombieBarRemaining[a]*zombie.health/100);
-				realBillboardData.corner.push(zombieBarRemaining[a+1]);
-			}
-			realBillboardData.texCoord = realBillboardData.texCoord.concat(mList([71/texW,161/texH], 6)); // change order
-			
-			if (checkCollision(myPlayer.cameraPos, [zombie.pos[0],zombie.pos[1]+3,zombie.pos[2]], [1, 1.6, 1], [1.5,2,1.5])) {
-				myPlayer.health -= zombie.damage;
-				myPlayer.takingDamage = true;
-			}
-		}
-		flushTransformedPositions();
-
-		// spawn zombies
-		if (Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2) {
-			new Zombie([Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10], zombiePos, 1, 100);
-		}
-		if (m == 3000) { // dun dun dun da boss comin'
-			new Zombie([0,0,0], bossPos, 10, 250);
-		}
+		spawnZombies(m);
 		if (myPlayer.health < 0) {ded();} // oof
 		debugDispNow["health"] = myPlayer.health;
 
 		// flush
-		flushRB(0, shaderProgram);
-		flushRealBillb();
-		flushObj();
-		refreshBillbs();	
+		flushBuffers();
 	}
 	{ // yum yum render em up
 		var posPlusFront = glMatrix.vec3.create();
@@ -620,33 +474,7 @@ function loop() {
 		gl.drawArrays(gl.TRIANGLES, 0, billboardPositions.length / 3);
 		gl.enable(gl.DEPTH_TEST);
 
-		if (myPlayer.takingDamage) {oCtx.fillStyle = "rgb("+(Math.sin(Date.now())*100+100)+", 0, 0)"}
-		else {oCtx.fillStyle = "rgb(0, 255, 255)"}
-		oCtx.fillRect(overlay.width * 0.3, overlay.height * 0.94, overlay.width * 0.4*myPlayer.health/100, overlay.height * 0.05);
-		oCtx.strokeRect(overlay.width * 0.3, overlay.height * 0.94, overlay.width * 0.4, overlay.height * 0.05);
-		oCtx.strokeRect(overlay.width * 0.3, overlay.height * 0.75, overlay.width * 0.4, overlay.height * 0.03);
-		// inv: one square is 0.1 wide and high, and 0.02 space between squares
-		oCtx.strokeRect(overlay.width * 0.36, overlay.height * 0.79, overlay.width * 0.28, overlay.height * 0.14);
-		var selectNum = 0;
-		for (let i=0.38; i<0.62; i+=0.06) {
-			if (myPlayer.selected == selectNum) {oCtx.lineWidth = 5;} else {oCtx.lineWidth = 1;}
-			if (myPlayer.inv[selectNum]) {
-				var theItem = myPlayer.inv[selectNum];
-				oCtx.drawImage(oTex, theItem.texCoordStart[0]*texW, theItem.texCoordStart[1]*texH,
-					texCoordDimension * texW, texCoordDimension * texW,
-					overlay.width * i, overlay.height * 0.81, overlay.width * 0.05, overlay.width * 0.05);
-			}
-			oCtx.strokeRect(overlay.width * i, overlay.height * 0.81, overlay.width * 0.05, overlay.width * 0.05);
-			selectNum += 1;
-		}
-		oCtx.lineWidth = 1;
-		if (myPlayer.reloading) {oCtx.fillText("Reloading", overlay.width * 0.4, overlay.height * 0.6);}
-		oCtx.fillText("Current Item: "+myPlayer.inv[myPlayer.selected].name, overlay.width * 0.4, overlay.height * 0.7);
-		oCtx.fillText(""+myPlayer.invSelect.roundsRemaining+"/"+myPlayer.invSelect.specs.capacity, overlay.width * 0.45, overlay.height * 0.74);
-		if (askPickUp) {oCtx.fillText("q to pick up", overlay.width * 0.4, overlay.height * 0.5)}
-		oCtx.fillStyle = "rgb(200, 150, 0)";
-		oCtx.fillRect(overlay.width * 0.3, overlay.height * 0.75, overlay.width * 0.4 * myPlayer.stamina/100, overlay.height * 0.03);
-		oCtx.fillText("Day #: " + dayNum, overlay.width * 0.85, overlay.height * 0.1);
+		renderGUI(askPickUp, dayNum);
 	}
 	frameSum += Date.now() - before;
 	numFrames += 1;

@@ -3,6 +3,7 @@ var bullets = [];
 var texW = 512;
 var texH = 512;
 var items = [];
+// generate the zombie stuffs
 var zombieBarTexCoord = [1, 1,
 0, 1,
 0, 0,
@@ -12,7 +13,7 @@ var zombieBarTexCoord = [1, 1,
 for (let a=0; a<zombieBarTexCoord.length; a+=2) {
 	zombieBarTexCoord[a] *= (71/texW);
 	zombieBarTexCoord[a+1] *= (13/texW);
-	zombieBarTexCoord[a+1] += (256/texH);
+	zombieBarTexCoord[a+1] += (241/texH);
 }
 var zombieBarPos = [-1.0, -1.0,
 1.0, -1.0,
@@ -88,7 +89,7 @@ class MyPlayer {
 		this.firingDelay = false;
 		this.reloading = false;
 		this.inAir = false;
-		this.inv = [new Item([0,10,0], "GL Gun", [266/texW, 300/texH], {damage:20,delay:100,reloadTime:1000,capacity:20}, false), false, false, false];
+		this.inv = [new Item([0,10,0], "GL Gun", [266/texW, 300/texH], {damage:20,delay:100,reloadTime:1000,capacity:20,fire:genNoise("gl_fire"),rel:genNoise("gl_reload")}, false), false, false, false];
 		this.selected = 0;
 	}
 	updatePos() {
@@ -101,6 +102,7 @@ class MyPlayer {
 	}
 	shoot() {
 		if (!this.firingDelay && !this.reloading && myPlayer.invSelect) {
+			if (this.invSelect.specs.fire && useSound) {new Audio(this.invSelect.specs.fire).play();}
 			this.invSelect.roundsRemaining--;
 			var distanceFromPlayer = 2;
 			var bulletPos = glMatrix.vec3.create();
@@ -116,6 +118,7 @@ class MyPlayer {
 				this.reloading = true; setTimeout(()=>{
 					myPlayer.reloading = false;myPlayer.invSelect.roundsRemaining = myPlayer.invSelect.specs.capacity;
 				}, this.invSelect.specs.reloadTime);
+				if (this.invSelect.specs.rel && useSound) {new Audio(this.invSelect.specs.rel).play();}
 			}
 		}
 	}

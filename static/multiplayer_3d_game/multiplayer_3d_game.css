@@ -62,3 +62,8 @@ p {
 	font-family: "Open Sans";
 	font-size: 1rem;
 }
+#volumeButton {
+    position: absolute;
+    left: 90%;
+    top: 85%;
+}

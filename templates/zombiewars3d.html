@@ -32,7 +32,12 @@
 					<br><br>
 					<button id="helpBtn" onclick="gameHelp();">How to Play</button>
 					<div id="helpDiv" style="display:none;">
-						<p>bro this game is still in early development ok so yea yea</p>
+						<strong>OBJECTIVE: shoot the zombies ig<br>
+						Controls</strong><br>
+						<p>WASD to move,  click to shoot, move mouse to look around</p><br>
+						<strong>Weapons</strong><br>
+						<p>When you kill zombies, they have a chance to drop a weapon. Keep a lookout for them!
+							Some are pretty OP.</p>
 					</div>
 				</center>
 			</div>
@@ -45,6 +50,12 @@
 				<button onclick="document.getElementById('pauseDiv').style.display='none';">Hide Banner</button>
 			</center>
 		</div>
+		<img src="/static/zombiegame_updated_3d/volume on.png" id="volumeButton" onclick="toggleVolume();">
+		<div class="migNot" style="position:absolute;left:50%;top:0%;">
+			<h1>IMPORTANT NOTICE!!!</h1>
+			<p>Zombie Wars is migrating from Heroku to Replit, thus the URL will be changing in the near future.</p>
+			<a href="/migration">for more details click here</a>
+		</div>
 		<!-- ------------------ -->
 		<script type="text/javascript"
 			src="/static/zombiegame_updated_3d/clouds.js" defer></script>
@@ -52,6 +63,27 @@
 			src="/static/zombiegame_updated_3d/shaders.js" defer></script>
 	<script type="text/javascript"
 			src="/static/multiplayer_3d_game/divisionEngine.js" defer></script>
+	<script type="text/javascript">
+		var arrowKeySensitivity = 20;
+		function onKeyDown(event) {
+			var keyCode = event.code;
+			divisDownKeys[keyCode] = true;
+		}
+		function onKeyUp(event) {
+			keyCode = event.code;
+			divisDownKeys[keyCode] = false;
+		}
+		window.addEventListener("keydown", onKeyDown);
+		window.addEventListener("keyup", onKeyUp);
+		function processArrowKeys() {
+			if (divisDownKeys["ArrowUp"]) {onCameraTurn({movementX: 0, movementY: -arrowKeySensitivity});}
+			if (divisDownKeys["ArrowDown"]) {onCameraTurn({movementX: 0, movementY: arrowKeySensitivity});}
+			if (divisDownKeys["ArrowLeft"]) {onCameraTurn({movementX: -arrowKeySensitivity, movementY: 0});}
+			if (divisDownKeys["ArrowRight"]) {onCameraTurn({movementX: arrowKeySensitivity, movementY: 0});}
+		}
+	</script>
+	<script type="text/javascript"
+			src="/static/zombiegame_updated_3d/funcs.js" defer></script>
 		<script type="text/javascript"
 			src="{{ url_for('static', filename='multiplayer_3d_game/perlin.js') }}" defer></script>
 		<script type="text/javascript"
