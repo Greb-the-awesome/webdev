@@ -103,7 +103,6 @@ def zombiewars3d():
 @socketio.on("message")
 def handleMsg(texts):
 	emit("sendBackLmoa", texts, broadcast=True)
-	sys.stdout.flush()
 
 # error handling
 
