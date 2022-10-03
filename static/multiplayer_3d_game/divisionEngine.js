@@ -1,7 +1,7 @@
 // WebGL boilerplate code.
 // or as I like to call it, a Semi-Abstract WebGL Interface.
 // proudly made by Greb. (with some assistance from MDN's tutorials) :D
-// also, this code really needs to be cleaned up a bit (will happen soon™)
+// also, this code really needs to be cleaned up a bit (will happen soon™) NVM ITS HAPPENING NOW!!!
 
 var canvas, gl, projectionMatrix, modelViewMatrix, infoStuff, buffers, positions, indexes, colors, texCoords, billboardShader, billboardPositions, billboardTexCoords, particleCorners, normals;
 var settings = {};

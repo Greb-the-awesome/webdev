@@ -21,7 +21,7 @@ def user(name):
 
 @app.route('/test')
 def test():
-	return render_template('test.html')
+	return render_template('newtest.html')
 	#please donnot render js in this!!
 
 @app.route('/fwoosh')
