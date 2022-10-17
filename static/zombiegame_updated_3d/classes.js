@@ -35,9 +35,11 @@ for (let a=0; a<zombieBarRemaining.length; a+=2) {
 var texCoordDimension = 100/texW; // if at any point I don't use a square texture then it will fail soooooooo
 
 class Item {
-	constructor(pos, name, texCoordStart, specs, add = true, despawn = true) {
+	constructor(pos, name, texCoordStart, specs, type = 0, add = true, despawn = true) {
+		console.log(texCoordStart);
 		this.name = name;
 		this.pos = pos;
+		this.type = type; // 0 = weapon, 1 = upgrade
 		this.texCoordsCycle = [1, 1,
 		 0, 1,
 		 0, 0,
@@ -65,8 +67,13 @@ class Item {
 		this.texCoordStart = texCoordStart;
 		this.timer = despawn?1000:Infinity;
 		this.roundsRemaining = this.specs.capacity;
+		if (!type) { // type == 0
+			this.clutcher = false;
+		}
 	}
 }
+
+
 class MyPlayer {
 	constructor() {
 		// thanks to learnOpenGL.com for these values cos dumb at linear algebra :D
@@ -89,8 +96,21 @@ class MyPlayer {
 		this.firingDelay = false;
 		this.reloading = false;
 		this.inAir = false;
-		this.inv = [new Item([0,10,0], "GL Gun", [266/texW, 300/texH], {damage:20,delay:100,reloadTime:1000,capacity:20,fire:genNoise("gl_fire"),rel:genNoise("gl_reload")}, false), false, false, false];
+		this.inv = [new Item([0,10,0], "GL Gun", [266/texW, 300/texH], {damage:20,delay:100,reloadTime:1000,capacity:20,fire:genNoise("gl_fire"),rel:genNoise("gl_reload")}, 0, false), false, false, false];
+		this.upgradeInv = [];
 		this.selected = 0;
+
+		this.upgradeInv.addUpgrade = function(u) {
+			//myPlayer.upgradeInv.push(u);
+			var div = document.getElementById("upgradeItem");
+			var clone = div.cloneNode(true);
+			clone.style.display = "block";
+			clone.id = "upgradeItem-" + myPlayer.upgradeInv.length;
+			clone.querySelector("#upHeading").innerHTML = u.name; // they all have identical ids
+			clone.querySelector("#upDesc").innerHTML = "some description trust";
+			clone.querySelector("#upButton").onclick = ()=>{u.specs.action();clone.remove();};
+			div.after(clone);
+		}
 	}
 	updatePos() {
 		glMatrix.vec3.add(this.cameraPos, this.cameraPos, this.velocity);
@@ -103,22 +123,32 @@ class MyPlayer {
 	shoot() {
 		if (!this.firingDelay && !this.reloading && myPlayer.invSelect) {
 			if (this.invSelect.specs.fire && useSound) {new Audio(this.invSelect.specs.fire).play();}
+
 			this.invSelect.roundsRemaining--;
+
 			var distanceFromPlayer = 2;
 			var bulletPos = glMatrix.vec3.create();
 			var multipliedFront = glMatrix.vec3.fromValues(
 				this.cameraFront[0]*distanceFromPlayer, this.cameraFront[1]*distanceFromPlayer, this.cameraFront[2]*distanceFromPlayer);
 			glMatrix.vec3.add(bulletPos, this.cameraPos, multipliedFront);
+
 			new Bullet(bulletPos, this.cameraFront, this.invSelect.specs.damage);
+
 			this.firingDelay = true;
+
 			billbOffsets[2] += 0.3;
 			setTimeout(()=>billbOffsets[2]-=0.3, this.invSelect.specs.delay/2)
 			setTimeout(()=>{myPlayer.firingDelay = false;}, this.invSelect.specs.delay);
+
 			if (this.invSelect.roundsRemaining == 0) {
-				this.reloading = true; setTimeout(()=>{
-					myPlayer.reloading = false;myPlayer.invSelect.roundsRemaining = myPlayer.invSelect.specs.capacity;
-				}, this.invSelect.specs.reloadTime);
-				if (this.invSelect.specs.rel && useSound) {new Audio(this.invSelect.specs.rel).play();}
+				if (this.invSelect.clutcher && this.health < 25) {
+					this.invSelect.roundsRemaining = this.invSelect.specs.capacity + 20;
+				} else {
+					this.reloading = true; setTimeout(()=>{
+						myPlayer.reloading = false;myPlayer.invSelect.roundsRemaining = myPlayer.invSelect.specs.capacity;
+					}, this.invSelect.specs.reloadTime);
+					if (this.invSelect.specs.rel && useSound) {new Audio(this.invSelect.specs.rel).play();}
+				}
 			}
 		}
 	}

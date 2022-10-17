@@ -15,7 +15,7 @@ function physicsUpdate() {
 		} else if (myPlayer.stamina < 100) {
 			if (speedMultiplier < -0.030) {myPlayer.stamina += 0.25;} else {myPlayer.stamina += 0.15;}
 		}
-		myPlayer.cameraPos[1] = height;
+		// myPlayer.cameraPos[1] = height;
 		debugDispNow["speed multiplier"] = speedMultiplier;
 	}
 	if (myPlayer.hitPos[1] < height - 1 && myPlayer.hitPos[1] > height - 2) {
@@ -73,12 +73,16 @@ function itemsUpdate() {
 		item.timer--;
 		if (item.timer <= 0) {items.splice(itemNum, 1);continue;} // despawn
 		if (checkCollision(item.pos, myPlayer.hitPos, [2,2,2], [2,2,2])) {
-			for (var i=0; i<myPlayer.inv.length; i++) {
-				if (!myPlayer.inv[i]) {myPlayer.inv[i] = item; items.splice(itemNum, 1); break;} // pick it up
-			}
-			if (i == 4) { // no empty space
-				pickUp = true;
-				if (divisDownKeys["KeyQ"]) {myPlayer.inv[myPlayer.selected] = item; items.splice(itemNum, 1);}
+			if (item.type == 0) {
+				for (var i=0; i<myPlayer.inv.length; i++) {
+					if (!myPlayer.inv[i]) {myPlayer.inv[i] = item; items.splice(itemNum, 1); break;} // pick it up
+				}
+				if (i == 4) { // no empty space
+					pickUp = true;
+					if (divisDownKeys["KeyQ"]) {myPlayer.inv[myPlayer.selected] = item; items.splice(itemNum, 1);}
+				}
+			} else if (item.type == 1) {
+				myPlayer.upgradeInv.addUpgrade(item); items.splice(itemNum, 1);
 			}
 		}
 		itemNum++;
@@ -126,12 +130,20 @@ function zombiesUpdate() {
 	}
 }
 
-function spawnZombies(t) {
+function randomAroundPlayer(range) { // helper for spawning upgrades
+	return [Math.random() * range + myPlayer.cameraPos[0], 2, Math.random() * range + myPlayer.cameraPos[2]];
+}
+
+function spawnStuff(t) {
 	if (Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2) {
 		new Zombie([Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10], models.zombie, 1, 100);
 	}
 	if (t == 3000) { // dun dun dun da boss comin'
 		new Zombie([0,0,0], models.boss, 10, 250);
+	}
+	if (Math.floor(Math.random() * 130) == 2 && t < 1500) {
+		items.push(new Item(randomAroundPlayer(20),
+			...upgrades[Math.floor(Math.random() * upgrades.length)], 1, true, true));
 	}
 }
 
@@ -154,7 +166,7 @@ function renderGUI(pickUp, dayN) {
 	var selectNum = 0;
 	for (let i=0.38; i<0.62; i+=0.06) {
 		if (myPlayer.selected == selectNum) {oCtx.lineWidth = 5;} else {oCtx.lineWidth = 1;}
-		if (myPlayer.inv[selectNum]) {
+		if (myPlayer.inv[selectNum] && myPlayer.inv[selectNum].type == 0) {
 			var theItem = myPlayer.inv[selectNum];
 			oCtx.drawImage(oTex, theItem.texCoordStart[0]*texW, theItem.texCoordStart[1]*texH,
 				texCoordDimension * texW, texCoordDimension * texW,
@@ -244,10 +256,29 @@ function airdrop() {
 	})
 }
 
-function perf(a) {
-	var start = Date.now();
-	for (let i=0; i<a; i++) {
-		_aList(models.airdrop.position, 69, 69, 69);
+function refreshBillbs() {
+	billboardPositions = [];
+	billboardTexCoords = [];
+	var pos = [1,-1,-1, 1,-1,1, 1,1,1, 1,-1,-1, 1,1,1, 1,1,-1];
+	for (let i=0; i<pos.length; i+=3) {
+		pos[i] += billbOffsets[0];
+		pos[i+1] += billbOffsets[1];
+		pos[i+2] += billbOffsets[2];
 	}
-	console.log(Date.now() - start);
+	var tex = myPlayer.inv[myPlayer.selected].texCoordsCycle;
+	addBillbPositions(pos, tex);
+	// crosshair
+	addBillbPositions([-0.1, 0.1, -4,
+					   0.1, -0.1, -4,
+					   0.1, 0.1, -4,
+					   -0.1, -0.1, -4,
+					   -0.1, 0.1, -4,
+					   0.1, -0.1, -4,],
+					   [128/texW, 128/texH,
+					    256/texW, 0.0,
+					   256/texW, 128/texH,
+					   128/texW, 0.0,
+					   128/texW, 128/texW,
+					   256/texW, 0.0,]);
+	flushBillb();
 }

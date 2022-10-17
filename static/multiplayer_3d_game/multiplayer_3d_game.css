@@ -58,7 +58,7 @@ h1 {
 	font-size: 3rem;
 }
 
-p {
+p, strong {
 	font-family: "Open Sans";
 	font-size: 1rem;
 }
@@ -66,4 +66,28 @@ p {
     position: absolute;
     left: 90%;
     top: 85%;
+}
+
+#upgradeDiv {
+	position: absolute;
+	left: 65%;
+	top: 85%;
+	border: 2px royalblue;
+	background-color: #11FF1199;
+	padding: 1rem;
+}
+
+#upgradeMenu {
+	position: absolute;
+	background-color: blueviolet;
+	width: 75%;
+	height: 75%;
+	left: 12.5%;
+	top: 12.5%;
+}
+
+#upgradeList {
+	overflow: scroll;
+	height: 50%;
+	border: 2px crimson;
 }

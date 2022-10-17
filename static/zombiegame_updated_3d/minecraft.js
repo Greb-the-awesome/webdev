@@ -237,32 +237,7 @@ function divisionOnLoad(gl) {
 	flushTransformedPositions();
 }
 var billbOffsets = [-2,-0.7,-2];
-function refreshBillbs() {
-	billboardPositions = [];
-	billboardTexCoords = [];
-	var pos = [1,-1,-1, 1,-1,1, 1,1,1, 1,-1,-1, 1,1,1, 1,1,-1];
-	for (let i=0; i<pos.length; i+=3) {
-		pos[i] += billbOffsets[0];
-		pos[i+1] += billbOffsets[1];
-		pos[i+2] += billbOffsets[2];
-	}
-	var tex = myPlayer.inv[myPlayer.selected].texCoordsCycle;
-	addBillbPositions(pos, tex);
-	// crosshair
-	addBillbPositions([-0.1, 0.1, -4,
-					   0.1, -0.1, -4,
-					   0.1, 0.1, -4,
-					   -0.1, -0.1, -4,
-					   -0.1, 0.1, -4,
-					   0.1, -0.1, -4,],
-					   [128/texW, 128/texH,
-					    256/texW, 0.0,
-					   256/texW, 128/texH,
-					   128/texW, 0.0,
-					   128/texW, 128/texW,
-					   256/texW, 0.0,]);
-	flushBillb();
-}
+
 
 function debugRefresh() {
 	var disp = "";
@@ -303,7 +278,7 @@ function checkCollision(pos1, pos2, w1, w2) { // pos1 and pos2 are the CENTER of
 }
 
 var ambientHandle;
-function onLoad() {
+function onLoad() { // division 1.0 moments
 	settings.useTexture = true;
 	settings.textStart = [0.5, 0.46875];
 	settings.charWidth = 0.03125;
@@ -420,7 +395,7 @@ function loop() {
 		// sun
 		buffer.vertexPosition[1] = buffer.vertexPosition[1].concat(sunPosition);
 		buffer.vertexTexCoord[1] = buffer.vertexTexCoord[1].concat([231/texW, 250/texH]);
-		spawnZombies(m);
+		spawnStuff(m);
 		if (myPlayer.health < 0) {ded();} // oof
 		debugDispNow["health"] = myPlayer.health;
 

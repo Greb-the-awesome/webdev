@@ -11,3 +11,8 @@ var weapons = [
 	[{name: "M249", texCoordStart: [266/texW, 200/texH], specs: {damage: 40, delay: 80, reloadTime: 4000, capacity: 100, fire: genNoise("m249_fire"), rel: genNoise("m249_reload")}}, 1],
 	[{name: "Vector", texCoordStart: [266/texW, 400/texH], specs: {damage: 30, delay: 30, reloadTime: 1000, capacity: 33, fire: genNoise("vector_fire"), rel: genNoise("gl_reload")},}, 2],
 ];
+
+var upgrades = [
+["Extra Ammo", [0, 0.5], {action:()=>myPlayer.invSelect.specs.capacity = 100}],
+["ClUtCh!!!", [0, 0.69], {action:()=>myPlayer.invSelect.clutcher = true}]
+];

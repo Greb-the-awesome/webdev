@@ -51,10 +51,23 @@
 			</center>
 		</div>
 		<img src="/static/zombiegame_updated_3d/volume on.png" id="volumeButton" onclick="toggleVolume();">
+		<div id = "upgradeDiv">
+			<strong>Upgrades (press U)</strong>
+		</div>
+		<div id = "upgradeMenu" style = "display:none;">
+			<h1>WEAPON UPGRADES</h1>
+			<div id = "upgradeList">
+				<div id = "upgradeItem" style = "display:none;">
+					<h2 id="upHeading">EMPTY</h2>
+					<p id="upDesc">You have no upgrades yet. Explore the map to try and find one!</p>
+					<button id="upButton">Apply To Current Weapon</button>
+				</div>
+			</div>
+		</div>
 		<div class="migNot" style="position:absolute;left:50%;top:0%;">
 			<h1>IMPORTANT NOTICE!!!</h1>
 			<p>Zombie Wars is migrating from Heroku to Replit, thus the URL will be changing in the near future.</p>
-			<a href="/migration">for more details click here</a>
+			<a href="https://zombiewars.repl.co">new link</a>
 		</div>
 		<!-- ------------------ -->
 		<script type="text/javascript"
@@ -68,6 +81,10 @@
 		function onKeyDown(event) {
 			var keyCode = event.code;
 			divisDownKeys[keyCode] = true;
+			if (keyCode == "KeyU") {
+				var el = document.getElementById("upgradeMenu");
+				el.style.display = el.style.display == "block"?"none":"block"; // im so smart
+			}
 		}
 		function onKeyUp(event) {
 			keyCode = event.code;
