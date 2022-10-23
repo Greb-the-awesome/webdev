@@ -18,7 +18,7 @@ const fsSource = `
 varying lowp vec4 vColor;
 
 void main() {
-	gl_FragColor = vColor;
+	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 `
 const billboardVS = `
@@ -219,7 +219,7 @@ void main() {
 	);
 	vec3 rightVec = uCameraRight;
 	vec3 upVec = vec3(uModelViewMatrix[0].y, uModelViewMatrix[1].y, uModelViewMatrix[2].y);
-	position.xyz += (rightVec * aParticleCorner.x) + 
+	position.xyz += (rightVec * aParticleCorner.x) +
 					(upVec * aParticleCorner.y);
 	gl_Position = uProjectionMatrix * uModelViewMatrix * position;
 	texCoord = aParticleTexCoords;

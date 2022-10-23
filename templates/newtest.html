@@ -13,26 +13,42 @@
 	<script type = "text/javascript" src = "/static/zombiegame_updated_3d/shaders2.js"></script>
 	<script type = "text/javascript" src = "/static/zombiegame_updated_3d/division2.js"></script>
 	<script>
+	// initialization
 		initGL("canv");
 		useShader("shaderProgram");
 		flushUniforms();
+
+		// textures
 		var texture = loadTexture("/static/zombiegame_updated_3d/grass.png");
 		bindTexture(texture);
 		console.log(texture);
-		addPositions([0,0,0, 2,0,0, 0,2,0], [1,1, 0,1, 0,0], [], [0,1,0, 0,1,0, 0,1,0,]);
-		flush("shaderProgram");
+
+		// renderbuffers
 		createRenderBuffer("shaderProgram");
 		var datas = getRBdata(0, "shaderProgram");
 		datas.aVertexPosition = [0,0,0, 2,0,0, 0,2,0];
 		datas.aTexCoord = [1,1, 0,1, 0,0];
 		datas.aVertexNormal = [0,1,0, 0,1,0, 0,1,0,];
 		flushRB(0, "shaderProgram");
+
+		// obj shaders
+		var objDatas = {};
+		objDatas.aVertexPosition = [0,0,0, 2,0,0, 0,2,0];
+		objDatas.aColor = [1,0,0,1, 1,1,0,1, 0,0,1,1];
+		objDatas.aVertexNormal = [0,1,0, 0,1,0, 0,1,0,];
+		shaderAddData(objDatas, "objShader");
+		flush("objShader");
+
+		// rendering loop
 		setInterval(function() {
 			useShader("shaderProgram");
 			glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, 0.1, [0,1,0]);
 			flushUniforms();
 			useRenderBuffer(0, "shaderProgram");
-			gl.drawArrays(gl.TRIANGLES, 0, 3);
+			//gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+			useShader('objShader');
+			gl.drawArrays(gl.TRIANGLES, 0, 10);
 		}, 20);
 	</script>
 </body>
