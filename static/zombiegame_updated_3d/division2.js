@@ -38,7 +38,7 @@ function loadShader(type, source) {
 	const shader = gl.createShader(type);
 	gl.shaderSource(shader, source);
 	gl.compileShader(shader);
-	
+
 	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
 		alert('shaders failed compiling lmao bc ' + gl.getShaderInfoLog(shader) +
 			"\nthe source code was logged in console.");
@@ -66,14 +66,14 @@ function setBufferData(buf, data) {
 }
 
 function initShadersAndBuffers() {
-	for (shader in buffers_d) {
+	for (var shader in buffers_d) {
 		var info = buffers_d[shader];
-		console.log(info)
+
 		info.compiled = compileShaders(info.vSource, info.fSource);
 		var requirements = parseShader(info.vSource);
 		// because the fShaders only have uniforms
 		requirements.uniform = requirements.uniform.concat(parseShader(info.fSource).uniform);
-
+		console.log(requirements.attribute);
 		for (var attrib of requirements.attribute) {
 			info.buffer[attrib].unshift(gl.getAttribLocation(info.compiled, attrib)); // add the attribute location
 
@@ -105,6 +105,7 @@ function useShader(name) {
 	gl.useProgram(info.compiled);
 	for (var buf in info.buffer) {
 		bindVertexAttribute(...info.buffer[buf]);
+		console.log(info.buffer[buf]);
 	}
 }
 
@@ -145,10 +146,15 @@ function addPositions(pos, tex, index = [], normal = []) { // backwards compatib
 	if (pos.length != normal.length) {
 		console.warn("addPositions: recieved less normals than positions");
 	}
-	var data = buffers_d.shaderProgram.data;
-	data.aVertexPosition = data.aVertexPosition.concat(pos);
-	data.aVertexNormal = data.aVertexNormal.concat(normal);
-	data.aTexCoord = data.aTexCoord.concat(tex);
+	shaderAddData({aVertexPosition: pos, aVertexNormal: normal, aTexCoord: tex}, "shaderProgram");
+}
+
+function shaderAddData(datas, shader) { // add data to any shader
+	// this way i dont have to write the same thing for every shader
+	var d = buffers_d[shader].data;
+	for (var prop in d) {
+		d[prop] = d[prop].concat(datas[prop]);
+	}
 }
 
 function flush(shaderName) {
@@ -220,6 +226,22 @@ function initGL(canvName) {
 				aVertexPosition: [],
 				aVertexNormal: [],
 				aTexCoord: []
+			}
+		},
+		objShader: {
+			vSource: lightColorVS,
+			fSource: fsSource,
+			compiled: false,
+			buffer: {
+				aVertexPosition: [],
+				aVertexNormal: [],
+				aColor: [4, gl.FLOAT, false, 0, 0]
+			},
+			uniform: {},
+			data: {
+				aVertexPosition: [],
+				aVertexNormal: [],
+				aColor: []
 			}
 		}
 	};
