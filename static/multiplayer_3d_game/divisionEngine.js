@@ -1,7 +1,7 @@
 // WebGL boilerplate code.
 // or as I like to call it, a Semi-Abstract WebGL Interface.
 // proudly made by Greb. (with some assistance from MDN's tutorials) :D
-// also, this code really needs to be cleaned up a bit (will happen soon™) NVM ITS HAPPENING NOW!!!
+// also, this code really needs to be cleaned up a bit (will happen soon™)
 
 var canvas, gl, projectionMatrix, modelViewMatrix, infoStuff, buffers, positions, indexes, colors, texCoords, billboardShader, billboardPositions, billboardTexCoords, particleCorners, normals;
 var settings = {};
@@ -94,7 +94,7 @@ function loadShader(type, source) {
 	const shader = gl.createShader(type);
 	gl.shaderSource(shader, source);
 	gl.compileShader(shader);
-	
+
 	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
 		alert('shaders failed compiling lmao bc ' + gl.getShaderInfoLog(shader));
 		gl.deleteShader(shader);
@@ -130,7 +130,7 @@ function initBuffers() { // i should dynamically generate the buffers too cuz th
 		billboardTexCoordBuffer = gl.createBuffer();
 		setBufferData(billboardTexCoordBuffer, billboardTexCoords);
 	}
-	
+
 	const particleCornerBuffer = gl.createBuffer();
 	particleCorners = [];
 	const particleTexCoordBuffer = gl.createBuffer();
@@ -146,7 +146,7 @@ function initBuffers() { // i should dynamically generate the buffers too cuz th
 	setBufferData(particleCornerBuffer, particleCorners);
 	setBufferData(particleTexCoordBuffer, particleTexCoords);
 	setBufferData(particleOffsetBuffer, particleCenterOffsets);
-	
+
 	const textPositionBuffer = gl.createBuffer();
 	textPositions = [];
 	setBufferData(textPositionBuffer, textPositions);
@@ -187,7 +187,7 @@ function initBuffers() { // i should dynamically generate the buffers too cuz th
 	const indexBuffer = gl.createBuffer();
 	indexes = [];
 	setBufferData(indexBuffer, indexes, Uint32Array, gl.STATIC_DRAW, gl.ELEMENT_ARRAY_BUFFER);
-	
+
 	return {
 		"position": positionBuffer,
 		"color": colorOrTextureBuffer,
@@ -238,7 +238,7 @@ function flushTransformedPositions() {
 function addBillbPositions(pos, texCoords = false) {
 	billboardPositions = billboardPositions.concat(pos);
 	if (settings.useTexture) {
-		billboardTexCoords = billboardTexCoords.concat(texCoords);	
+		billboardTexCoords = billboardTexCoords.concat(texCoords);
 	}
 }
 
@@ -265,7 +265,7 @@ function flush() {
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(billboardPositions), gl.STATIC_DRAW);
 
 	setBufferData(buffers.normal, normals);
-	
+
 
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(indexes), gl.STATIC_DRAW);
 }
@@ -302,7 +302,7 @@ function translateModelView(toTranslate) {
 }
 
 function rotateModelView(angle, axis) {
-	glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, angle, axis);	
+	glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, angle, axis);
 }
 
 function setModelView(modelView) {
@@ -830,7 +830,12 @@ function request(url, callback) {
 }
 
 function parseMTL(text) { // I wrote this mtl parser myself but it kinda sux
-	var splitd = text.split("\n");
+	var ending = "\n"
+	if (text.search("\r") != -1) { // for some reason i saved the mtls with CRLF?
+																 // and the github and replit versions were LF?
+		ending = "\r\n";
+	}
+	var splitd = text.split(ending);
 	var materials = {};
 	var currentMtl = null;
 	var currentName = "cope";
@@ -989,6 +994,8 @@ function initGL(canvName) {
 		translation: [buffers.transf.translate]
 	};
 
+	window.addEventListener("keydown", onKeyDown);
+	window.addEventListener("keyup", onKeyUp);
 
 	// complicated stoufvves
 	// var cameraPos = glMatrix.vec3.fromValues(0.0, 0.0, 0.0);

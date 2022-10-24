@@ -62,7 +62,7 @@ class Chunk {
 		var toAdd = [];
 		for (let x=coords[0]; x<coords[0] + 10; x++) {
 			for (let z=coords[1]; z<coords[1] + 10; z++) {
-				this.blocks[[x, z]] = new Block("beanz", 
+				this.blocks[[x, z]] = new Block("beanz",
 					[x - 0.5, this.depthMap[[(x - 0.5), (z - 0.5)]], z - 0.5],
 					[x - 0.5, this.depthMap[[(x - 0.5), (z + 0.5)]], z + 0.5],
 					[x + 0.5, this.depthMap[[(x + 0.5), (z + 0.5)]], z + 0.5],
@@ -100,7 +100,10 @@ function startGame() {
 	canvas.requestPointerLock();
 	clearInterval(ambientHandle);
 	var n = document.getElementById("nameBox").value;
-	playerName = n == ""?"You":n; // if they didn't enter anything, just put "you"
+	playerName = n == ""?"Player":n; // if they didn't enter anything, just put "you"
+	if (n == "jerry is hot") {
+		creative = true; // enable flying
+	}
 }
 var alreadyHelped;
 var dead = false;
@@ -157,6 +160,8 @@ function loadObj(url, mtlUrl, callback) {
 			for (const geom of data.geometries) {
 				res.position = res.position.concat(geom.data.position);
 				res.normal = res.normal.concat(geom.data.normal);
+				console.log(geom);
+				console.log(materials);
 				res.color = res.color.concat(
 					mList(materials[geom.material].diffuseColor.concat([1.0]),geom.data.position.length/3))
 				// we don't use any of the mtl specs except for the diffuse color cuz yeah
@@ -189,7 +194,7 @@ function divisionOnLoad(gl) {
 	oCtx.font = "30px Open Sans";
 
 	document.addEventListener("pointerlockchange", pauseMenu, false);
-	
+
 	// terrain gen
 	for (let x=WORLDSTART; x<WORLDEND; x++) {
 		for (let z=WORLDSTART; z<WORLDEND; z++) {
@@ -206,7 +211,7 @@ function divisionOnLoad(gl) {
 	bindTexture(loadTexture("/static/zombiegame_updated_3d/grass.png"), 0);
 	oTex = new Image();
 	oTex.src = "/static/zombiegame_updated_3d/grass.png";
-	
+
 	// addPositions([-100, 0, -100,
 	// 			  100, 0, -100,
 	// 			  100, 0, 100,
@@ -329,7 +334,7 @@ function loop() {
 
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	oCtx.clearRect(0, 0, overlay.width, overlay.height);
-	
+
 	// color calcs
 	var m = gameTime % DAYLENGTH;
 	var dayNum = Math.floor(gameTime / DAYLENGTH);
@@ -343,7 +348,7 @@ function loop() {
 	var adj = m - 1 * COLORLENGTH; // bc the sun position is a bit wank
 	var sunPosition = [Math.sin(adj / DAYLENGTH * 2 * Math.PI) * 50, Math.cos(adj / DAYLENGTH * 2 * Math.PI) * 30, 0];
 
-	
+
 	if (mouseDown || divisDownKeys["KeyE"]) {myPlayer.shoot();}
 	if(divisDownKeys["KeyA"]) { // a or <
 		var crossed = glMatrix.vec3.create();
@@ -440,7 +445,7 @@ function loop() {
 		gl.drawArrays(gl.TRIANGLES, 0, positions.length/3);
 		// user-defined uniforms so flushUniforms() doesn't flush it
 		gl.uniform3f(infoStuff.uniformLocations.cameraPos, myPlayer.cameraPos[0], myPlayer.cameraPos[1], myPlayer.cameraPos[2]);
-		
+
 
 		useShader(textShader);
 		gl.uniform4f(infoStuff.uniformLocations.tFogColor, 0.529, 0.808, 0.921, 1.0);
