@@ -35,7 +35,7 @@ for (let a=0; a<zombieBarRemaining.length; a+=2) {
 var texCoordDimension = 100/texW; // if at any point I don't use a square texture then it will fail soooooooo
 
 class Item {
-	constructor(pos, name, texCoordStart, specs, type = 0, add = true, despawn = true) {
+	constructor(pos, name, texCoordStart, specs, size, type = 0, add = true, despawn = true) {
 		console.log(texCoordStart);
 		this.name = name;
 		this.pos = pos;
@@ -46,18 +46,20 @@ class Item {
 		 1, 1,
 		 0, 0,
 		 1, 0];
-		for (let a=0; a<this.texCoordsCycle.length; a+=2) {
-			this.texCoordsCycle[a] *= texCoordDimension;
-			this.texCoordsCycle[a+1] *= texCoordDimension;
-			this.texCoordsCycle[a] += texCoordStart[0];
-			this.texCoordsCycle[a+1]+=  texCoordStart[1];
-		}
 		this.cycle = [-1.0, -1.0,
 		1.0, -1.0,
 		1.0, 1.0,
 		-1.0, -1.0,
 		1.0, 1.0,
 		-1.0, 1.0];
+		for (let a=0; a<this.texCoordsCycle.length; a+=2) {
+			this.texCoordsCycle[a] *= texCoordDimension;
+			this.texCoordsCycle[a+1] *= texCoordDimension;
+			this.texCoordsCycle[a] += texCoordStart[0];
+			this.texCoordsCycle[a+1]+=  texCoordStart[1];
+			this.cycle[a] *= size;
+			this.cycle[a+1] *= size;
+		}
 		if (add) {
 			for (let i=0; i<6; i++) {realBillboardData.offset = realBillboardData.offset.concat(pos);}
 			realBillboardData.corner = realBillboardData.corner.concat(this.cycle);
@@ -68,7 +70,7 @@ class Item {
 		this.timer = despawn?1000:Infinity;
 		this.roundsRemaining = this.specs.capacity;
 		if (!type) { // type == 0
-			this.clutcher = false;
+			this.clutcher = false; // weapons can have the "clutcher" upgrade
 		}
 	}
 }
@@ -96,7 +98,7 @@ class MyPlayer {
 		this.firingDelay = false;
 		this.reloading = false;
 		this.inAir = false;
-		this.inv = [new Item([0,10,0], "GL Gun", [266/texW, 300/texH], {damage:20,delay:100,reloadTime:1000,capacity:20,fire:genNoise("gl_fire"),rel:genNoise("gl_reload")}, 0, false), false, false, false];
+		this.inv = [new Item([0,10,0], "GL Gun", [266/texW, 300/texH], {damage:20,delay:100,reloadTime:1000,capacity:20,fire:genNoise("gl_fire"),rel:genNoise("gl_reload")}, 0, 0, false), false, false, false];
 		this.upgradeInv = [];
 		this.selected = 0;
 
@@ -107,7 +109,7 @@ class MyPlayer {
 			clone.style.display = "block";
 			clone.id = "upgradeItem-" + myPlayer.upgradeInv.length;
 			clone.querySelector("#upHeading").innerHTML = u.name; // they all have identical ids
-			clone.querySelector("#upDesc").innerHTML = "some description trust";
+			clone.querySelector("#upDesc").innerHTML = u.specs.desc;
 			clone.querySelector("#upButton").onclick = ()=>{u.specs.action();clone.remove();};
 			div.after(clone);
 		}
@@ -142,7 +144,7 @@ class MyPlayer {
 
 			if (this.invSelect.roundsRemaining == 0) {
 				if (this.invSelect.clutcher && this.health < 25) {
-					this.invSelect.roundsRemaining = this.invSelect.specs.capacity + 20;
+					this.invSelect.roundsRemaining = this.invSelect.specs.capacity;
 				} else {
 					this.reloading = true; setTimeout(()=>{
 						myPlayer.reloading = false;myPlayer.invSelect.roundsRemaining = myPlayer.invSelect.specs.capacity;

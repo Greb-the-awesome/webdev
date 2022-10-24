@@ -13,6 +13,10 @@ var weapons = [
 ];
 
 var upgrades = [
-["Extra Ammo", [0, 0.5], {action:()=>myPlayer.invSelect.specs.capacity = 100}],
-["ClUtCh!!!", [0, 0.69], {action:()=>myPlayer.invSelect.clutcher = true}]
+["Extra Ammo", [0, 0.5], {action:()=>myPlayer.invSelect.specs.capacity = 100,
+	desc:"do you really not know what extra ammo means?"}],
+["ClUtCh!!!", [0, 0.69], {action:()=>myPlayer.invSelect.clutcher = true,
+	desc: "When you are low on health, this weapon does not need to reload!"}],
+["Sus Juice", [0.195, 0.5], {action:()=>myPlayer.health = Math.max(myPlayer.health + 75, 100),
+	desc: "Heal 75 health on application. (this doesn't affect your weapon)"}]
 ];

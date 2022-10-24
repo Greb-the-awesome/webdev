@@ -23,7 +23,7 @@ function physicsUpdate() {
 		myPlayer.velocity[1] = 0;
 	}
 	myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
-	if (myPlayer.hitPos[1] < -50) {ded();}
+	if (myPlayer.hitPos[1] < -50) {ded(playerName + " didn't know the world was flat in Zombie Wars. skill issue!");}
 	
 	// myPlayer.userInputVelocity[0] *= speedMultiplier;
 	// myPlayer.userInputVelocity[2] *= speedMultiplier;
@@ -41,7 +41,7 @@ function bulletsUpdate(buffer, dayN) {
 				if (zomb.health <= 0) {
 					if (Math.random() > 0.6) {
 						var toDrop = dropItems(dayN < 2);
-						items.push(new Item([zomb.pos[0], zomb.pos[1]+1, zomb.pos[2]], toDrop.name, toDrop.texCoordStart, toDrop.specs));
+						items.push(new Item([zomb.pos[0], zomb.pos[1]+1, zomb.pos[2]], toDrop.name, toDrop.texCoordStart, toDrop.specs, 1));
 					}
 					zombies.splice(zombNum, 1);
 					playerStats.zombiesKilled++;
@@ -136,14 +136,19 @@ function randomAroundPlayer(range) { // helper for spawning upgrades
 
 function spawnStuff(t) {
 	if (Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2) {
-		new Zombie([Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10], models.zombie, 1, 100);
+		var attemptedPos = [Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10];
+		var range = Math.min(Math.max(3000 / 4 / gameTime, 3), 15);
+		if (!Math.abs(attemptedPos[0] - myPlayer.hitPos[0]) < range &&
+			!Math.abs(attemptedPos[2] - myPlayer.hitPos[2] < range)) {
+			new Zombie(attemptedPos, models.zombie, 1, 100);
+		}
 	}
 	if (t == 3000) { // dun dun dun da boss comin'
 		new Zombie([0,0,0], models.boss, 10, 250);
 	}
-	if (Math.floor(Math.random() * 130) == 2 && t < 1500) {
+	if (Math.floor(Math.random() * 170) == 2 && t < 1500) {
 		items.push(new Item(randomAroundPlayer(20),
-			...upgrades[Math.floor(Math.random() * upgrades.length)], 1, true, true));
+			...upgrades[Math.floor(Math.random() * upgrades.length)], 0.3, 1, true, true));
 	}
 }
 

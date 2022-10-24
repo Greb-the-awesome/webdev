@@ -42,6 +42,7 @@
 				</center>
 			</div>
 		</div>
+		<!-- ------pause------- -->
 		<div id="pauseDiv" class="homeDivInner">
 			<center>
 				<h1>Game Paused</h1>
@@ -50,7 +51,10 @@
 				<button onclick="document.getElementById('pauseDiv').style.display='none';">Hide Banner</button>
 			</center>
 		</div>
+
 		<img src="/static/zombiegame_updated_3d/volume on.png" id="volumeButton" onclick="toggleVolume();">
+
+		<!-- ------upgrades------- -->
 		<div id = "upgradeDiv">
 			<strong>Upgrades (press U)</strong>
 		</div>
@@ -64,6 +68,16 @@
 				</div>
 			</div>
 		</div>
+		<!-- ------you died!------- -->
+		<div id="deadDiv">
+			<div id="deadMsg">
+				<center>
+					<h1 style="font-size:5rem;">YOU DIED!!!</h1>
+					<strong id="deadReason" style="font-size:2rem;"></strong>
+				</center>
+			</div>
+		</div>
+		<!-- ------------------ -->
 		<div class="migNot" style="position:absolute;left:50%;top:0%;">
 			<h1>IMPORTANT NOTICE!!!</h1>
 			<p>Zombie Wars is migrating from Heroku to Replit, thus the URL will be changing in the near future.</p>
@@ -76,28 +90,7 @@
 			src="/static/zombiegame_updated_3d/shaders.js" defer></script>
 	<script type="text/javascript"
 			src="/static/multiplayer_3d_game/divisionEngine.js" defer></script>
-	<script type="text/javascript">
-		var arrowKeySensitivity = 20;
-		function onKeyDown(event) {
-			var keyCode = event.code;
-			divisDownKeys[keyCode] = true;
-			if (keyCode == "KeyU") {
-				var el = document.getElementById("upgradeMenu");
-				el.style.display = el.style.display == "block"?"none":"block"; // im so smart
-			}
-		}
-		function onKeyUp(event) {
-			keyCode = event.code;
-			divisDownKeys[keyCode] = false;
-		}
-		window.addEventListener("keydown", onKeyDown);
-		window.addEventListener("keyup", onKeyUp);
-		function processArrowKeys() {
-			if (divisDownKeys["ArrowUp"]) {onCameraTurn({movementX: 0, movementY: -arrowKeySensitivity});}
-			if (divisDownKeys["ArrowDown"]) {onCameraTurn({movementX: 0, movementY: arrowKeySensitivity});}
-			if (divisDownKeys["ArrowLeft"]) {onCameraTurn({movementX: -arrowKeySensitivity, movementY: 0});}
-			if (divisDownKeys["ArrowRight"]) {onCameraTurn({movementX: arrowKeySensitivity, movementY: 0});}
-		}
+	<script type="text/javascript" src="/static/zombiegame_updated_3d/keys.js">
 	</script>
 	<script type="text/javascript"
 			src="/static/zombiegame_updated_3d/funcs.js" defer></script>

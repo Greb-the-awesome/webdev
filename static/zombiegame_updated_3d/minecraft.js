@@ -94,13 +94,16 @@ function _aList(lst, x, y, z) {
 }
 
 var a = new Audio("/static/radio.mp3");
-
+var playerName;
 function startGame() {
 	document.getElementById("homeDiv").style.display = "none";
 	canvas.requestPointerLock();
 	clearInterval(ambientHandle);
+	var n = document.getElementById("nameBox").value;
+	playerName = n == ""?"You":n; // if they didn't enter anything, just put "you"
 }
 var alreadyHelped;
+var dead = false;
 function gameHelp() {
 	var h;
 	if (!alreadyHelped) {
@@ -122,7 +125,7 @@ function pauseMenu() {
 		console.log("lock on");
 		if (gamestart) {mainHandle = setInterval(loop, 25);}
 		gamestart = true;
-	} else {
+	} else if (!dead) {
 		var a = document.getElementById('pauseDiv');
 		a.style.display = "block";
 		console.log("lock off");
@@ -248,12 +251,15 @@ function debugRefresh() {
 	document.getElementById("debugStuff").innerHTML = disp;
 }
 
-function ded() {
+function ded(reason) {
 	window.clearInterval(mainHandle);
 	oCtx.font = "40px Open Sans";
 	oCtx.fillText("you died lmao", overlay.width * 0.3, overlay.height * 0.4);
 	a.currentTime = 18;
-	a.play()
+	a.play();
+	document.getElementById("deadDiv").style.display = "block";
+	document.getElementById("deadReason").innerHTML = reason;
+	dead = true;
 }
 
 function onCameraTurn(e) {
@@ -308,12 +314,12 @@ function dropItems(goodWeapon) {
 	return eligible[Math.floor(Math.random() * eligible.length)];
 }
 function getDifficulty(t) {
-	return 1 / (2 * Math.abs(t - Math.floor(t + 0.5)) * Math.sqrt(t * 2));
+	return 0.5 / (2 * Math.abs(t - Math.floor(t + 0.5)) * Math.sqrt(t * 2));
 }
 function mix(a, b, amount) {
 	return a * (1 - amount) + b * amount;
 }
-var DAYLENGTH = 4000; // 2min
+var DAYLENGTH = 3000; // divided by 40 = seconds
 var COLORLENGTH = DAYLENGTH / 8; // the time each color lasts for
 function loop() {
 	var before = Date.now();
@@ -396,7 +402,15 @@ function loop() {
 		buffer.vertexPosition[1] = buffer.vertexPosition[1].concat(sunPosition);
 		buffer.vertexTexCoord[1] = buffer.vertexTexCoord[1].concat([231/texW, 250/texH]);
 		spawnStuff(m);
-		if (myPlayer.health < 0) {ded();} // oof
+		if (myPlayer.health < 0) { // oof
+			if (zombies.length > 5) {
+				ded(playerName + " was swarmed by a bunch of zombies. rip " + playerName + ".");
+			} else if (myPlayer.reloading) {
+				ded(playerName + " was assasinated by a zombie while reloading.");
+			} else {
+				ded(playerName + " was slain by zombies. LLLL");
+			}
+		}
 		debugDispNow["health"] = myPlayer.health;
 
 		// flush
