@@ -15,7 +15,7 @@ function physicsUpdate() {
 		} else if (myPlayer.stamina < 100) {
 			if (speedMultiplier < -0.030) {myPlayer.stamina += 0.25;} else {myPlayer.stamina += 0.15;}
 		}
-		// myPlayer.cameraPos[1] = height;
+		myPlayer.cameraPos[1] = height;
 		debugDispNow["speed multiplier"] = speedMultiplier;
 	}
 	if (myPlayer.hitPos[1] < height - 1 && myPlayer.hitPos[1] > height - 2) {
