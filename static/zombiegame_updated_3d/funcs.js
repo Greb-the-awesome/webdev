@@ -15,7 +15,9 @@ function physicsUpdate() {
 		} else if (myPlayer.stamina < 100) {
 			if (speedMultiplier < -0.030) {myPlayer.stamina += 0.25;} else {myPlayer.stamina += 0.15;}
 		}
-		myPlayer.cameraPos[1] = height;
+		if (!creative) {
+			myPlayer.cameraPos[1] = height;
+		}
 		debugDispNow["speed multiplier"] = speedMultiplier;
 	}
 	if (myPlayer.hitPos[1] < height - 1 && myPlayer.hitPos[1] > height - 2) {
@@ -24,7 +26,7 @@ function physicsUpdate() {
 	}
 	myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
 	if (myPlayer.hitPos[1] < -50) {ded(playerName + " didn't know the world was flat in Zombie Wars. skill issue!");}
-	
+
 	// myPlayer.userInputVelocity[0] *= speedMultiplier;
 	// myPlayer.userInputVelocity[2] *= speedMultiplier;
 }
@@ -122,7 +124,7 @@ function zombiesUpdate() {
 			realBillboardData.corner.push(zombieBarRemaining[a+1]);
 		}
 		realBillboardData.texCoord = realBillboardData.texCoord.concat(mList([71/texW,161/texH], 6)); // change order
-		
+
 		if (checkCollision(myPlayer.cameraPos, [zombie.pos[0],zombie.pos[1]+3,zombie.pos[2]], [1, 1.6, 1], [1.5,2,1.5])) {
 			myPlayer.health -= zombie.damage;
 			myPlayer.takingDamage = true;
@@ -157,7 +159,7 @@ function flushBuffers() {
 	flushRB(0, shaderProgram);
 	flushRealBillb();
 	flushObj();
-	refreshBillbs();	
+	refreshBillbs();
 }
 
 function renderGUI(pickUp, dayN) {
@@ -257,7 +259,7 @@ function airdrop() {
 	}, 50);
 	setTimeout(function() {
 		clearInterval(airdropHandle);
-		
+
 	})
 }
 

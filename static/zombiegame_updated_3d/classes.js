@@ -34,6 +34,8 @@ for (let a=0; a<zombieBarRemaining.length; a+=2) {
 
 var texCoordDimension = 100/texW; // if at any point I don't use a square texture then it will fail soooooooo
 
+var creative = false;
+
 class Item {
 	constructor(pos, name, texCoordStart, specs, size, type = 0, add = true, despawn = true) {
 		console.log(texCoordStart);
@@ -71,6 +73,7 @@ class Item {
 		this.roundsRemaining = this.specs.capacity;
 		if (!type) { // type == 0
 			this.clutcher = false; // weapons can have the "clutcher" upgrade
+			this.rocketJump = false;
 		}
 	}
 }
@@ -92,8 +95,8 @@ class MyPlayer {
 
 		this.acceleration = 0.000000002; // + 0.02 per frame
 
-		this.health = 100;
-		this.stamina = 100;
+		this.health = creative?Infinity:100;
+		this.stamina = creative?Infinity:100;
 		this.takingDamage = false;
 		this.firingDelay = false;
 		this.reloading = false;
@@ -142,7 +145,7 @@ class MyPlayer {
 			setTimeout(()=>billbOffsets[2]-=0.3, this.invSelect.specs.delay/2)
 			setTimeout(()=>{myPlayer.firingDelay = false;}, this.invSelect.specs.delay);
 
-			if (this.invSelect.roundsRemaining == 0) {
+			if (this.invSelect.roundsRemaining <= 0) {
 				if (this.invSelect.clutcher && this.health < 25) {
 					this.invSelect.roundsRemaining = this.invSelect.specs.capacity;
 				} else {
