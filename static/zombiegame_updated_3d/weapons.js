@@ -17,6 +17,8 @@ var upgrades = [
 	desc:"do you really not know what extra ammo means?"}],
 ["ClUtCh!!!", [0, 0.69], {action:()=>myPlayer.invSelect.clutcher = true,
 	desc: "When you are low on health, this weapon does not need to reload!"}],
-["Sus Juice", [0.195, 0.5], {action:()=>myPlayer.health = Math.max(myPlayer.health + 75, 100),
-	desc: "Heal 75 health on application. (this doesn't affect your weapon)"}]
+["Sus Juice", [0.195, 0.5], {action:()=>myPlayer.health = Math.min(myPlayer.health + 75, 100),
+	desc: "Heal 75 health on application. (this doesn't affect your weapon)"}],
+["Jump!!!", [0.195, 0.69], {action:()=>myPlayer.invSelect.jump = true,
+	desc: "<a href='https://youtu.be/MHi9mKq0slA?t=92'>Rocket Jump!</a>"}]
 ];
