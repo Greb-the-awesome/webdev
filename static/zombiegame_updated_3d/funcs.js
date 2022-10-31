@@ -6,9 +6,9 @@ function physicsUpdate() {
 	var z = myPlayer.cameraPos[2];
 	var height = getTerrain(x, z) + 2;
 
-	if (height == -Infinity) {myPlayer.inAir = true;}
+	if (height == -Infinity) {myPlayer.inAir = true;} // fell off the map RIP
 
-	if (myPlayer.inAir) {myPlayer.velocity[1] -= 0.008;} else {
+	if (myPlayer.inAir) {myPlayer.velocity[1] -= 0.008;} else { // on the ground
 		var speedMultiplier = (myPlayer.hitPos[1] - height + 2 - 0.1) * 2;
 		if (speedMultiplier < -0.21) {
 			myPlayer.stamina += speedMultiplier;
@@ -20,15 +20,17 @@ function physicsUpdate() {
 		}
 		debugDispNow["speed multiplier"] = speedMultiplier;
 	}
-	if (myPlayer.hitPos[1] < height - 1 && myPlayer.hitPos[1] > height - 2) {
+	if (myPlayer.hitPos[1] < height - 1 && myPlayer.hitPos[1] > height - 2) { // landing
 		myPlayer.inAir = false;
+		if (myPlayer.velocity[1] < -1) {
+			ded(playerName + " thought fall damage was a hoax created by the government and took their" +
+				" experiments a bit far. TRUST THE GOVERNMENT!!!");
+		}
 		myPlayer.velocity[1] = 0;
 	}
 	myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
 	if (myPlayer.hitPos[1] < -50) {ded(playerName + " didn't know the world was flat in Zombie Wars. skill issue!");}
-
-	// myPlayer.userInputVelocity[0] *= speedMultiplier;
-	// myPlayer.userInputVelocity[2] *= speedMultiplier;
+	if (myPlayer.hitPos[1] > 70) {ded(playerName + " went too high up and died in the name of science. O7");}
 }
 
 function bulletsUpdate(buffer, dayN) {
@@ -288,4 +290,9 @@ function refreshBillbs() {
 					   128/texW, 128/texW,
 					   256/texW, 0.0,]);
 	flushBillb();
+}
+
+function jumpBoost() {
+	var f = myPlayer.cameraFront;
+	glMatrix.vec3.subtract(myPlayer.velocity, myPlayer.velocity, [f[0], f[1] * 0.5, f[2]]);
 }

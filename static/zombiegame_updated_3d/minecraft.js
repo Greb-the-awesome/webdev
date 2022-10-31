@@ -384,17 +384,17 @@ function loop() {
 	}
 	if (divisDownKeys["ShiftLeft"] && myPlayer.stamina > 60) {
 		myPlayer.userInputVelocity[0] *= 0.25;
-		myPlayer.userInputVelocity[1] *= 0.25;
 		myPlayer.userInputVelocity[2] *= 0.25;
 	} else if (myPlayer.stamina > 40) {
 		myPlayer.userInputVelocity[0] *= 0.15;
-		myPlayer.userInputVelocity[1] *= 0.15;
 		myPlayer.userInputVelocity[2] *= 0.15;
 	} else { // stamina rlly low
 		myPlayer.userInputVelocity[0] *= 0.08;
-		myPlayer.userInputVelocity[1] *= 0.08;
 		myPlayer.userInputVelocity[2] *= 0.08;
 	}
+	myPlayer.velocity[0] *= 0.9;
+	myPlayer.velocity[2] *= 0.9;
+	myPlayer.userInputVelocity[1] = 0;
 	processArrowKeys();
 
 	physicsUpdate();

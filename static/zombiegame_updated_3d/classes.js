@@ -72,7 +72,7 @@ class Item {
 		this.timer = despawn?1000:Infinity;
 		this.roundsRemaining = this.specs.capacity;
 		if (!type) { // type == 0
-			this.clutcher = false; // weapons can have the "clutcher" upgrade
+			this.clutcher = false; // weapons can have upgrades
 			this.rocketJump = false;
 		}
 	}
@@ -126,8 +126,15 @@ class MyPlayer {
 		this.invSelect = this.inv[this.selected];
 	}
 	shoot() {
-		if (!this.firingDelay && !this.reloading && myPlayer.invSelect) {
-			if (this.invSelect.specs.fire && useSound) {new Audio(this.invSelect.specs.fire).play();}
+		if (!this.firingDelay && !this.reloading && myPlayer.invSelect) { // a lot of code for each shot lmao
+			var toPlay = new Audio(this.invSelect.specs.fire);
+			if (this.invSelect.rocketJump &&
+				(this.invSelect.roundsRemaining % 3 == 0)) {
+				jumpBoost();
+				toPlay.preservesPitch = false;
+				toPlay.playbackRate = 0.7;
+			}
+			if (this.invSelect.specs.fire && useSound) {toPlay.play();}
 
 			this.invSelect.roundsRemaining--;
 
