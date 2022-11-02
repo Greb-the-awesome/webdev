@@ -1,6 +1,6 @@
 console.log("funcs.js loaded.");
 
-function physicsUpdate() {
+function physicsUpdate() { // for the first map
 	myPlayer.updatePos(); // would-be next position
 	var x = myPlayer.cameraPos[0];
 	var z = myPlayer.cameraPos[2];
@@ -31,6 +31,10 @@ function physicsUpdate() {
 	myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
 	if (myPlayer.hitPos[1] < -50) {ded(playerName + " didn't know the world was flat in Zombie Wars. skill issue!");}
 	if (myPlayer.hitPos[1] > 70) {ded(playerName + " went too high up and died in the name of science. O7");}
+}
+
+function physicsUpdate_parkour() { // for the second map
+	// TODO: do the parkour map thing
 }
 
 function bulletsUpdate(buffer, dayN) {

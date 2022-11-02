@@ -18,7 +18,7 @@ const fsSource = `
 varying lowp vec4 vColor;
 
 void main() {
-	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+	gl_FragColor = vColor;
 }
 `
 const billboardVS = `
@@ -102,12 +102,10 @@ varying lowp vec4 vColor;
 
 void main() {
 	gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-	/*
+
 	if (uCameraPos.y < 0.0) {
-		fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.08;
-	} else {
-		fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.05 - 1.0;
-	}*/
+		float a = -(uModelViewMatrix * aVertexPosition).z * 0.08;
+	}
 	mediump float fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.05 - 1.0;
 	highp vec4 transformedNormal = vec4(aVertexNormal, 1.0);
 	highp float directional = max(dot(transformedNormal.xyz, uLightingInfo[0]), 0.0);
@@ -163,7 +161,7 @@ uniform vec4 uFogColor;
 varying mediump float fogAmount;
 
 void main() {
-	if (gl_FragCoord.z < 0.0) {discard;}
+	//if (gl_FragCoord.z < 0.0) {discard;}
 	lowp vec4 col = texture2D(uSampler, texCoord);
 	col = vec4(col.rgb * vLighting, col.a);
 	col = mix(col, uFogColor, clamp(fogAmount, 0.0, 1.0)); // use uFogColor later when water physics actually make sense

@@ -223,7 +223,7 @@ function divisionOnLoad(gl) {
 	flush();
 	window.gl = gl;
 	//assdfd = new ParticleSystem([2.47-2.5, 1.23, 6.96-2.5], D_SQUARE_PLANE, 0, 0, [0.73, 0.746], 0.218);
-	assdfd = new ParticleSystem([1.01-2.5, 1.75, -9.82-2.5], D_SQUARE_PLANE, 0, 0, [142/texW, 166/texH], 32/texW);
+	assdfd = new ParticleSystem([1.01-2.5, 60, -9.82-2.5], D_SQUARE_PLANE, 0, 0, [142/texW, 166/texH], 32/texW);
 	canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
 	overlay.onclick = function() {canvas.requestPointerLock();};
 	document.exitPointerLock = document.exitPointerLock ||
@@ -417,6 +417,26 @@ function loop() {
 			}
 		}
 		debugDispNow["health"] = myPlayer.health;
+		if (checkCollision(myPlayer.cameraPos, [10,2,0], [3,3,3], [3,3,3])) {
+			console.log("c");
+			clearInterval(mainHandle);
+			new Audio("/static/zombiegame_updated_3d/sfx/Nether_portal_trigger.ogg").play();
+			setTimeout(()=>{
+				new Audio("/static/zombiegame_updated_3d/sfx/Portal_teleportation.ogg").play();
+				oCtx.clearRect(0, 0, overlay.width, overlay.height);
+			}, 2750);
+			var x = setInterval(()=>{
+				oCtx.fillStyle = "rgba(0, 200, 30, 0.08)";
+				oCtx.fillRect(0, 0, overlay.width, overlay.height);
+			}, 25);
+			setTimeout(()=>{
+				clearInterval(x);
+				oCtx.fillStyle = "rgb(255, 255, 255)";
+				oCtx.font = "100px 'Open Sans'";
+				oCtx.fillText("Generating Terrain...", overlay.width / 6, overlay.height / 3);
+
+			}, 1300);
+		}
 
 		// flush
 		flushBuffers();

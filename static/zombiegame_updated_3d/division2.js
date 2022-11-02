@@ -5,7 +5,7 @@
 var canvas, gl;
 var buffers_d;
 var modelViewMatrix = glMatrix.mat4.create();
-glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -2]);
+glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -5]);
 var projectionMatrix = glMatrix.mat4.create();
 glMatrix.mat4.perspective(projectionMatrix,
 	60 * Math.PI / 180, // fov
@@ -105,7 +105,6 @@ function useShader(name) {
 	gl.useProgram(info.compiled);
 	for (var buf in info.buffer) {
 		bindVertexAttribute(...info.buffer[buf]);
-		console.log(info.buffer[buf]);
 	}
 }
 
@@ -167,6 +166,11 @@ function flush(shaderName) {
 
 function flushUniforms() {
 	var locs = buffers_d.shaderProgram.uniform;
+	gl.uniformMatrix4fv(locs.uModelViewMatrix, false, modelViewMatrix);
+	gl.uniformMatrix4fv(locs.uProjectionMatrix, false, projectionMatrix);
+	gl.uniformMatrix3fv(locs.uLightingInfo, false, lightingInfo);
+	locs = buffers_d.objShader.uniform;
+	gl.useProgram(buffers_d.objShader.compiled);
 	gl.uniformMatrix4fv(locs.uModelViewMatrix, false, modelViewMatrix);
 	gl.uniformMatrix4fv(locs.uProjectionMatrix, false, projectionMatrix);
 	gl.uniformMatrix3fv(locs.uLightingInfo, false, lightingInfo);
@@ -246,4 +250,7 @@ function initGL(canvName) {
 		}
 	};
 	initShadersAndBuffers();
+	try { // if you don't have a divisionOnLoad function or sth idk
+		divisionOnLoad(gl);
+	} catch (e) {}
 }

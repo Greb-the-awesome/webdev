@@ -27,7 +27,7 @@
 		createRenderBuffer("shaderProgram");
 		var datas = getRBdata(0, "shaderProgram");
 		datas.aVertexPosition = [0,0,0, 2,0,0, 0,2,0];
-		datas.aTexCoord = [1,1, 0,1, 0,0];
+		datas.aTexCoord = [1,0, 0,1, 0,0];
 		datas.aVertexNormal = [0,1,0, 0,1,0, 0,1,0,];
 		flushRB(0, "shaderProgram");
 
@@ -42,13 +42,13 @@
 		// rendering loop
 		setInterval(function() {
 			useShader("shaderProgram");
+			useRenderBuffer(0, "shaderProgram");
+			gl.drawArrays(gl.TRIANGLES, 0, 9);
 			glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, 0.1, [0,1,0]);
 			flushUniforms();
-			useRenderBuffer(0, "shaderProgram");
-			//gl.drawArrays(gl.TRIANGLES, 0, 3);
 
 			useShader('objShader');
-			gl.drawArrays(gl.TRIANGLES, 0, 10);
+			gl.drawArrays(gl.TRIANGLES, 0, 9);
 		}, 20);
 	</script>
 </body>
