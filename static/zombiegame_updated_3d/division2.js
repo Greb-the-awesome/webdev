@@ -13,8 +13,9 @@ glMatrix.mat4.perspective(projectionMatrix,
 	0.1, // zNear
 	150.0 // zFar
 );
+var bModelViewMatrix = glMatrix.mat4.create();
 var lightingInfo = [0, 1, 0, 1, 1, 1, 0.5, 0.5, 0.5];
-var renderBuffers = {"shaderProgram":[]};
+var renderBuffers = {"shaderProgram":[], "objShader":[]};
 
 function parseShader(s) {
 	var attribRegEx = /attribute (vec[0-5]|float) .+?(?=;)/g;
@@ -75,6 +76,7 @@ function initShadersAndBuffers() {
 		requirements.uniform = requirements.uniform.concat(parseShader(info.fSource).uniform);
 		console.log(requirements.attribute);
 		for (var attrib of requirements.attribute) {
+			console.log(attrib);
 			info.buffer[attrib].unshift(gl.getAttribLocation(info.compiled, attrib)); // add the attribute location
 
 			var buffer = gl.createBuffer();
@@ -164,13 +166,26 @@ function flush(shaderName) {
 	}
 }
 
-function flushUniforms() {
+function flushUniforms() { // WARNING: will switch programs so u gotta switch back
 	var locs = buffers_d.shaderProgram.uniform;
+	gl.useProgram(buffers_d.shaderProgram.compiled);
 	gl.uniformMatrix4fv(locs.uModelViewMatrix, false, modelViewMatrix);
 	gl.uniformMatrix4fv(locs.uProjectionMatrix, false, projectionMatrix);
 	gl.uniformMatrix3fv(locs.uLightingInfo, false, lightingInfo);
+
 	locs = buffers_d.objShader.uniform;
 	gl.useProgram(buffers_d.objShader.compiled);
+	gl.uniformMatrix4fv(locs.uModelViewMatrix, false, modelViewMatrix);
+	gl.uniformMatrix4fv(locs.uProjectionMatrix, false, projectionMatrix);
+	gl.uniformMatrix3fv(locs.uLightingInfo, false, lightingInfo);
+
+	locs = buffers_d.overlayShader.uniform;
+	gl.useProgram(buffers_d.overlayShader.compiled);
+	gl.uniformMatrix4fv(locs.ubModelViewMatrix, false, bModelViewMatrix);
+	gl.uniformMatrix4fv(locs.uProjectionMatrix, false, projectionMatrix);
+
+	locs = buffers_d.transformShader.uniform;
+	gl.useProgram(buffers_d.transformShader.compiled);
 	gl.uniformMatrix4fv(locs.uModelViewMatrix, false, modelViewMatrix);
 	gl.uniformMatrix4fv(locs.uProjectionMatrix, false, projectionMatrix);
 	gl.uniformMatrix3fv(locs.uLightingInfo, false, lightingInfo);
@@ -226,7 +241,7 @@ function initGL(canvName) {
 				aTexCoord: [2, gl.FLOAT, false, 0, 0]
 			},
 			uniform: {},
-			data: {
+			data: { // TODO: autogenerate this
 				aVertexPosition: [],
 				aVertexNormal: [],
 				aTexCoord: []
@@ -246,6 +261,40 @@ function initGL(canvName) {
 				aVertexPosition: [],
 				aVertexNormal: [],
 				aColor: []
+			}
+		},
+		overlayShader: {
+			vSource: textureBillboardVS,
+			fSource: textureFS,
+			compiled: false,
+			buffer: {
+				aBillboardPos: [],
+				abTexCoord: [2, gl.FLOAT, false, 0, 0]
+			},
+			uniform: {},
+			data: {
+				aBillboardPos: [],
+				abTexCoord: []
+			}
+		},
+		transformShader: {
+			vSource: lightColorTransfVS,
+			fSource: fsSource,
+			compiled: false,
+			buffer: {
+				aVertexPosition: [],
+				aVertexNormal: [],
+				aColor: [4, gl.FLOAT, false, 0, 0],
+				aYRot: [1, gl.FLOAT, false, 0, 0],
+				aTranslation: []
+			},
+			uniform: {},
+			data: {
+				aVertexPosition: [],
+				aVertexNormal: [],
+				aColor: [],
+				aYRot: [],
+				aTranslation: []
 			}
 		}
 	};

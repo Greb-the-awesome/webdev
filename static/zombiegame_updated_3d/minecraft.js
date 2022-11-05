@@ -103,6 +103,8 @@ function startGame() {
 	playerName = n == ""?"Player":n; // if they didn't enter anything, just put "you"
 	if (n == "jerry is hot") {
 		creative = true; // enable flying
+	} else if (n.includes("ron") || n.includes("trefoil")) {
+		ded("JERRY DIED OF TRYING TO MAKE A TREFOIL REEREOISJFOAJES");
 	}
 }
 var alreadyHelped;

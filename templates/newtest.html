@@ -39,15 +39,37 @@
 		shaderAddData(objDatas, "objShader");
 		flush("objShader");
 
+		// overlay shaders
+		var overlayDatas = {};
+		overlayDatas.aBillboardPos = [1,1,-4, 1,0,-4, 0,0,-4];
+		overlayDatas.abTexCoord = [0,0, 1,0, 0,1];
+		shaderAddData(overlayDatas, "overlayShader");
+		flush("overlayShader");
+
+		var transfDatas = {};
+		transfDatas.aVertexPosition = [0,0,0, 0,0,0, 0,0,0];
+		transfDatas.aVertexNormal = [0,1,0, 0,1,0, 0,1,0];
+		transfDatas.aColor = [0,1,0,1, 1,0,0,1, 0,0,1,1]
+		transfDatas.aYRot = [1, 1, 1];
+		transfDatas.aTranslation = [1,0,-1, 1,1,1, 0,0,0];
+		shaderAddData(transfDatas, "transformShader");
+		flush("transformShader");
+
 		// rendering loop
 		setInterval(function() {
 			useShader("shaderProgram");
 			useRenderBuffer(0, "shaderProgram");
-			gl.drawArrays(gl.TRIANGLES, 0, 9);
+			gl.	drawArrays(gl.TRIANGLES, 0, 9);
 			glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, 0.1, [0,1,0]);
 			flushUniforms();
 
 			useShader('objShader');
+			gl.drawArrays(gl.TRIANGLES, 0, 9);
+
+			useShader("overlayShader");
+			gl.drawArrays(gl.TRIANGLES, 0, 9);
+
+			useShader("transformShader");
 			gl.drawArrays(gl.TRIANGLES, 0, 9);
 		}, 20);
 	</script>

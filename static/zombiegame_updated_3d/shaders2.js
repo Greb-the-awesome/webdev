@@ -138,12 +138,7 @@ void main() {
 	vec4 transformed = rotate(aVertexPosition, aYRot);
 	transformed.xyz += aTranslation;
 	gl_Position = uProjectionMatrix * uModelViewMatrix * transformed;
-	/*
-	if (uCameraPos.y < 0.0) {
-		fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.08;
-	} else {
-		fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.05 - 1.0;
-	}*/
+
 	mediump float fogAmount = -(uModelViewMatrix * transformed).z * 0.05 - 1.0;
 	highp vec4 transformedNormal = rotate(vec4(aVertexNormal.xyz, 1.0), aYRot);
 	highp float directional = max(dot(transformedNormal.xyz, uLightingInfo[0]), 0.0);
