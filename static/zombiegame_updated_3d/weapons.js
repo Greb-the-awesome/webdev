@@ -19,10 +19,6 @@ var upgrades = [
 	desc: "When you are low on health, this weapon does not need to reload!"}],
 ["Sus Juice", [0.195, 0.5], {action:()=>myPlayer.health = Math.min(myPlayer.health + 75, 100),
 	desc: "Heal 75 health on application. (this doesn't affect your weapon)"}],
-["Jump!!!", [0.195, 0.69], {action:()=>myPlayer.invSelect.rocketJump = true,
-	desc: "<a href='https://youtu.be/MHi9mKq0slA?t=92'>Rocket Jump!</a> (every third bullet "+
-	"boosts you up when jumping)"}]
-,
 ["Sus Juice", [0.195, 0.5], {action:()=>{
 		myPlayer.health = Math.max(myPlayer.health + 75, 100);
 		if (Math.floor(Math.random() * 7) == 2) {
@@ -31,3 +27,7 @@ var upgrades = [
 	},
 	desc: "Heal 75 health on application. (this doesn't affect your weapon)"}]
 ];
+
+var jumpBoostUpgrade = ["Jump!!!", [0.195, 0.69], {action:()=>myPlayer.invSelect.rocketJump = true,
+	desc: "<a href='https://youtu.be/MHi9mKq0slA?t=92'>Rocket Jump!</a> (every third bullet "+
+	"boosts you up when jumping)"}];

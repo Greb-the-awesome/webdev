@@ -75,6 +75,15 @@ class Item {
 			this.clutcher = false; // weapons can have upgrades
 			this.rocketJump = false;
 		}
+		this.velocity = [0,0,0]; // manually set it if u want smth diff
+	}
+	updatePos() {
+		if (this.pos[1] > getTerrain(this.pos[0], this.pos[2]) + 1) {
+			this.pos[0] += this.velocity[0];
+			this.pos[1] += this.velocity[1];
+			this.pos[2] += this.velocity[2];
+			this.velocity[1] -= 0.008;
+		}
 	}
 }
 

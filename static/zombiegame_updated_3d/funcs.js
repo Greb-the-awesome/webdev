@@ -36,6 +36,29 @@ function physicsUpdate() { // for the first map
 function physicsUpdate_parkour() { // for the second map
 	// TODO: do the parkour map thing
 }
+var oldMap = true;
+function changeMap() {
+	loadObj("/static/multiplayer_3d_game/parkour.obj", "/static/multiplayer_3d_game/parkour.mtl", function(res) {
+		positions = [];
+		colors = [];
+		texCoords = [];
+		normals = [];
+		indexes = [];
+		transformInfos = {position:[], color:[], rot:[], translate:[], normal:[]};
+
+		objInfos = res;
+		flush();
+		flushObj();
+		flushTransformedPositions();
+
+		oldMap = false;
+		loop();
+		alert(`This is supposed to be a new map, but the map has not been fully implemented yet.
+So just play with this invisible map (and bugged GUI) for now, and hopefully the new map gets added soon!`);
+
+		mainHandle = setInterval(loop, 25);
+	});
+}
 
 function bulletsUpdate(buffer, dayN) {
 	var finalBullet = [];
@@ -43,19 +66,23 @@ function bulletsUpdate(buffer, dayN) {
 	var bulletNum = 0;
 	for (bullet of bullets) {
 		var zombNum = 0;
-		for (zomb of zombies) {
+		for (zomb of zombies) { // check if the bullets are colliding the zombies
 			if (checkCollision([zomb.pos[0],zomb.pos[1]+3,zomb.pos[2]], bullet.pos, [2,4,2], [1,1,1])) {
 				zomb.health -= bullet.damage;
+
 				if (zomb.health <= 0) {
 					if (Math.random() > 0.6) {
 						var toDrop = dropItems(dayN < 2);
 						items.push(new Item([zomb.pos[0], zomb.pos[1]+1, zomb.pos[2]], toDrop.name, toDrop.texCoordStart, toDrop.specs, 1));
+						if (Math.random() > 0.6) {
+							var toPush = new Item([zomb.pos[0], zomb.pos[1] + 2, zomb.pos[2]],
+								...jumpBoostUpgrade, 0.3, 1, true, true);
+							items.push(toPush);
+							toPush.velocity = [0.1, 0.5, 0.1];
+						}
 					}
 					zombies.splice(zombNum, 1);
 					playerStats.zombiesKilled++;
-					if (playerStats.zombiesKilled == 1) {
-						airdrop();
-					}
 				}
 			}
 			zombNum++;
@@ -79,6 +106,7 @@ function itemsUpdate() {
 	var pickUp = false;
 	for (var item of items) {
 		item.timer--;
+		item.updatePos();
 		if (item.timer <= 0) {items.splice(itemNum, 1);continue;} // despawn
 		if (checkCollision(item.pos, myPlayer.hitPos, [2,2,2], [2,2,2])) {
 			if (item.type == 0) {
