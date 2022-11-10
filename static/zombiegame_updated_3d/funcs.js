@@ -47,6 +47,7 @@ function changeMap() {
 		transformInfos = {position:[], color:[], rot:[], translate:[], normal:[]};
 
 		objInfos = res;
+		// parse the obj into a hitbox
 		flush();
 		flushObj();
 		flushTransformedPositions();
@@ -78,7 +79,7 @@ function bulletsUpdate(buffer, dayN) {
 							var toPush = new Item([zomb.pos[0], zomb.pos[1] + 2, zomb.pos[2]],
 								...jumpBoostUpgrade, 0.3, 1, true, true);
 							items.push(toPush);
-							toPush.velocity = [0.1, 0.5, 0.1];
+							toPush.velocity = [Math.random() * 0.1, 0.5 * Math.random(), Math.random() * 0.1];
 						}
 					}
 					zombies.splice(zombNum, 1);
@@ -173,11 +174,7 @@ function randomAroundPlayer(range) { // helper for spawning upgrades
 function spawnStuff(t) {
 	if (Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2) {
 		var attemptedPos = [Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10];
-		var range = Math.min(Math.max(3000 / 4 / gameTime, 3), 15);
-		if (!Math.abs(attemptedPos[0] - myPlayer.hitPos[0]) < range &&
-			!Math.abs(attemptedPos[2] - myPlayer.hitPos[2] < range)) {
-			new Zombie(attemptedPos, models.zombie, 1, 100);
-		}
+		new Zombie(attemptedPos, models.zombie, 1, 100);
 	}
 	if (t == 3000) { // dun dun dun da boss comin'
 		new Zombie([0,0,0], models.boss, 10, 250);

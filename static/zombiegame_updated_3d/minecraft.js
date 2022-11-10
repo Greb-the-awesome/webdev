@@ -24,6 +24,7 @@ var gameTime = 0;
 var playerStats = {zombiesKilled: 0,};
 console.log("main script loaded.");
 var models = {};
+var hitboxes = [];
 function fakePerlin(x, y) {
 	return [Math.sin((x + y) / 2)]
 }
@@ -169,6 +170,71 @@ function loadObj(url, mtlUrl, callback) {
 				res.color = res.color.concat(
 					mList(materials[geom.material].diffuseColor.concat([1.0]),geom.data.position.length/3))
 				// we don't use any of the mtl specs except for the diffuse color cuz yeah
+			}
+			callback(res);
+		});
+	});
+}
+// -------- helpers for loadObjAndHitbox --------
+function compareVec3(arr1, arr2) {
+	// both are Array(3)
+	return arr1[0] == arr2[0] &&
+		arr1[1] == arr2[1] &&
+		arr1[2] == arr2[2];
+}
+
+function arrIncludesVec3(arr, vec) {
+	// arr: Array(n)<Array(3)>
+	// vec: Array(3)
+	for (const v of arr) {
+		if (compareVec3(v, vec)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function loadObjAndHitbox(url, mtlUrl, callback) {
+	var res = {"position":[], "normal":[], "color": [], "hitboxes": []};
+	// res.hitboxes: array of arrays. Each nested array has these values:
+	// [x, y, z], [x, y, z], [l, w, h], [l, w, h]
+	request(url, function(txt) { // jimmy rigged but it works
+		var data = parseOBJ(txt);
+		request(mtlUrl, function(mats) {
+			var materials = parseMTL(mats);
+			for (const geom of data.geometries) {
+				res.position = res.position.concat(geom.data.position);
+				res.normal = res.normal.concat(geom.data.normal);
+				res.color = res.color.concat(
+					mList(materials[geom.material].diffuseColor.concat([1.0]),geom.data.position.length/3));
+				// we don't use any of the mtl specs except for the diffuse color cuz yeah
+
+				// turn the geometries into hitboxes
+				var toPush = [];
+				var vertices = [];
+				var p = geom.data.position;
+				// get the vertices of the cube
+				for (let i=0; i<geom.data.position.length; i+=3) {
+					var pos = [p[i], p[i+1], p[i+2]];
+					if (!arrIncludesVec3(toPush, pos)) {
+						toPush.push(pos);
+					}
+				}
+				console.log("topush", toPush);
+				// WARNING: only works with axis-aligned rectangular prisms (i think)
+				// algo for creating hitboxes: first find the min and max x, y, z coords
+				// difference of coords between those is the width and height
+				// midpoint between those is the middle
+				var mins = [Infinity, Infinity, Infinity];
+				var maxs = [-Infinity, -Infinity, -Infinity];
+				for (const pos of toPush) {
+					pos.forEach((el, ind) => {
+						mins[ind] = Math.min(mins[ind], el);
+						maxs[ind] = Math.max(maxs[ind], el);
+					})
+				}
+				console.log("mins", mins);
+				console.log("maxs", maxs);
 			}
 			callback(res);
 		});
