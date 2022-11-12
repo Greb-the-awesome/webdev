@@ -34,20 +34,25 @@ function physicsUpdate() { // for the first map
 }
 
 function physicsUpdate_parkour() { // for the second map
-	// TODO: do the parkour map thing
+	myPlayer.velocity[1] -= 0.08;
+	myPlayer.updatePos();
+	myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
+	for (const box of hitboxes) {
+		const height = box[0][1] + box[1][1] + 2;
+		if (myPlayer.cameraPos[1] < height) {
+			myPlayer.cameraPos[1] = height;
+			myPlayer.velocity[1] = 0;
+		}
+	}
 }
 var oldMap = true;
 function changeMap() {
-	loadObj("/static/multiplayer_3d_game/parkour.obj", "/static/multiplayer_3d_game/parkour.mtl", function(res) {
-		positions = [];
-		colors = [];
-		texCoords = [];
-		normals = [];
-		indexes = [];
+	loadObjAndHitbox("/static/multiplayer_3d_game/parkour.obj", "/static/multiplayer_3d_game/parkour.mtl", function(res) {
+		positions, colors, texCoords, normals, indexes = [], [], [], [], [];
 		transformInfos = {position:[], color:[], rot:[], translate:[], normal:[]};
-
 		objInfos = res;
-		// parse the obj into a hitbox
+		console.log(res);
+
 		flush();
 		flushObj();
 		flushTransformedPositions();
@@ -56,8 +61,9 @@ function changeMap() {
 		loop();
 		alert(`This is supposed to be a new map, but the map has not been fully implemented yet.
 So just play with this invisible map (and bugged GUI) for now, and hopefully the new map gets added soon!`);
-
+		hitboxes = res.hitboxes;
 		mainHandle = setInterval(loop, 25);
+		physicsUpdate = physicsUpdate_parkour;
 	});
 }
 

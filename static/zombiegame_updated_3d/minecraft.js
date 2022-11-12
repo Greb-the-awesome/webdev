@@ -29,6 +29,7 @@ function fakePerlin(x, y) {
 	return [Math.sin((x + y) / 2)]
 }
 var normalRef = [null, ["pos2","pos4"], ["pos3","pos1"], ["pos4","pos2"], ["pos1","pos3"]];
+var hitboxes;
 class Block {
 	constructor(what, pos1, pos2, pos3, pos4) {
 		this.pos1 = pos1;
@@ -175,29 +176,14 @@ function loadObj(url, mtlUrl, callback) {
 		});
 	});
 }
-// -------- helpers for loadObjAndHitbox --------
-function compareVec3(arr1, arr2) {
-	// both are Array(3)
-	return arr1[0] == arr2[0] &&
-		arr1[1] == arr2[1] &&
-		arr1[2] == arr2[2];
-}
 
-function arrIncludesVec3(arr, vec) {
-	// arr: Array(n)<Array(3)>
-	// vec: Array(3)
-	for (const v of arr) {
-		if (compareVec3(v, vec)) {
-			return true;
-		}
-	}
-	return false;
-}
+// helper for loadObjAndHitbox
+function avg(a, b) {return (a + b) / 2;}
 
 function loadObjAndHitbox(url, mtlUrl, callback) {
 	var res = {"position":[], "normal":[], "color": [], "hitboxes": []};
 	// res.hitboxes: array of arrays. Each nested array has these values:
-	// [x, y, z], [x, y, z], [l, w, h], [l, w, h]
+	// [x, y, z], [l, w, h]
 	request(url, function(txt) { // jimmy rigged but it works
 		var data = parseOBJ(txt);
 		request(mtlUrl, function(mats) {
@@ -210,31 +196,24 @@ function loadObjAndHitbox(url, mtlUrl, callback) {
 				// we don't use any of the mtl specs except for the diffuse color cuz yeah
 
 				// turn the geometries into hitboxes
-				var toPush = [];
-				var vertices = [];
-				var p = geom.data.position;
-				// get the vertices of the cube
-				for (let i=0; i<geom.data.position.length; i+=3) {
-					var pos = [p[i], p[i+1], p[i+2]];
-					if (!arrIncludesVec3(toPush, pos)) {
-						toPush.push(pos);
-					}
-				}
-				console.log("topush", toPush);
 				// WARNING: only works with axis-aligned rectangular prisms (i think)
 				// algo for creating hitboxes: first find the min and max x, y, z coords
 				// difference of coords between those is the width and height
 				// midpoint between those is the middle
+				// also this is pretty slow but its the best algo i can think of
 				var mins = [Infinity, Infinity, Infinity];
 				var maxs = [-Infinity, -Infinity, -Infinity];
-				for (const pos of toPush) {
-					pos.forEach((el, ind) => {
+				var p = geom.data.position;
+				for (let i=0; i<p.length; i+=3) {
+					[p[i], p[i+1], p[i+2]].forEach((el, ind) => { // assign the max and min x, y, z values
 						mins[ind] = Math.min(mins[ind], el);
 						maxs[ind] = Math.max(maxs[ind], el);
 					})
 				}
-				console.log("mins", mins);
-				console.log("maxs", maxs);
+				var toPush = [];
+				toPush[0] = [avg(mins[0], maxs[0]), avg(mins[1], maxs[1]), avg(mins[2], maxs[2])];
+				toPush[1] = [maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]];
+				res.hitboxes.push(toPush);
 			}
 			callback(res);
 		});
