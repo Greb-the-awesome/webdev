@@ -38,7 +38,7 @@ function physicsUpdate_parkour() { // for the second map
 	myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
 	var colliding = false;
 	for (const box of hitboxes) {
-		if (!checkCollision(box[0], myPlayer.cameraPos, box[1], [1, 2, 1])) {
+		if (!checkCollision(box[0], myPlayer.cameraPos, box[1], [1, 4, 1])) {
 			continue;
 		}
 		// player is colliding with the obstacle, so calculate the new position
@@ -51,9 +51,9 @@ function physicsUpdate_parkour() { // for the second map
 		const minZ = box[0][2] - box[1][2] - 0.5;
 		console.log(maxY, minY);
 		// check the Y
-		if (myPlayer.hitPos[1] < maxY) {
-			// myPlayer.hitPos[1] = maxY + 0.05;
-			// myPlayer.cameraPos[1] = maxY + 2;
+		if (myPlayer.hitPos[1] <= maxY) {
+			myPlayer.hitPos[1] = maxY - 2.05;
+			myPlayer.cameraPos[1] = maxY - 0.05;
 			myPlayer.velocity[1] = 0;
 			myPlayer.userInputVelocity[1] = 0;
 		} else if (myPlayer.hitPos[1] > minY) {
@@ -77,7 +77,7 @@ function physicsUpdate_parkour() { // for the second map
 			myPlayer.velocity[2] = 0;
 		}
 	}
-	if (!colliding) {
+	if (true) {
 		myPlayer.velocity[1] -= 0.08;
 	}
 }

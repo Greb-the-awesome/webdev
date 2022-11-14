@@ -429,8 +429,8 @@ function loop() {
 			myPlayer.cameraFront,);
 	}
 	if (divisDownKeys["Space"] && !myPlayer.inAir) {
-		myPlayer.velocity[1] = 0.25;
-		myPlayer.inAir = true;
+		myPlayer.velocity[1] = 0;
+		//myPlayer.inAir = true;
 	}
 	if (divisDownKeys["ShiftLeft"] && myPlayer.stamina > 60) {
 		myPlayer.userInputVelocity[0] *= 0.25;
@@ -444,10 +444,11 @@ function loop() {
 	}
 	myPlayer.velocity[0] *= 0.9;
 	myPlayer.velocity[2] *= 0.9;
-	myPlayer.userInputVelocity[1] *= verticalMultiplier;
+	myPlayer.userInputVelocity[1] *= 0.2;
 	processArrowKeys();
 
 	physicsUpdate();
+	debugDispNow["<strong>player velocity</strong>"] = myPlayer.velocity[1];
 	var buffer = getRBdata(0, shaderProgram);
 	{ // game thingies
 		bulletsUpdate(buffer, dayNum);
