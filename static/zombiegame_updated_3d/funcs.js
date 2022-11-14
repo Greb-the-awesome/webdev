@@ -34,24 +34,59 @@ function physicsUpdate() { // for the first map
 }
 
 function physicsUpdate_parkour() { // for the second map
-	myPlayer.velocity[1] -= 0.08;
 	myPlayer.updatePos();
 	myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
+	var colliding = false;
 	for (const box of hitboxes) {
-		const height = box[0][1] + box[1][1] + 2;
-		if (myPlayer.cameraPos[1] < height) {
-			myPlayer.cameraPos[1] = height;
+		if (!checkCollision(box[0], myPlayer.cameraPos, box[1], [1, 2, 1])) {
+			continue;
+		}
+		// player is colliding with the obstacle, so calculate the new position
+		colliding = true;
+		const maxY = box[0][1] + box[1][1];
+		const minY = box[0][1] - box[1][1] - 2;
+		const maxX = box[0][0] + box[1][0] + 0.5;
+		const maxZ = box[0][2] + box[1][2] + 0.5;
+		const minX = box[0][2] - box[1][2] - 0.5;
+		const minZ = box[0][2] - box[1][2] - 0.5;
+		console.log(maxY, minY);
+		// check the Y
+		if (myPlayer.hitPos[1] < maxY) {
+			// myPlayer.hitPos[1] = maxY + 0.05;
+			// myPlayer.cameraPos[1] = maxY + 2;
+			myPlayer.velocity[1] = 0;
+			myPlayer.userInputVelocity[1] = 0;
+		} else if (myPlayer.hitPos[1] > minY) {
+			myPlayer.hitPos[1] = minY;
 			myPlayer.velocity[1] = 0;
 		}
+		// check the X
+		if (myPlayer.hitPos[0] < maxX) {
+			myPlayer.hitPos[0] = maxX;
+			myPlayer.velocity[0] = 0;
+		} else if (myPlayer.hitPos[0] > minX) {
+			myPlayer.hitPos[0] = minX;
+			myPlayer.velocity[0] = 0;
+		}
+		// check the Z
+		if (myPlayer.hitPos[2] < maxZ) {
+			myPlayer.hitPos[2] = maxZ;
+			myPlayer.velocity[2] = 0;
+		} else if (myPlayer.hitPos[2] > minZ) {
+			myPlayer.hitPos[2] = minZ;
+			myPlayer.velocity[2] = 0;
+		}
+	}
+	if (!colliding) {
+		myPlayer.velocity[1] -= 0.08;
 	}
 }
 var oldMap = true;
 function changeMap() {
-	loadObjAndHitbox("/static/multiplayer_3d_game/parkour.obj", "/static/multiplayer_3d_game/parkour.mtl", function(res) {
+	loadObjAndHitbox("/static/multiplayer_3d_game/parkour.obj?a="+Math.random(), "/static/multiplayer_3d_game/parkour.mtl?a="+Math.random(), function(res) {
 		positions, colors, texCoords, normals, indexes = [], [], [], [], [];
 		transformInfos = {position:[], color:[], rot:[], translate:[], normal:[]};
 		objInfos = res;
-		console.log(res);
 
 		flush();
 		flushObj();

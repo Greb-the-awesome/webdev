@@ -186,6 +186,7 @@ function loadObjAndHitbox(url, mtlUrl, callback) {
 	// [x, y, z], [l, w, h]
 	request(url, function(txt) { // jimmy rigged but it works
 		var data = parseOBJ(txt);
+		console.log(txt);
 		request(mtlUrl, function(mats) {
 			var materials = parseMTL(mats);
 			for (const geom of data.geometries) {
