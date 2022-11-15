@@ -428,9 +428,11 @@ function loop() {
 			myPlayer.userInputVelocity,
 			myPlayer.cameraFront,);
 	}
-	if (divisDownKeys["Space"] && !myPlayer.inAir) {
-		myPlayer.velocity[1] = 0;
-		//myPlayer.inAir = true;
+	if (divisDownKeys["Space"]) {
+		myPlayer.velocity[1] = 0.5;
+		myPlayer.hitPos[1] += 2.01;
+		myPlayer.cameraPos[1] += 2.01;
+		console.log("boom");
 	}
 	if (divisDownKeys["ShiftLeft"] && myPlayer.stamina > 60) {
 		myPlayer.userInputVelocity[0] *= 0.25;

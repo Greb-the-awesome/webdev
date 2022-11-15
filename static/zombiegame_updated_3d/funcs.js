@@ -49,13 +49,11 @@ function physicsUpdate_parkour() { // for the second map
 		const maxZ = box[0][2] + box[1][2] + 0.5;
 		const minX = box[0][2] - box[1][2] - 0.5;
 		const minZ = box[0][2] - box[1][2] - 0.5;
-		console.log(maxY, minY);
 		// check the Y
 		if (myPlayer.hitPos[1] <= maxY) {
-			myPlayer.hitPos[1] = maxY - 2.05;
-			myPlayer.cameraPos[1] = maxY - 0.05;
+			myPlayer.hitPos[1] = maxY - 2;
+			myPlayer.cameraPos[1] = maxY;
 			myPlayer.velocity[1] = 0;
-			myPlayer.userInputVelocity[1] = 0;
 		} else if (myPlayer.hitPos[1] > minY) {
 			myPlayer.hitPos[1] = minY;
 			myPlayer.velocity[1] = 0;
@@ -84,7 +82,7 @@ function physicsUpdate_parkour() { // for the second map
 var oldMap = true;
 function changeMap() {
 	loadObjAndHitbox("/static/multiplayer_3d_game/parkour.obj?a="+Math.random(), "/static/multiplayer_3d_game/parkour.mtl?a="+Math.random(), function(res) {
-		positions, colors, texCoords, normals, indexes = [], [], [], [], [];
+		[positions, colors, texCoords, normals, indexes] = [[], [], [], [], []];
 		transformInfos = {position:[], color:[], rot:[], translate:[], normal:[]};
 		objInfos = res;
 
@@ -93,6 +91,7 @@ function changeMap() {
 		flushTransformedPositions();
 
 		oldMap = false;
+		myPlayer.inAir = false; // because the method of collision detection changed so we don't need this no more
 		loop();
 		alert(`This is supposed to be a new map, but the map has not been fully implemented yet.
 So just play with this invisible map (and bugged GUI) for now, and hopefully the new map gets added soon!`);
