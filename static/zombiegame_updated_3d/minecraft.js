@@ -107,6 +107,7 @@ function startGame() {
 	if (n == "jerry is hot") {
 		creative = true; // enable flying
 		verticalMultiplier = 0.25;
+		myPlayer.health = Infinity;
 	} else if (n.includes("ron") || n.includes("trefoil")) {
 		ded("JERRY DIED OF TRYING TO MAKE A TREFOIL REEREOISJFOAJES");
 	}
@@ -428,11 +429,13 @@ function loop() {
 			myPlayer.userInputVelocity,
 			myPlayer.cameraFront,);
 	}
-	if (divisDownKeys["Space"]) {
-		myPlayer.velocity[1] = 0.5;
-		myPlayer.hitPos[1] += 2.01;
-		myPlayer.cameraPos[1] += 2.01;
-		console.log("boom");
+	if (divisDownKeys["Space"] && !myPlayer.inAir) {
+		myPlayer.velocity[1] = 0.25;
+		if (!oldMap) {
+			myPlayer.hitPos[1] += 2;
+			myPlayer.cameraPos[1] += 2;
+		}
+		myPlayer.inAir = true;
 	}
 	if (divisDownKeys["ShiftLeft"] && myPlayer.stamina > 60) {
 		myPlayer.userInputVelocity[0] *= 0.25;
@@ -446,11 +449,11 @@ function loop() {
 	}
 	myPlayer.velocity[0] *= 0.9;
 	myPlayer.velocity[2] *= 0.9;
-	myPlayer.userInputVelocity[1] *= 0.2;
+	myPlayer.userInputVelocity[1] *= verticalMultiplier;
 	processArrowKeys();
 
 	physicsUpdate();
-	debugDispNow["<strong>player velocity</strong>"] = myPlayer.velocity[1];
+	debugDispNow["player velocity"] = myPlayer.velocity[1];
 	var buffer = getRBdata(0, shaderProgram);
 	{ // game thingies
 		bulletsUpdate(buffer, dayNum);
@@ -462,11 +465,11 @@ function loop() {
 		spawnStuff(m);
 		if (myPlayer.health < 0) { // oof
 			if (zombies.length > 5) {
-				ded(playerName + " was swarmed by a bunch of zombies. rip " + playerName + ".");
+				ded(playerName + " was swarmed by a bunch of zombies because they suck. rip " + playerName + ".");
 			} else if (myPlayer.reloading) {
-				ded(playerName + " was assasinated by a zombie while reloading.");
+				ded(playerName + " was assasinated by a zombie while reloading, imagine being so bad.");
 			} else {
-				ded(playerName + " was slain by zombies. LLLL");
+				ded(playerName + " was slain by zombies. LLLL, get rickrolled");
 			}
 		}
 		debugDispNow["health"] = myPlayer.health;

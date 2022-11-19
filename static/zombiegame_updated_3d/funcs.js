@@ -36,48 +36,33 @@ function physicsUpdate() { // for the first map
 function physicsUpdate_parkour() { // for the second map
 	myPlayer.updatePos();
 	myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
-	var colliding = false;
+	myPlayer.inAir = true;
 	for (const box of hitboxes) {
 		if (!checkCollision(box[0], myPlayer.cameraPos, box[1], [1, 4, 1])) {
 			continue;
 		}
 		// player is colliding with the obstacle, so calculate the new position
-		colliding = true;
+		myPlayer.inAir = false;
 		const maxY = box[0][1] + box[1][1];
+		/* code still under development
 		const minY = box[0][1] - box[1][1] - 2;
 		const maxX = box[0][0] + box[1][0] + 0.5;
 		const maxZ = box[0][2] + box[1][2] + 0.5;
 		const minX = box[0][2] - box[1][2] - 0.5;
 		const minZ = box[0][2] - box[1][2] - 0.5;
-		// check the Y
+		*/
+		// check the Y only (don't ask me how this works)
 		if (myPlayer.hitPos[1] <= maxY) {
-			myPlayer.hitPos[1] = maxY - 2;
+			myPlayer.hitPos[1] = maxY;
 			myPlayer.cameraPos[1] = maxY;
 			myPlayer.velocity[1] = 0;
-		} else if (myPlayer.hitPos[1] > minY) {
+		}/* else if (myPlayer.hitPos[1] > minY) {
 			myPlayer.hitPos[1] = minY;
 			myPlayer.velocity[1] = 0;
-		}
-		// check the X
-		if (myPlayer.hitPos[0] < maxX) {
-			myPlayer.hitPos[0] = maxX;
-			myPlayer.velocity[0] = 0;
-		} else if (myPlayer.hitPos[0] > minX) {
-			myPlayer.hitPos[0] = minX;
-			myPlayer.velocity[0] = 0;
-		}
-		// check the Z
-		if (myPlayer.hitPos[2] < maxZ) {
-			myPlayer.hitPos[2] = maxZ;
-			myPlayer.velocity[2] = 0;
-		} else if (myPlayer.hitPos[2] > minZ) {
-			myPlayer.hitPos[2] = minZ;
-			myPlayer.velocity[2] = 0;
-		}
+		}*/
 	}
-	if (true) {
-		myPlayer.velocity[1] -= 0.08;
-	}
+	myPlayer.velocity[1] -= 0.03;
+	if (myPlayer.cameraPos[1] < -50) {ded(playerName + " was bad at parkour. could not be me");}
 }
 var oldMap = true;
 function changeMap() {
@@ -91,7 +76,6 @@ function changeMap() {
 		flushTransformedPositions();
 
 		oldMap = false;
-		myPlayer.inAir = false; // because the method of collision detection changed so we don't need this no more
 		loop();
 		alert(`This is supposed to be a new map, but the map has not been fully implemented yet.
 So just play with this invisible map (and bugged GUI) for now, and hopefully the new map gets added soon!`);
