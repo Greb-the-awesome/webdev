@@ -66,27 +66,33 @@ function setBufferData(buf, data) {
 	gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
 }
 
+function processShader(shader) {
+	// process a shader.
+	// accesses the global variable buffers_d's shader property.
+	var info = buffers_d[shader];
+
+	info.compiled = compileShaders(info.vSource, info.fSource);
+	var requirements = parseShader(info.vSource);
+	// because the fShaders only have uniforms
+	requirements.uniform = requirements.uniform.concat(parseShader(info.fSource).uniform);
+	console.log(requirements.attribute);
+	for (var attrib of requirements.attribute) {
+		console.log(attrib);
+		info.buffer[attrib].unshift(gl.getAttribLocation(info.compiled, attrib)); // add the attribute location
+
+		var buffer = gl.createBuffer();
+		setBufferData(buffer, new Float32Array([]));
+		info.buffer[attrib].unshift(buffer); // add the buffer
+	}
+
+	for (var uniform of requirements.uniform) {
+		info.uniform[uniform] = gl.getUniformLocation(info.compiled, uniform);
+	}
+}
+
 function initShadersAndBuffers() {
 	for (var shader in buffers_d) {
-		var info = buffers_d[shader];
-
-		info.compiled = compileShaders(info.vSource, info.fSource);
-		var requirements = parseShader(info.vSource);
-		// because the fShaders only have uniforms
-		requirements.uniform = requirements.uniform.concat(parseShader(info.fSource).uniform);
-		console.log(requirements.attribute);
-		for (var attrib of requirements.attribute) {
-			console.log(attrib);
-			info.buffer[attrib].unshift(gl.getAttribLocation(info.compiled, attrib)); // add the attribute location
-
-			var buffer = gl.createBuffer();
-			setBufferData(buffer, new Float32Array([]));
-			info.buffer[attrib].unshift(buffer); // add the buffer
-		}
-
-		for (var uniform of requirements.uniform) {
-			info.uniform[uniform] = gl.getUniformLocation(info.compiled, uniform);
-		}
+		processShader(shader);
 	}
 }
 

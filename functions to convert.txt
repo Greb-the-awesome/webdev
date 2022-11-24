@@ -1,0 +1,15 @@
+serializeChunks
+genClouds
+refreshBillbs
+flush line 258
+flushRealBillb
+
+line 295: addTransformedPositions, flushTransformedPositions
+
+bulletsUpdate, zombiewUpdate, itemsUpdate
+flushBuffers
+
+renderloop: useShader: change to string
+renderloop: uniformxx calls: change to new locations
+
+ParticleSystem
