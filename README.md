@@ -19,3 +19,5 @@ its a simple javascript game where you shoot zombies.
 a more advanced zombiegame
 
 Play the game at https://zombiewars.repl.co/
+
+Official Website **CURRENTLY IN DEVELOPMENT** at https://fireheartjerry.github.io/zombiewars/
