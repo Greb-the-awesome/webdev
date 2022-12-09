@@ -62,10 +62,11 @@ class Item {
 			this.cycle[a] *= size;
 			this.cycle[a+1] *= size;
 		}
+		var realBillboardData = buffers_d.billboardShader.data;
 		if (add) {
-			for (let i=0; i<6; i++) {realBillboardData.offset = realBillboardData.offset.concat(pos);}
-			realBillboardData.corner = realBillboardData.corner.concat(this.cycle);
-			realBillboardData.texCoord = realBillboardData.texCoord.concat(this.texCoordsCycle);
+			for (let i=0; i<6; i++) {realBillboardData.aCenterOffset = realBillboardData.aCenterOffset.concat(pos);}
+			realBillboardData.aCorner = realBillboardData.aCorner.concat(this.cycle);
+			realBillboardData.aTexCoord = realBillboardData.aTexCoord.concat(this.texCoordsCycle);
 		}
 		this.specs = specs;
 		this.texCoordStart = texCoordStart;
@@ -110,7 +111,9 @@ class MyPlayer {
 		this.firingDelay = false;
 		this.reloading = false;
 		this.inAir = false;
-		this.inv = [new Item([0,10,0], "GL Gun", [266/texW, 300/texH], {damage:20,delay:100,reloadTime:1000,capacity:20,fire:genNoise("gl_fire"),rel:genNoise("gl_reload")}, 0, 0, false), false, false, false];
+		this.inv = [new Item([0,10,0], "GL Gun", [266/texW, 300/texH],
+			{damage:20,delay:100,reloadTime:1000,capacity:20,spread:10,speed:0.9,fire:genNoise("gl_fire"),rel:genNoise("gl_reload")},
+			0, 0, false), false, false, false];
 		this.upgradeInv = [];
 		this.selected = 0;
 
@@ -137,30 +140,45 @@ class MyPlayer {
 	shoot() {
 		if (!this.firingDelay && !this.reloading && myPlayer.invSelect) { // a lot of code for each shot lmao
 			var toPlay = new Audio(this.invSelect.specs.fire);
+			// rocket jump
 			if (this.invSelect.rocketJump &&
 				(this.invSelect.roundsRemaining % 3 == 0)) {
 				jumpBoost();
 				toPlay.preservesPitch = false;
 				toPlay.playbackRate = 0.7;
 			}
+			// sounds
 			if (this.invSelect.specs.fire && useSound) {toPlay.play();}
 
+			// subtract bullet
 			this.invSelect.roundsRemaining--;
 
+			// front vector calcs
 			var distanceFromPlayer = 2;
-			var bulletPos = glMatrix.vec3.create();
+			var sp = this.invSelect.specs.speed;
+			var vel = glMatrix.vec3.create();
+			var pos = glMatrix.vec3.create();
+			var adjYaw = this.yaw + (Math.random() * 2 - 1) * this.invSelect.specs.spread;
+			var adjPitch = this.pitch + (Math.random() * 2 - 1) * this.invSelect.specs.spread;
+			vel[0] = Math.cos(glMatrix.glMatrix.toRadian(adjYaw)) * Math.cos(glMatrix.glMatrix.toRadian(adjPitch));
+			vel[1] = Math.sin(glMatrix.glMatrix.toRadian(adjPitch));
+			vel[2] = Math.sin(glMatrix.glMatrix.toRadian(adjYaw)) * Math.cos(glMatrix.glMatrix.toRadian(adjPitch));
+			glMatrix.vec3.normalize(vel, vel);
+
 			var multipliedFront = glMatrix.vec3.fromValues(
 				this.cameraFront[0]*distanceFromPlayer, this.cameraFront[1]*distanceFromPlayer, this.cameraFront[2]*distanceFromPlayer);
-			glMatrix.vec3.add(bulletPos, this.cameraPos, multipliedFront);
+			glMatrix.vec3.add(pos, this.cameraPos, multipliedFront);
 
-			new Bullet(bulletPos, this.cameraFront, this.invSelect.specs.damage);
+			new Bullet(pos, vel, this.invSelect.specs.damage);
 
 			this.firingDelay = true;
 
+			// recoil animation
 			billbOffsets[2] += 0.3;
 			setTimeout(()=>billbOffsets[2]-=0.3, this.invSelect.specs.delay/2)
 			setTimeout(()=>{myPlayer.firingDelay = false;}, this.invSelect.specs.delay);
 
+			// reload
 			if (this.invSelect.roundsRemaining <= 0) {
 				if (this.invSelect.clutcher && this.health < 25) {
 					this.invSelect.roundsRemaining = this.invSelect.specs.capacity;
@@ -177,17 +195,17 @@ class MyPlayer {
 
 
 class Bullet {
-	constructor(pos, front, damage) {
+	constructor(pos, front, damage, add = true) {
 		this.front = glMatrix.vec3.fromValues(front[0], front[1], front[2]);
 		this.pos = glMatrix.vec3.fromValues(pos[0], pos[1], pos[2]);
-		this.location = positions.length;
+		this.location = buffers_d.shaderProgram.data.aVertexPosition.length;
 		this.damage = damage;
-		var buffer = getRBdata(0, shaderProgram);
-		buffer.vertexPosition[1] = buffer.vertexPosition[1].concat(_aList(cube, pos[0], pos[1], pos[2]));
-		buffer.vertexTexCoord[1] = buffer.vertexTexCoord[1].concat(mList([0,0], 72));
-		buffer.vertexNormal[1] = buffer.vertexNormal[1].concat(mList([0, 1, 0], 108));
-		flushRB(0, shaderProgram);
-		bullets.push(this);
+		var buffer = getRBdata(0, "shaderProgram");
+		buffer.aVertexPosition = buffer.aVertexPosition.concat(_aList(cube, pos[0], pos[1], pos[2]));
+		buffer.aTexCoord = buffer.aTexCoord.concat(mList([0,0], 72));
+		buffer.aVertexNormal = buffer.aVertexNormal.concat(mList([0, 1, 0], 108));
+		flushRB(0, "shaderProgram");
+		if (add) {bullets.push(this)};
 	}
 	updatePos() {
 		glMatrix.vec3.add(this.pos, this.pos, this.front);
@@ -214,6 +232,7 @@ class Zombie {
 		this.angle = 0;
 		this.model = model;
 		this.damage = damage;
+		this.zombieType = "base";
 		zombies.push(this);
 	}
 	updatePos() {
@@ -243,5 +262,56 @@ class Zombie {
 			else if (moveSideways == 2) {this.angle = rads[270];}
 		}
 		return this.angle;
+	}
+	update() {return this.updatePos();}
+	dead() {
+		var zomb = this; // so i can just copy and paste code lmao
+		if (Math.random() > 0.6) {
+			var toDrop = dropItems(dayN < 2);
+			items.push(new Item([zomb.pos[0], zomb.pos[1]+1, zomb.pos[2]], toDrop.name, toDrop.texCoordStart, toDrop.specs, 1));
+			if (Math.random() > 0.6) {
+				var toPush = new Item([zomb.pos[0], zomb.pos[1] + 2, zomb.pos[2]],
+					...jumpBoostUpgrade, 0.3, 1, true, true);
+				items.push(toPush);
+				toPush.velocity = [Math.random() * 0.1, 0.5 * Math.random(), Math.random() * 0.1];
+			}
+		}
+	}
+}
+
+// enokers and vaxes are both in the zombies array
+// this is because they have the same methods that can be called
+// when zombiesUpdate() iterates through the zombies
+
+class Enoker extends Zombie {
+	constructor(pos, model, damage, health) {
+		super(pos, model, damage, health);
+		this.vaxes = [];
+		this.zombieType = "enoker";
+	}
+	spawnVaxes() {
+		if (this.vaxes.length < 10) {
+			this.vaxes.push(new Vax([this.pos[0], this.pos[1] + 5, this.pos[2]]));
+		}
+	}
+}
+
+class Vax extends Zombie {
+	constructor(pos, model, damage, health) {
+		super(pos, model, damage, health);
+		this.target = glMatrix.vec3.fromValues(0, 0, 0);
+		this.firingDelay = false;
+		this.zombieType = "vax";
+	}
+	update() {
+		if (Math.random() > 0.85 && !this.firingDelay) { // shoot
+			this.firingDelay = true;
+			setTimeout(()=>{this.firingDelay = false;}, 500);
+			var front = glMatrix.vec3.create();
+			glMatrix.vec3.sub(front, this.pos, myPlayer.cameraPos);
+			glMatrix.vec3.normalize(front, front);
+			vaxBullets.push(new Bullet(this.pos, front, 5, 0, false)); // vax bullets are non-piercing so higher damage
+		}
+		return this.updatePos();
 	}
 }

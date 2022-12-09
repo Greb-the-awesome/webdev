@@ -95,17 +95,8 @@ function bulletsUpdate(buffer, dayN) {
 			if (checkCollision([zomb.pos[0],zomb.pos[1]+3,zomb.pos[2]], bullet.pos, [2,4,2], [1,1,1])) {
 				zomb.health -= bullet.damage;
 
-				if (zomb.health <= 0) {
-					if (Math.random() > 0.6) {
-						var toDrop = dropItems(dayN < 2);
-						items.push(new Item([zomb.pos[0], zomb.pos[1]+1, zomb.pos[2]], toDrop.name, toDrop.texCoordStart, toDrop.specs, 1));
-						if (Math.random() > 0.6) {
-							var toPush = new Item([zomb.pos[0], zomb.pos[1] + 2, zomb.pos[2]],
-								...jumpBoostUpgrade, 0.3, 1, true, true);
-							items.push(toPush);
-							toPush.velocity = [Math.random() * 0.1, 0.5 * Math.random(), Math.random() * 0.1];
-						}
-					}
+				if (zomb.health <= 0) { // drop items
+					zomb.dead();
 					zombies.splice(zombNum, 1);
 					playerStats.zombiesKilled++;
 				}
@@ -120,9 +111,10 @@ function bulletsUpdate(buffer, dayN) {
 		}
 		bulletNum += 1;
 	}
-	buffer.vertexPosition[1] = finalBullet;
-	buffer.vertexTexCoord[1] = mList([71/texW,161/texH], buffer.vertexPosition[1].length*2/3);
-	buffer.vertexNormal[1] = mList([0, 1, 0], buffer.vertexPosition[1].length+1); // +1 because the sun needs normals too
+	// vax bullets
+	buffer.aVertexPosition = finalBullet;
+	buffer.aTexCoord = mList([71/texW,161/texH], buffer.aVertexPosition.length*2/3);
+	buffer.aVertexNormal = mList([0, 1, 0], buffer.aVertexPosition.length+1); // +1 because the sun needs normals too
 }
 
 function itemsUpdate() {
@@ -150,40 +142,44 @@ function itemsUpdate() {
 	}
 
 	// update buffers
-	realBillboardData.offset = []; realBillboardData.texCoord = []; realBillboardData.corner = [];
+	var bData = buffers_d.billboardShader.data;
+	bData.aCenterOffset = []; bData.aTexCoord = []; bData.aCorner = [];
 	for (var item of items) {
-		realBillboardData.texCoord = realBillboardData.texCoord.concat(item.texCoordsCycle);
-		for (let i=0; i<6; i++) {realBillboardData.offset = realBillboardData.offset.concat(item.pos);}
-		realBillboardData.corner = realBillboardData.corner.concat(item.cycle);
+		bData.aTexCoord = bData.aTexCoord.concat(item.texCoordsCycle);
+		for (let i=0; i<6; i++) {bData.aCenterOffset = bData.aCenterOffset.concat(item.pos);}
+		bData.aCorner = bData.aCorner.concat(item.cycle);
 	}
 	return pickUp;
 }
 
 function zombiesUpdate() {
 	// update zombies
-	transformInfos.position = [];
-	transformInfos.color = [];
-	transformInfos.normal = [];
-	transformInfos.rot = [];
-	transformInfos.translate = [];
+	var transformInfos = buffers_d.transformShader.data;
+	var realBillboardData = buffers_d.billboardShader.data;
+	transformInfos.aVertexPosition = [];
+	transformInfos.aColor = [];
+	transformInfos.aVertexNormal = [];
+	transformInfos.aYRot = [];
+	transformInfos.aTranslation = [];
 	for (zombie of zombies) {
-		transformInfos.position = transformInfos.position.concat(zombie.model.position);
-		transformInfos.color = transformInfos.color.concat(zombie.model.color);
-		transformInfos.normal = transformInfos.normal.concat(zombie.model.normal);
-		transformInfos.rot = transformInfos.rot.concat(mList([zombie.updatePos()], zombie.model.position.length/3));
-		transformInfos.translate = transformInfos.translate.concat(mList(zombie.pos, zombie.model.position.length/3));
+		transformInfos.aVertexPosition = transformInfos.aVertexPosition.concat(zombie.model.position);
+		transformInfos.aColor = transformInfos.aColor.concat(zombie.model.color);
+		transformInfos.aVertexNormal = transformInfos.aVertexNormal.concat(zombie.model.normal);
+		transformInfos.aYRot = transformInfos.aYRot.concat(mList([zombie.update()], zombie.model.position.length/3));
+		transformInfos.aTranslation = transformInfos.aTranslation.concat(mList(zombie.pos, zombie.model.position.length/3));
 		// bar outline
-		realBillboardData.texCoord = realBillboardData.texCoord.concat(zombieBarTexCoord);
-		realBillboardData.corner = realBillboardData.corner.concat(zombieBarPos);
-		for (let x=0; x<12; x++) {realBillboardData.offset = realBillboardData.offset.concat([
-			zombie.pos[0], zombie.pos[1] + 3, zombie.pos[2]]);}
-		// bar fill
-		for (let a=0; a<zombieBarRemaining.length; a+=2) {
-			realBillboardData.corner.push(zombieBarRemaining[a]*zombie.health/100);
-			realBillboardData.corner.push(zombieBarRemaining[a+1]);
+		// TODO: health bars
+		realBillboardData.aTexCoord = realBillboardData.aTexCoord.concat(zombieBarTexCoord);
+		for (let i=0; i<zombieBarPos.length; i+=2) {
+			realBillboardData.aCorner.push(zombieBarPos[i] * zombie.health / 100);
+			realBillboardData.aCorner.push(zombieBarPos[i+1]);
 		}
-		realBillboardData.texCoord = realBillboardData.texCoord.concat(mList([71/texW,161/texH], 6)); // change order
+		for (let x=0; x<6; x++) {
+			realBillboardData.aCenterOffset = realBillboardData.aCenterOffset.concat([
+			zombie.pos[0], zombie.pos[1] + 3, zombie.pos[2]]);
+		}
 
+// 71/texW,161/texH
 		if (checkCollision(myPlayer.cameraPos, [zombie.pos[0],zombie.pos[1]+3,zombie.pos[2]], [1, 1.6, 1], [1.5,2,1.5])) {
 			myPlayer.health -= zombie.damage;
 			myPlayer.takingDamage = true;
@@ -191,29 +187,33 @@ function zombiesUpdate() {
 	}
 }
 
-function randomAroundPlayer(range) { // helper for spawning upgrades
-	return [Math.random() * range + myPlayer.cameraPos[0], 2, Math.random() * range + myPlayer.cameraPos[2]];
-}
+
 
 function spawnStuff(t) {
 	if (Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2) {
 		var attemptedPos = [Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10];
 		new Zombie(attemptedPos, models.zombie, 1, 100);
 	}
-	if (t == 3000) { // dun dun dun da boss comin'
-		new Zombie([0,0,0], models.boss, 10, 250);
-	}
 	if (Math.floor(Math.random() * 170) == 2 && t < 1500) {
 		items.push(new Item(randomAroundPlayer(20),
 			...upgrades[Math.floor(Math.random() * upgrades.length)], 0.3, 1, true, true));
 	}
+	if (Math.floor(Math.random() * 75) == 2) {
+		(async function() { // to avoid holding up the frame
+			for (let z of zombies) {
+				if (z.zombieType == "enoker") {
+					z.spawnVaxes();
+				}
+			}
+		}());
+	}
 }
 
 function flushBuffers() {
-	flushTransformedPositions();
-	flushRB(0, shaderProgram);
-	flushRealBillb();
-	flushObj();
+	flush("transformShader");
+	flushRB(0, "shaderProgram");
+	flush("billboardShader");
+	flush("objShader");
 	refreshBillbs();
 }
 
@@ -265,7 +265,7 @@ function serializeChunks() {
 	for (let c=0; c<values.length; c++) {
 		var chunk = values[c];
 		var chunkBlocks = chunk.blocks;
-		console.log(chunkBlocks);
+		dO(chunkBlocks);
 		for (const blockPos in chunkBlocks) {
 			var block = chunkBlocks[blockPos];
 			var triang1 = block.pos1.concat(block.pos2.concat(block.pos3));
@@ -298,13 +298,21 @@ function genClouds() {
 function loadModels() {
 	loadObj("/static/multiplayer_3d_game/zombie.obj", "/static/multiplayer_3d_game/zombie.mtl", function(res) {
 		models.zombie = res;
+		dO("set zombie model.");
 	});
 	loadObj("/static/multiplayer_3d_game/zombieboss.obj", "/static/multiplayer_3d_game/zombieboss.mtl", function(res) {
 		models.boss = res;
+		dO("set boss model.");
 	});
 	loadObj("/static/multiplayer_3d_game/airdrop.obj", "/static/multiplayer_3d_game/airdrop.mtl", function(res) {
 		models.airdrop = res;
+		dO("set airdrop model.");
 	});
+	loadObj("/static/multiplayer_3d_game/vax.obj", "/static/multiplayer_3d_game/vax.mtl", function(res) {
+		models.vax = res;
+		dO("set vax model.");
+	});
+	dO("loadModels async ended without fatal exceptions.");
 }
 var airdropHandle;
 function airdrop() {
@@ -319,8 +327,6 @@ function airdrop() {
 }
 
 function refreshBillbs() {
-	billboardPositions = [];
-	billboardTexCoords = [];
 	var pos = [1,-1,-1, 1,-1,1, 1,1,1, 1,-1,-1, 1,1,1, 1,1,-1];
 	for (let i=0; i<pos.length; i+=3) {
 		pos[i] += billbOffsets[0];
@@ -328,21 +334,25 @@ function refreshBillbs() {
 		pos[i+2] += billbOffsets[2];
 	}
 	var tex = myPlayer.inv[myPlayer.selected].texCoordsCycle;
-	addBillbPositions(pos, tex);
+	var data = buffers_d.overlayShader.data;
+	data.aBillboardPos = pos;
+	data.abTexCoord = tex;
 	// crosshair
-	addBillbPositions([-0.1, 0.1, -4,
+	data.aBillboardPos = data.aBillboardPos.concat(
+	[-0.1, 0.1, -4,
 					   0.1, -0.1, -4,
 					   0.1, 0.1, -4,
 					   -0.1, -0.1, -4,
 					   -0.1, 0.1, -4,
-					   0.1, -0.1, -4,],
+					   0.1, -0.1, -4,]);
+	data.abTexCoord = data.abTexCoord.concat(
 					   [128/texW, 128/texH,
 					    256/texW, 0.0,
 					   256/texW, 128/texH,
 					   128/texW, 0.0,
 					   128/texW, 128/texW,
 					   256/texW, 0.0,]);
-	flushBillb();
+	flush("overlayShader");
 }
 
 function jumpBoost() {

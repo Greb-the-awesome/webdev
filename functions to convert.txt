@@ -1,13 +1,17 @@
-serializeChunks
-genClouds
-refreshBillbs
-flush line 258
-flushRealBillb
+x serializeChunks
+x genClouds
+x refreshBillbs
+x flush line 258
+x flushRealBillb
+more flushes ig
 
-line 295: addTransformedPositions, flushTransformedPositions
+change particleshader to realbillboardshader
 
-bulletsUpdate, zombiewUpdate, itemsUpdate
-flushBuffers
+x line 295: addTransformedPositions,
+x flushTransformedPositions
+
+x bulletsUpdate, (x) zombiesUpdate, x itemsUpdate
+x flushBuffers
 
 renderloop: useShader: change to string
 renderloop: uniformxx calls: change to new locations

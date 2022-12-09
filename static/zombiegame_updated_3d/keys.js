@@ -1,3 +1,5 @@
+var divisDownKeys = {};
+
 var arrowKeySensitivity = 20;
 		function onKeyDown(event) {
 			var keyCode = event.code;
@@ -12,6 +14,9 @@ var arrowKeySensitivity = 20;
 						el.style.display = "block";
 						document.exitPointerLock();
 					}
+				}
+				if (keyCode.startsWith("Digit")) {
+					myPlayer.selected = parseInt(keyCode[5], 10) - 1;
 				}
 			}
 		}
