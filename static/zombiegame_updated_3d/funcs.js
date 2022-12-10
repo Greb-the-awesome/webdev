@@ -96,7 +96,7 @@ function bulletsUpdate(buffer, dayN) {
 				zomb.health -= bullet.damage;
 
 				if (zomb.health <= 0) { // drop items
-					zomb.dead();
+					zomb.dead(dayN);
 					zombies.splice(zombNum, 1);
 					playerStats.zombiesKilled++;
 				}
@@ -112,6 +112,22 @@ function bulletsUpdate(buffer, dayN) {
 		bulletNum += 1;
 	}
 	// vax bullets
+	bulletNum = 0;
+	for (bullet of vaxBullets) {
+		var temp = myPlayer.cameraPos;
+		if (checkCollision([temp[0], temp[1] + 2, temp[2]], bullet.pos, [1, 2, 1], [1,1,1])) {
+			vaxBullets.splice(bulletNum, 1);
+			myPlayer.health -= bullet.damage;
+			if (myPlayer.health < 0) {ded(playerName + " was killed by enoker using m a j i q u e");}
+		}
+		if (bullet.pos[0] > 50 || bullet.pos[0] < -50 || bullet.pos[2] > 50 || bullet.pos[2] < -50 ||
+			bullet.pos[1] < getTerrain(bullet.pos[0], bullet.pos[2]) || bullet.pos[1] > 50) {
+			vaxBullets.splice(bulletNum, 1);
+		} else {
+			finalBullet = finalBullet.concat(bullet.updatePos());
+		}
+		bulletNum++;
+	}
 	buffer.aVertexPosition = finalBullet;
 	buffer.aTexCoord = mList([71/texW,161/texH], buffer.aVertexPosition.length*2/3);
 	buffer.aVertexNormal = mList([0, 1, 0], buffer.aVertexPosition.length+1); // +1 because the sun needs normals too
@@ -188,11 +204,20 @@ function zombiesUpdate() {
 }
 
 
+function randomAroundPlayer(range) { // helper for spawning upgrades
+	return [Math.random() * range + myPlayer.cameraPos[0], 2, Math.random() * range + myPlayer.cameraPos[2]];
+}
 
 function spawnStuff(t) {
 	if (Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2) {
 		var attemptedPos = [Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10];
-		new Zombie(attemptedPos, models.zombie, 1, 100);
+		if (Math.floor(Math.random() * 10) == 2 && numEnokers < 3 &&
+			t > 2000) { // zombies have a 1 in 10 chance of being an enoker in the last 1/6 of the day
+			new Enoker(attemptedPos, models.boss, 1, 100);
+			numEnokers++;
+		} else {
+			new Zombie(attemptedPos, models.zombie, 1, 100);
+		}
 	}
 	if (Math.floor(Math.random() * 170) == 2 && t < 1500) {
 		items.push(new Item(randomAroundPlayer(20),

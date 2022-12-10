@@ -237,6 +237,7 @@ class Zombie {
 	}
 	updatePos() {
 		// player speed (walking) is 0.136/frame so zombie is 0.14 (so u can only run to escape zombie)
+		// returns [moveForward, moveSideways] for udpateAngle()
 		var moveForward = 0; var moveSideways = 0;
 		if (!closeTo(myPlayer.cameraPos[0], this.pos[0])) {
 			if (myPlayer.cameraPos[0] > this.pos[0]) { this.pos[0] += 0.14; moveForward = 1; }
@@ -247,8 +248,10 @@ class Zombie {
 			if (myPlayer.cameraPos[2] > this.pos[2]) { this.pos[2] += 0.14; moveSideways = 1; }
 			else { this.pos[2] -= 0.14; moveSideways = 2; }
 		}
-
 		this.pos[1] = getTerrain(this.pos[0], this.pos[2]);
+		return [moveForward, moveSideways];
+	}
+	updateAngle(moveForward, moveSideways) {
 		if (moveForward == 1) {
 			if (!moveSideways) {this.angle = rads[180];}
 			else if (moveSideways == 1) {this.angle = rads[135];}
@@ -263,8 +266,8 @@ class Zombie {
 		}
 		return this.angle;
 	}
-	update() {return this.updatePos();}
-	dead() {
+	update() {return this.updateAngle(...this.updatePos());}
+	dead(dayN) {
 		var zomb = this; // so i can just copy and paste code lmao
 		if (Math.random() > 0.6) {
 			var toDrop = dropItems(dayN < 2);
@@ -286,12 +289,17 @@ class Zombie {
 class Enoker extends Zombie {
 	constructor(pos, model, damage, health) {
 		super(pos, model, damage, health);
+		console.log(model);
+		console.log("^^ enoker");
 		this.vaxes = [];
 		this.zombieType = "enoker";
 	}
 	spawnVaxes() {
 		if (this.vaxes.length < 10) {
-			this.vaxes.push(new Vax([this.pos[0], this.pos[1] + 5, this.pos[2]]));
+			for (let i=0; i<Math.random()*3; i++) {
+				this.vaxes.push(new Vax([this.pos[0] + Math.random() * 10,
+					this.pos[1] + 5, this.pos[2] + Math.random() * 10], models.vax, 1, 50));
+			}
 		}
 	}
 }
@@ -299,19 +307,40 @@ class Enoker extends Zombie {
 class Vax extends Zombie {
 	constructor(pos, model, damage, health) {
 		super(pos, model, damage, health);
-		this.target = glMatrix.vec3.fromValues(0, 0, 0);
+		this.target = glMatrix.vec3.fromValues(Math.random() * 5, 0, Math.random() * 5);
+		this.timeOffset = Math.random() * Math.PI;
+		this.heightOffset = Math.random() * 10 + 5;
 		this.firingDelay = false;
 		this.zombieType = "vax";
+	}
+	updatePos() {
+		var target = glMatrix.vec3.create();
+		glMatrix.vec3.add(target, this.target, myPlayer.cameraPos);
+		console.log(target);
+
+		var moveForward = 0; var moveSideways = 0;
+		if (!closeTo(target[0], this.pos[0])) {
+			if (target[0] > this.pos[0]) { this.pos[0] += 0.14; moveForward = 1; }
+			else { this.pos[0] -= 0.14; moveForward = 2; }
+		}
+
+		if (!closeTo(target[2], this.pos[2])) {
+			if (target[2] > this.pos[2]) { this.pos[2] += 0.14; moveSideways = 1; }
+			else { this.pos[2] -= 0.14; moveSideways = 2; }
+		}
+		this.pos[1] = Math.sin(Date.now()/100 + this.timeOffset) + this.heightOffset;
+
+		return [moveForward, moveSideways];
 	}
 	update() {
 		if (Math.random() > 0.85 && !this.firingDelay) { // shoot
 			this.firingDelay = true;
-			setTimeout(()=>{this.firingDelay = false;}, 500);
+			setTimeout(()=>{this.firingDelay = false;}, 1500);
 			var front = glMatrix.vec3.create();
-			glMatrix.vec3.sub(front, this.pos, myPlayer.cameraPos);
+			glMatrix.vec3.sub(front, myPlayer.cameraPos, this.pos);
 			glMatrix.vec3.normalize(front, front);
 			vaxBullets.push(new Bullet(this.pos, front, 5, 0, false)); // vax bullets are non-piercing so higher damage
 		}
-		return this.updatePos();
+		return this.updateAngle(...this.updatePos());
 	}
 }

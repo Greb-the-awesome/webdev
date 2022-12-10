@@ -8,6 +8,7 @@ var locations = {};
 var bullets = [];
 var zombies = [];
 var vaxBullets = [];
+var numEnokers = 0;
 var oTex;
 var useSound = true;
 var settings = {};
@@ -234,6 +235,7 @@ var overlay, oCtx;
 var mouseDown = false;
 let myPlayer;
 function divisionOnLoad(gl) {
+	setTimeout(function() {new Enoker([10,0,10], models.boss, 1, 100);}, 10000);
 	loadModels();
 	console.log("divisionOnLoad");
 	createRenderBuffer("shaderProgram");
@@ -485,6 +487,7 @@ function loop() {
 		buffer.aVertexPosition = buffer.aVertexPosition.concat(sunPosition);
 		buffer.aTexCoord = buffer.aTexCoord.concat([231/texW, 250/texH]);
 		spawnStuff(m);
+
 		if (myPlayer.health < 0) { // oof
 			if (zombies.length > 5) {
 				ded(playerName + " was swarmed by a bunch of zombies because they suck. rip " + playerName + ".");
