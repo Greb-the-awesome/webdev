@@ -198,25 +198,37 @@ attribute float aLifetime;
 
 uniform vec3 uParticleEmitter;
 uniform float uTime;
+uniform float uStartTime;
+uniform int uNumCycles;
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
-uniform vec3 uCameraRight;
 
 varying highp vec2 texCoord;
 varying lowp float size;
 
 void main() {
+	if (
+		(uTime - uStartTime) < aLifetime - mod(uStartTime, aLifetime)
+		|| int((uTime - uStartTime) / aLifetime) > uNumCycles
+	) {
+		gl_Position = vec4(0.0, 0.0, 0.0, 0.0);
+		texCoord = vec2(1.0, 1.0);
+		size = 0.0;
+		return;
+	}
 	float time = mod(uTime, aLifetime);
 	vec4 position = vec4(
 		uParticleEmitter + aParticleCenterOffset + (time * aParticleVelocity), 1.0
 	);
-	vec3 rightVec = uCameraRight;
+	vec3 rightVec = vec3(
+      uModelViewMatrix[0].x, uModelViewMatrix[1].x, uModelViewMatrix[2].x
+    );
 	vec3 upVec = vec3(uModelViewMatrix[0].y, uModelViewMatrix[1].y, uModelViewMatrix[2].y);
 	position.xyz += (rightVec * aParticleCorner.x) +
 					(upVec * aParticleCorner.y);
 	gl_Position = uProjectionMatrix * uModelViewMatrix * position;
 	texCoord = aParticleTexCoords;
-	size = (10.0 - time) / 10.0;
+	size = (aLifetime - time) / aLifetime;
 }
 `;//uModelViewMatrix[0].y, uModelViewMatrix[1].y, uModelViewMatrix[2].y
 const realBillboardVS = /*lmao*/`

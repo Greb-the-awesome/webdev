@@ -21,9 +21,6 @@ var upgrades = [
 	desc: "Heal 75 health on application. (this doesn't affect your weapon)"}],
 ["Sus Juice", [0.195, 0.5], {action:()=>{
 		myPlayer.health = Math.max(myPlayer.health + 75, 100);
-		if (Math.floor(Math.random() * 7) == 2) {
-			ded(playerName + " drank some contaminated sus juice. it's called SUS juice for a reason!");
-		}
 	},
 	desc: "Heal 75 health on application. (this doesn't affect your weapon)"}]
 ];

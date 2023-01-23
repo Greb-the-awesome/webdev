@@ -27,8 +27,22 @@
 				<center>
 					<h1>Zombie Wars (now 3D)</h1>
 					<input type="text" id="nameBox" placeholder="Your Name">
+					<br>
+					<div id="joinDiv" style="display:none;">
+						<input type="text" id="gameIDbox" placeholder="Game Name"><br>
+						<p id="joinMessage"></p>
+						<button onclick="joinGame();">Join</button>
+					</div>
+					<div id="hostDiv" style="display:none;">
+						<input type="text" id="hostIDbox" placeholder="Game Name"><br>
+						<p id="hostMessage"></p>
+						<button onclick="hostGame();">Join</button>
+					</div>
 					<br><br>
 					<button id="startBtn" onclick = "startGame();">Play</button>
+					<br><br>
+					<button id="joinMultiplayer" onclick="multiplayerMenu('joinDiv','joinMonkey.js');">Join Multiplayer</button>
+					<button id="hostMultiplayer" onclick="multiplayerMenu('hostDiv','hostMonkey.js');">Host Multiplayer</button>
 					<br><br>
 					<button id="helpBtn" onclick="gameHelp();">How to Play</button>
 					<div id="helpDiv" style="display:none;">
@@ -96,6 +110,7 @@
 			src="static/zombiegame_updated_3d/classes.js" defer></script>
 		<script type="text/javascript"
 			src="/static/zombiegame_updated_3d/weapons.js" defer></script>
+		<script type="text/javascript" id="monkeyScript"></script>
 		<script type="text/javascript"
 			src="static/zombiegame_updated_3d/minecraft.js" defer></script>
 		<script defer>var easdf;

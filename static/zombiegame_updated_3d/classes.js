@@ -70,13 +70,14 @@ class Item {
 		}
 		this.specs = specs;
 		this.texCoordStart = texCoordStart;
-		this.timer = despawn?1000:Infinity;
+		this.timer = despawn?1000:2147483647;
 		this.roundsRemaining = this.specs.capacity;
 		if (!type) { // type == 0
 			this.clutcher = false; // weapons can have upgrades
 			this.rocketJump = false;
 		}
 		this.velocity = [0,0,0]; // manually set it if u want smth diff
+		this.id = 0;
 	}
 	updatePos() {
 		if (this.pos[1] > getTerrain(this.pos[0], this.pos[2]) + 1) {
@@ -85,6 +86,14 @@ class Item {
 			this.pos[2] += this.velocity[2];
 			this.velocity[1] -= 0.008;
 		}
+	}
+	destruct() {}
+	toJSON() {
+		return {pos: [...this.pos], type: this.type, name: this.name,
+			texCoordsCycle: this.texCoordsCycle, cycle: this.cycle,
+			specs: this.specs, texCoordStart: this.texCoordStart,
+			roundsRemaining: this.roundsRemaining, clutcher: this.clutcher,
+			rocketJump: this.rocketJump, velocity: this.velocity, size: this.size, id: this.id};
 	}
 }
 
@@ -129,6 +138,9 @@ class MyPlayer {
 			div.after(clone);
 		}
 	}
+	// these methods are overriden if multiplayer is used
+	sendData() {}
+	sendShootEvent(a) {}
 	updatePos() {
 		glMatrix.vec3.add(this.cameraPos, this.cameraPos, this.velocity);
 		glMatrix.vec3.add(this.cameraPos, this.cameraPos, this.userInputVelocity);
@@ -136,6 +148,7 @@ class MyPlayer {
 		glMatrix.vec3.add(this.hitPos, this.hitPos, this.userInputVelocity);
 		// some other housekeeping
 		this.invSelect = this.inv[this.selected];
+		this.sendData();
 	}
 	shoot() {
 		if (!this.firingDelay && !this.reloading && myPlayer.invSelect) { // a lot of code for each shot lmao
@@ -169,7 +182,8 @@ class MyPlayer {
 				this.cameraFront[0]*distanceFromPlayer, this.cameraFront[1]*distanceFromPlayer, this.cameraFront[2]*distanceFromPlayer);
 			glMatrix.vec3.add(pos, this.cameraPos, multipliedFront);
 
-			new Bullet(pos, vel, this.invSelect.specs.damage);
+			var bul = new Bullet(pos, vel, this.invSelect.specs.damage);
+			this.sendShootEvent(bul);
 
 			this.firingDelay = true;
 
@@ -193,6 +207,16 @@ class MyPlayer {
 	}
 }
 
+class OtherPlayer {
+	constructor(pos, id) {
+		this.cameraPos = pos;
+		this.id = id;
+	}
+	toJSON() {
+		return {cameraPos: [...this.cameraPos], id: this.id}
+	}
+}
+
 
 class Bullet {
 	constructor(pos, front, damage, add = true) {
@@ -210,6 +234,15 @@ class Bullet {
 	updatePos() {
 		glMatrix.vec3.add(this.pos, this.pos, this.front);
 		return _aList(cube, this.pos[0], this.pos[1], this.pos[2]);
+	}
+	checkDestruction() {
+		return this.pos[0] > 50 || this.pos[0] < -50 || this.pos[2] > 50 || this.pos[2] < -50 ||
+			this.pos[1] < getTerrain(this.pos[0], this.pos[2]) || this.pos[1] > 50;
+	}
+	destruct() {
+		particles.push(new ParticleSystem(
+			this.pos, D_ONE_POINT(), 20, 0.05, [71/texW,161/texH], 0.0, 0.1, 10, 1
+		));
 	}
 }
 var epsilon = 1;
@@ -233,19 +266,22 @@ class Zombie {
 		this.model = model;
 		this.damage = damage;
 		this.zombieType = "base";
+		this.target = myPlayer;
 		zombies.push(this);
 	}
+	checkDestruction() {return this.health <= 0;}
+	takeDamage(a) {this.health -= a;}
 	updatePos() {
 		// player speed (walking) is 0.136/frame so zombie is 0.14 (so u can only run to escape zombie)
 		// returns [moveForward, moveSideways] for udpateAngle()
 		var moveForward = 0; var moveSideways = 0;
-		if (!closeTo(myPlayer.cameraPos[0], this.pos[0])) {
-			if (myPlayer.cameraPos[0] > this.pos[0]) { this.pos[0] += 0.14; moveForward = 1; }
+		if (!closeTo(this.target.cameraPos[0], this.pos[0])) {
+			if (this.target.cameraPos[0] > this.pos[0]) { this.pos[0] += 0.14; moveForward = 1; }
 			else { this.pos[0] -= 0.14; moveForward = 2; }
 		}
 
 		if (!closeTo(myPlayer.cameraPos[2], this.pos[2])) {
-			if (myPlayer.cameraPos[2] > this.pos[2]) { this.pos[2] += 0.14; moveSideways = 1; }
+			if (this.target.cameraPos[2] > this.pos[2]) { this.pos[2] += 0.14; moveSideways = 1; }
 			else { this.pos[2] -= 0.14; moveSideways = 2; }
 		}
 		this.pos[1] = getTerrain(this.pos[0], this.pos[2]);
@@ -267,18 +303,25 @@ class Zombie {
 		return this.angle;
 	}
 	update() {return this.updateAngle(...this.updatePos());}
+	transmitDeath() {} // host override
 	dead(dayN) {
 		var zomb = this; // so i can just copy and paste code lmao
 		if (Math.random() > 0.6) {
 			var toDrop = dropItems(dayN < 2);
 			items.push(new Item([zomb.pos[0], zomb.pos[1]+1, zomb.pos[2]], toDrop.name, toDrop.texCoordStart, toDrop.specs, 1));
-			if (Math.random() > 0.6) {
+			transmitItem(items[items.length-1]);
+			if (Math.random() > 0.9) {
 				var toPush = new Item([zomb.pos[0], zomb.pos[1] + 2, zomb.pos[2]],
 					...jumpBoostUpgrade, 0.3, 1, true, true);
 				items.push(toPush);
 				toPush.velocity = [Math.random() * 0.1, 0.5 * Math.random(), Math.random() * 0.1];
+				transmitItem(toPush);
 			}
 		}
+		particles.push(new ParticleSystem(
+			this.pos, D_ONE_POINT(), 7, 1, [0, 0], 0.1, 0.1, 1000, 1
+		));
+		this.transmitDeath();
 	}
 }
 
@@ -307,16 +350,16 @@ class Enoker extends Zombie {
 class Vax extends Zombie {
 	constructor(pos, model, damage, health) {
 		super(pos, model, damage, health);
-		this.target = glMatrix.vec3.fromValues(Math.random() * 5, 0, Math.random() * 5);
+		this.targetOffset = glMatrix.vec3.fromValues(Math.random() * 5, 0, Math.random() * 5);
+		this.target = myPlayer;
 		this.timeOffset = Math.random() * Math.PI;
-		this.heightOffset = Math.random() * 10 + 5;
+		this.heightOffset = Math.random() * 10 + 2;
 		this.firingDelay = false;
 		this.zombieType = "vax";
 	}
 	updatePos() {
 		var target = glMatrix.vec3.create();
-		glMatrix.vec3.add(target, this.target, myPlayer.cameraPos);
-		console.log(target);
+		glMatrix.vec3.add(target, this.targetOffset, this.target.cameraPos);
 
 		var moveForward = 0; var moveSideways = 0;
 		if (!closeTo(target[0], this.pos[0])) {
@@ -335,7 +378,7 @@ class Vax extends Zombie {
 	update() {
 		if (Math.random() > 0.85 && !this.firingDelay) { // shoot
 			this.firingDelay = true;
-			setTimeout(()=>{this.firingDelay = false;}, 1500);
+			setTimeout(()=>{this.firingDelay = false;}, 2500);
 			var front = glMatrix.vec3.create();
 			glMatrix.vec3.sub(front, myPlayer.cameraPos, this.pos);
 			glMatrix.vec3.normalize(front, front);

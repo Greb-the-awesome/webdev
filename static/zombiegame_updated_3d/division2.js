@@ -25,11 +25,13 @@ var cube = [-1.0, -1.0, 1.0,  1.0, -1.0, 1.0,  1.0, 1.0, 1.0,  -1.0, -1.0, 1.0, 
 			 1.0, -1.0, -1.0,  1.0, 1.0, -1.0,  1.0, 1.0, 1.0,  1.0, -1.0, -1.0,  1.0, 1.0, 1.0,  1.0, -1.0, 1.0,
 			 -1.0, -1.0, -1.0,  -1.0, -1.0,  1.0,  -1.0, 1.0, 1.0,  -1.0, -1.0, -1.0,  -1.0, 1.0, 1.0,  -1.0,  1.0, -1.0,
 ];
+var theTime = 0;
+setInterval(function() {theTime += 0.03;}, 10);
 
 
 function parseShader(s) {
 	var attribRegEx = /attribute (vec[0-5]|float) .+?(?=;)/g;
-	var uniformRegEx = /uniform (mat[0-5]|sampler2D|vec[0-5]|float) .+?(?=;)/g;
+	var uniformRegEx = /uniform (mat[0-5]|sampler2D|vec[0-5]|float|int) .+?(?=;)/g;
 	var results = {
 		attribute: [],
 		uniform: []
@@ -172,6 +174,13 @@ function shaderAddData(datas, shader) { // add data to any shader
 	}
 }
 
+function clearShaderData(shader) {
+	var d = buffers_d[shader].data;
+	for (var prop in d) {
+		d[prop] = [];
+	}
+}
+
 function flush(shaderName) {
 	var info = buffers_d[shaderName];
 	for (var property in info.data) {
@@ -207,6 +216,12 @@ function flushUniforms() { // WARNING: will switch programs so u gotta switch ba
 	gl.useProgram(buffers_d.billboardShader.compiled);
 	gl.uniformMatrix4fv(locs.uModelViewMatrix, false, modelViewMatrix);
 	gl.uniformMatrix4fv(locs.uProjectionMatrix, false, projectionMatrix);
+
+	locs = buffers_d.particleShader.uniform;
+	gl.useProgram(buffers_d.particleShader.compiled);
+	gl.uniform1f(locs.uTime, theTime);
+	gl.uniformMatrix4fv(locs.uModelViewMatrix, false, modelViewMatrix);
+	gl.uniformMatrix4fv(locs.uProjectionMatrix, false, projectionMatrix);
 }
 
 function createRenderBuffer(prog) {
@@ -239,6 +254,104 @@ function flushRB(loc, program) {
 
 function getRBdata(loc, program) {
 	return renderBuffers[program][loc].data;
+}
+
+const D_ONE_POINT = function() {
+	return function() {return glMatrix.vec3.fromValues(0, 0, 0);};
+}
+const D_PLANE = function(w, l) {
+	var wStart = -0.5 * w;
+	var lStart = -0.5 * l;
+	return function() {return glMatrix.vec3.fromValues(Math.random() * w - wStart, 0,
+		Math.random() * l - lStart);}
+}
+
+class ParticleSystem { // yet another jimmy-rigged contraption
+	constructor(position, emitter, startVelocity, lifetime, texCoordStart, texCoordDimension, size,
+			timer = Infinity, numCycles = 2147483647) {
+		this.position = position;
+		this.emitFunc = emitter;
+		this.startVelocity = startVelocity;
+		this.particleLifetime = lifetime;
+
+		// graphics data
+		this.aParticleCorner = [];
+		this.aParticleTexCoords = [];
+		this.aParticleCenterOffset = [];
+		this.aParticleVelocity = [];
+		this.aLifetime = [];
+
+		this.start = buffers_d.particleShader.data.aParticleCenterOffset.length/3;
+		this.startTime = theTime;
+		this.timer = timer;
+		this.numCycles = numCycles;
+		debugDispNow["numCycles"] = this.numCycles;
+		this.texCoordsCycle = [1, 1, // 149, 179 is the start of the smoke texture, and it is 61x61
+							  0, 1,
+							  0, 0,
+							  1, 1,
+							  0, 0,
+							  1, 0];
+		// offset the texture coordinates
+		for (let a=0; a<this.texCoordsCycle.length; a+=2) {
+			this.texCoordsCycle[a] *= texCoordDimension;
+			this.texCoordsCycle[a+1] *= texCoordDimension;
+			this.texCoordsCycle[a] += texCoordStart[0];
+			this.texCoordsCycle[a+1]+=  texCoordStart[1];
+		}
+		this.cycle = [-1.0, -1.0,
+					 1.0, -1.0,
+					 1.0, 1.0,
+					 -1.0, -1.0,
+					 1.0, 1.0,
+					 -1.0, 1.0];
+		for (let a=0; a<this.cycle.length; a++) {
+			this.cycle[a] *= size
+		}
+		var numParticles = 30;
+		for (let j=0; j<numParticles/*change later*/; j++) {
+			var computed = Array.from(this.emitFunc());
+			var lifetime = Math.random()*5+5;
+			var vel = [Math.random()-0.5, startVelocity * Math.random(), Math.random()-0.5];
+			var b = buffers_d.particleShader.data;
+			for (let i=0; i<6; i++) {
+				// init the values
+				this.aLifetime.push(lifetime);
+				this.aParticleVelocity = this.aParticleVelocity.concat(vel);
+				this.aParticleCorner.push(this.cycle[i * 2]);
+				this.aParticleCorner.push(this.cycle[i * 2 + 1]);
+				this.aParticleTexCoords.push(this.texCoordsCycle[i * 2]);
+				this.aParticleTexCoords.push(this.texCoordsCycle[i * 2 + 1]);
+				this.aParticleCenterOffset = this.aParticleCenterOffset.concat(computed);
+			}
+		}
+		shaderAddData(this, "particleShader");
+		this.num = buffers_d.particleShader.data.aParticleCenterOffset.length/3 - this.start;
+		flush("particleShader");
+	}
+	render() {
+		gl.useProgram(buffers_d.particleShader.compiled);
+		gl.uniform3f(buffers_d.particleShader.uniform.uParticleEmitter, ...this.position);
+		gl.uniform1f(buffers_d.particleShader.uniform.uStartTime, this.startTime);
+		gl.uniform1i(buffers_d.particleShader.uniform.uNumCycles, this.numCycles);
+		gl.drawArrays(gl.TRIANGLES, this.start, this.num);
+	}
+}
+
+function updateParticles(particles) { // to render all particles and delete old ones
+	for (let i=0; i<particles.length; i++) {
+		particles[i].render();
+		particles[i].timer--;
+		if (particles[i].timer < 0) {
+			particles.splice(i, 1);
+			(async () => {
+				clearShaderData("particleShader");
+				for (let j=0; j<particles.length; j++) {
+					shaderAddData(particles[i], "particleShader");
+				}
+			})();
+		}
+	}
 }
 
 function mList(list, n) {
@@ -336,6 +449,23 @@ function initGL(canvName) {
 				aCenterOffset: [],
 				aCorner: [],
 				aTexCoord: []
+			}
+		},
+		particleShader: {
+			vSource: particleVS,
+			fSource: particleFS,
+			compiled: false,
+			buffer: {
+				aParticleVelocity: [3, gl.FLOAT, false, 0, 0],
+				aParticleCenterOffset: [],
+				aParticleCorner: [2, gl.FLOAT, false, 0, 0],
+				aParticleTexCoords: [2, gl.FLOAT, false, 0, 0],
+				aLifetime: [1, gl.FLOAT, false, 0, 0],
+			},
+			uniform: {},
+			data: {
+				aParticleVelocity: [], aParticleCenterOffset: [], aParticleCorner: [],
+				aParticleTexCoords: [], aLifetime: [],
 			}
 		}
 	};

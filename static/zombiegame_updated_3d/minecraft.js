@@ -2,14 +2,17 @@
 // I was going to make minecraft but then I had another idea
 // and I was too lazy to rename :/
 
+var PLAYERID = Date.now();
 var chunks, gl;
 var debugDispNow = {"hi":"hi"};
 var locations = {};
 var bullets = [];
 var zombies = [];
 var vaxBullets = [];
+var particles = [];
 var numEnokers = 0;
 var oTex;
+var sio;
 var useSound = true;
 var settings = {};
 var skyColors = [ // each one lasts for around 1/8 of a day
@@ -79,10 +82,6 @@ class Chunk {
 	}
 }
 
-class OtherPlayer {
-
-}
-
 chunks = {};
 var gamestart = false;
 
@@ -142,6 +141,45 @@ function pauseMenu() {
 		console.log("lock off");
 		if (gamestart) {clearInterval(mainHandle);}
 	}
+}
+
+function multiplayerMenu(divName, s) {
+	document.getElementById(divName).style.display = "block";
+	clearInterval(ambientHandle);
+	clearInterval(mainHandle);
+	document.getElementById("monkeyScript").src = `/static/zombiegame_updated_3d/${s}?a=${Date.now()*69}`;
+}
+
+function joinGame() {
+	var name = document.getElementById("gameIDbox").value;
+	var n = document.getElementById("nameBox").value;
+	sio = io();
+	sio.emit("join_game", {room: name, playerName: n, id: PLAYERID}, (resp)=>{
+		if (resp.status != "ok" && !DEBUGMODE) {
+			document.getElementById("joinMessage").innerHTML = resp.status + ": " + resp.text;
+		} else {
+			startGame();
+			gamestart = true;
+			gameRoomName = name;
+			joinGame_monkey();
+		}
+	});
+}
+
+function hostGame() {
+	var name = document.getElementById("hostIDbox").value;
+	var n = document.getElementById("nameBox").value;
+	sio = io();
+	sio.emit("host_game", {room: name, playerName: n, id: PLAYERID}, (resp)=>{
+		if (resp.status != "ok" && !DEBUGMODE) {
+			document.getElementById("hostMessage").innerHTML = resp.status + ": " + resp.text;
+		} else {
+			startGame();
+			gamestart = true;
+			gameRoomName = name;
+			hostGame_monkey();
+		}
+	});
 }
 
 function toggleVolume() {
@@ -235,7 +273,9 @@ var overlay, oCtx;
 var mouseDown = false;
 let myPlayer;
 function divisionOnLoad(gl) {
-	setTimeout(function() {new Enoker([10,0,10], models.boss, 1, 100);}, 10000);
+	particles.push(new ParticleSystem([-90, 25, -90],
+		D_PLANE(90, 90), -5, 20, [266/texW, 0], 0.218, 100, 1));
+	// setTimeout(function() {new Enoker([10,0,10], models.boss, 1, 100);}, 10000);
 	loadModels();
 	console.log("divisionOnLoad");
 	createRenderBuffer("shaderProgram");
@@ -362,17 +402,7 @@ function checkCollision(pos1, pos2, w1, w2) { // pos1 and pos2 are the CENTER of
 }
 
 var ambientHandle;
-function onLoad() { // division 1.0 moments
-	/*
-	settings.useTexture = true;
-	settings.textStart = [0.5, 0.46875];
-	settings.charWidth = 0.03125;
-	settings.numCharsPerBreak = 10;
-	settings.useLighting = true; // useLighting true is not compatible with useTexture true just saying (cuz reasons)
-	settings.lightDir = glMatrix.vec3.fromValues(0.85, 0.8, 0.75);
-	settings.lightCol = glMatrix.vec3.fromValues(1, 1, 0.8);
-	settings.ambientLight = glMatrix.vec3.fromValues(0.4, 0.4, 0.4);
-	*/
+function onLoad() {
 	initGL("canvas");
 	ambientHandle = setInterval(function() {
 		onCameraTurn({"movementX": 1, "movementY": 0});
@@ -483,6 +513,7 @@ function loop() {
 		bulletsUpdate(buffer, dayNum);
 		askPickUp = itemsUpdate();
 		zombiesUpdate();
+		multiplayerUpdate();
 		// sun
 		buffer.aVertexPosition = buffer.aVertexPosition.concat(sunPosition);
 		buffer.aTexCoord = buffer.aTexCoord.concat([231/texW, 250/texH]);
@@ -534,7 +565,8 @@ function loop() {
 			myPlayer.cameraUp);
 		settings.lightCol = glMatrix.vec3.fromValues(...c);
 		flushUniforms();
-
+		useShader("particleShader");
+		updateParticles(particles);
 		useShader("billboardShader");
 		gl.drawArrays(gl.TRIANGLES, 0, buffers_d.billboardShader.data.aCorner.length/2);
 
@@ -563,7 +595,6 @@ function loop() {
 		assdfd.render();
 		//assdfd2.render();
 		*/
-
 		useShader("transformShader");
 		gl.drawArrays(gl.TRIANGLES, 0, buffers_d.transformShader.data.aVertexPosition.length / 3);
 

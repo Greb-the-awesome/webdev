@@ -30,7 +30,7 @@ function physicsUpdate() { // for the first map
 	}
 	myPlayer.hitPos[1] = myPlayer.cameraPos[1] - 2;
 	if (myPlayer.hitPos[1] < -50) {ded(playerName + " didn't know the world was flat in Zombie Wars. skill issue!");}
-	if (myPlayer.hitPos[1] > 70) {ded(playerName + " went too high up and died in the name of science. O7");}
+	if (myPlayer.hitPos[1] > 150) {ded(playerName + " tried to break the game by going up too high.");}
 }
 
 function physicsUpdate_parkour() { // for the second map
@@ -93,9 +93,9 @@ function bulletsUpdate(buffer, dayN) {
 		var zombNum = 0;
 		for (zomb of zombies) { // check if the bullets are colliding the zombies
 			if (checkCollision([zomb.pos[0],zomb.pos[1]+3,zomb.pos[2]], bullet.pos, [2,4,2], [1,1,1])) {
-				zomb.health -= bullet.damage;
+				zomb.takeDamage(bullet.damage);
 
-				if (zomb.health <= 0) { // drop items
+				if (zomb.checkDestruction()) { // drop items
 					zomb.dead(dayN);
 					zombies.splice(zombNum, 1);
 					playerStats.zombiesKilled++;
@@ -103,8 +103,8 @@ function bulletsUpdate(buffer, dayN) {
 			}
 			zombNum++;
 		}
-		if (bullet.pos[0] > 50 || bullet.pos[0] < -50 || bullet.pos[2] > 50 || bullet.pos[2] < -50 ||
-			bullet.pos[1] < getTerrain(bullet.pos[0], bullet.pos[2]) || bullet.pos[1] > 50) {
+		if (bullet.checkDestruction()) {
+			bullet.destruct();
 			bullets.splice(bulletNum, 1);
 		} else {
 			finalBullet = finalBullet.concat(bullet.updatePos());
@@ -122,6 +122,7 @@ function bulletsUpdate(buffer, dayN) {
 		}
 		if (bullet.pos[0] > 50 || bullet.pos[0] < -50 || bullet.pos[2] > 50 || bullet.pos[2] < -50 ||
 			bullet.pos[1] < getTerrain(bullet.pos[0], bullet.pos[2]) || bullet.pos[1] > 50) {
+			bullet.destruct();
 			vaxBullets.splice(bulletNum, 1);
 		} else {
 			finalBullet = finalBullet.concat(bullet.updatePos());
@@ -144,14 +145,14 @@ function itemsUpdate() {
 		if (checkCollision(item.pos, myPlayer.hitPos, [2,2,2], [2,2,2])) {
 			if (item.type == 0) {
 				for (var i=0; i<myPlayer.inv.length; i++) {
-					if (!myPlayer.inv[i]) {myPlayer.inv[i] = item; items.splice(itemNum, 1); break;} // pick it up
+					if (!myPlayer.inv[i]) {myPlayer.inv[i] = item; item.destruct(); items.splice(itemNum, 1); break;} // pick it up
 				}
 				if (i == 4) { // no empty space
 					pickUp = true;
-					if (divisDownKeys["KeyQ"]) {myPlayer.inv[myPlayer.selected] = item; items.splice(itemNum, 1);}
+					if (divisDownKeys["KeyQ"]) {myPlayer.inv[myPlayer.selected] = item; item.destruct(); items.splice(itemNum, 1);}
 				}
 			} else if (item.type == 1) {
-				myPlayer.upgradeInv.addUpgrade(item); items.splice(itemNum, 1);
+				myPlayer.upgradeInv.addUpgrade(item); item.destruct(); items.splice(itemNum, 1);
 			}
 		}
 		itemNum++;
@@ -167,6 +168,10 @@ function itemsUpdate() {
 	}
 	return pickUp;
 }
+
+function transmitItem(a) {}
+
+function multiplayerUpdate() {}
 
 function zombiesUpdate() {
 	// update zombies
@@ -196,7 +201,7 @@ function zombiesUpdate() {
 		}
 
 // 71/texW,161/texH
-		if (checkCollision(myPlayer.cameraPos, [zombie.pos[0],zombie.pos[1]+3,zombie.pos[2]], [1, 1.6, 1], [1.5,2,1.5])) {
+		if (checkCollision(myPlayer.cameraPos, [zombie.pos[0],zombie.pos[1]+2.5,zombie.pos[2]], [1, 1.6, 1], [1.5,2,1.5])) {
 			myPlayer.health -= zombie.damage;
 			myPlayer.takingDamage = true;
 		}
@@ -209,10 +214,10 @@ function randomAroundPlayer(range) { // helper for spawning upgrades
 }
 
 function spawnStuff(t) {
-	if (Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2) {
+	if (/*Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2*/gameTime > 100) {
 		var attemptedPos = [Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10];
-		if (Math.floor(Math.random() * 10) == 2 && numEnokers < 3 &&
-			t > 2000) { // zombies have a 1 in 10 chance of being an enoker in the last 1/6 of the day
+		if (Math.floor(Math.random() * 10) == 2 && numEnokers < 4 &&
+			t > 2000) { // zombies have a 1 in 10 chance of being an enoker in the last 1/3 of the day
 			new Enoker(attemptedPos, models.boss, 1, 100);
 			numEnokers++;
 		} else {
@@ -233,6 +238,8 @@ function spawnStuff(t) {
 		}());
 	}
 }
+
+
 
 function flushBuffers() {
 	flush("transformShader");

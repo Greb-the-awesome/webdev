@@ -1,12 +1,18 @@
+import eventlet
+
 from flask import Flask, render_template, request
 import json, time, sys
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room, leave_room
 import threading
 # from replit import db
 from functools import cmp_to_key
-global scores, foolz
+global scores, gameRooms
 scores = {}
-foolz = 0
+gameRooms = []
+
+print("flask-socketio was designed by a bunch of dumbfucks")
+print("that is still straight fax")
+sys.stdout.flush()
 
 
 app=Flask(__name__)
@@ -20,7 +26,7 @@ def index():
 
 @app.route('/test')
 def test():
-	return render_template('newtest.html')
+	return render_template('test.html')
 	#please donnot render js in this!!
 
 @app.route('/fwoosh')
@@ -110,13 +116,66 @@ def zombiewars():
 def zombiewars3d():
 	return render_template("zombiewars3d.html", rand_num = time.time())
 
+@app.route("/plat")
+def plat():
+	return render_template("platformer.html")
+
+@app.after_request
+def add_header(r):
+    """
+    Add headers to both force latest IE rendering engine or Chrome Frame,
+    and also to cache the rendered page for 10 minutes.
+    """
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
+    r.headers['Cache-Control'] = 'public, max-age=0'
+    return r
+
 # sockets
 
-@socketio.on("message")
+@socketio.on("msg")
 def handleMsg(texts):
-	emit("sendBackLmoa", texts, broadcast=True)
+	emit("sendBackLmoa", texts["body"], to=texts["room"])
 	print(texts)
 	sys.stdout.flush()
+
+@socketio.on("host_game")
+def host_game(name):
+	join_room(name["room"])
+	gameRooms.append(name["room"])
+	socketio.sleep(0)
+	eventlet.sleep(0)
+	print("hosting game")
+	sys.stdout.flush()
+	return {"status": "ok", "text": "yeah"}
+
+@socketio.on("join_game")
+def join_game(name):
+	if name["room"] not in gameRooms:
+		return {"status": "error", "text": "Invalid Game."}
+	emit("s_playerjoin", {"playerName": name["playerName"], "id": name["id"]}, to=name["room"])
+	join_room(name["room"])
+	socketio.sleep(0)
+	eventlet.sleep(0)
+	return {"status": "ok", "text": "Joined."}
+
+evNames = ["s_zombiedelete", "s_zombiespawn", "receiveOtherPlayers", "getOtherPlayers"]
+
+def gen_hfunc(n):
+	def python_goofy(data):
+		emit(n, data, to=data["room"])
+		socketio.sleep(0)
+		eventlet.sleep(0)
+		print(n)
+		sys.stdout.flush()
+	return python_goofy
+
+for x in range(len(evNames)):
+	print("event handler for", evNames[x])
+	sys.stdout.flush()
+	socketio.on_event(evNames[x], gen_hfunc(evNames[x]))
+
 
 # error handling
 
@@ -124,4 +183,5 @@ def handleMsg(texts):
 def handle_404(e):
 	return '<center><h1>Oh No!</h1><br><p>An error 404 occured.</p></center>'
 
-socketio.run(app)
+if __name__ == "__main__":
+	socketio.run(app)

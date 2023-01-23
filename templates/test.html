@@ -5,7 +5,6 @@
 	<head>
 
 		<title>deez eez a webpage</title>
-		<script src="{{ url_for('static', filename='tests/test.js') }}">
 		</script>
 
 		<link rel="stylesheet" type='text/css' href="{{ url_for('static', filename='tests/test.css') }}">
@@ -27,19 +26,22 @@
 		<p style="font-family:'Calibri', 'Helvetica'">this is another paragraf.</p>
 		<br>
 		<p style="font-size: 20; background-color: powderblue;">this is another paragraph.</p>
-		<h3 style="font-family:'Calibri'">nowwww..... this is a yt video!</h3>
-		<iframe width="853" height="480" src="https://www.youtube.com/embed/l6oyuw4VCsU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+		<!-- <h3 style="font-family:'Calibri'">nowwww..... this is a yt video!</h3> -->
+		<!-- <iframe width="853" height="480" src="https://www.youtube.com/embed/l6oyuw4VCsU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe> -->
 
 
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 		<input type="text" id = "chatinp">
 		<button onclick = "sockt(document.getElementById('chatinp').value);">send</button>
+		<input type="text" id="gameRoominp">
+		<button onclick="joinRoom(document.getElementById('gameRoominp').value);">join room</button>
 		<script type="text/javascript">
 			var socket = io();
 			socket.on("sendBackLmoa", (texts) => {
 	console.log(texts);
-})
+});
 		</script>
+		<script src="{{ url_for('static', filename='tests/test.js') }}"></script>
 	</body>
 
 </html>
