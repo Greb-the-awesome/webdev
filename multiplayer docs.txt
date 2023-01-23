@@ -1,0 +1,75 @@
+Player sends data every 75ms to the server
+
+.section Zombies, Enokers and Vaxes:
+- Zombies are controlled by the client. Both client and server have the same algo
+  so they should get the same positions
+  .zombies have a `target` property that is their target (duh)
+  .target stays the same throughout the zombie's life
+  .every 1000ms the client and server synchronize zombie positions and zombie targets
+- Similar for Enokers and Vaxes.
+  .Enokers do not spawn vaxes. Server spawns them for the client
+- When a zombie-type mob dies:
+  .Server broadcasts death message
+  .All clients remove that Zombie
+
+.section Bullets
+- When fired, client broadcasts fire msg to server, server broadcasts to everyone
+- Client moves the bullet, bullets synchronized every 1000ms
+- Server checks if bullet is colliding w/Zombie
+  .As soon as collision ends, server broadcasts zombie damage
+  .Death messages are broadcasted separately
+- regular bullets are destroyed by the **server**
+- vax bullets are destroyed by the **client**
+
+.section Frame
+- Every frame the server:
+  .basically does everything a singleplayer client would do.
+    .except it broadcasts events when things happen
+- Every frame for the client:
+  .update zombie, enoker, vax, bullet positions
+  .render all entities
+  .synchronizations happen asynchronously
+
+.section Synchronizations
+- Every 1000ms there is a synchronization
+- {
+  zombies: {$id: {
+    pos: xxx, health: xxx, target: $playerId, zombieType: "base"
+  }, $id: {
+    pos: xxx, health: xxx, target: $playerId, zombieType: "enoker", vaxes: [{pos: xxx, health: xxx, timeOffset: xxx, heightOffset: xxx,
+      target: $playerId, targetOffset: xxx} ...]
+  } ...},
+  otherPlayers: {$id: {
+    pos: xxx, health: xxx, yaw: xxx, pitch: xxx
+  } ...},
+  bullets: {$id: {
+    pos: xxx, vel: xxx, damage: xxx
+  } ...}
+}
+
+references:
+void myPlayer.sendData() {
+  sio.emit("playerUpdate", {
+    // idk why im sending both pos and hitPos, backwards compatibiility I guess
+    pos: [...this.cameraPos],
+    hPos: [...this.hitPos],
+    health: this.health,
+    yaw: this.yaw,
+    pitch: this.pitch,
+    invSelect: this.invSelect,
+    takingDamage: this.takingDamage,
+    id: PLAYERID
+  });
+}
+
+void myPlayer.sendShootEvent(pos, vel, damage) {
+  sio.emit("playerShoot", {
+    pos: pos, vel: vel, damage: damage
+  });
+}
+
+names:
+synchronization: "s_sync"
+zombie spawn: "s_zombiespawn"
+vax spawn: "s_vaxspawn"
+enoker spawn: "s_enokerspawn"
