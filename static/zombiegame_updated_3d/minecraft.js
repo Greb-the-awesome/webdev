@@ -25,7 +25,9 @@ var skyColors = [ // each one lasts for around 1/8 of a day
 [0.337, 0.482, 0.749], // dawn
 [0.968, 0.105, 0.278], // sunrise
 [0.529, 0.807, 0.921] // morning again
-]
+];
+var globalSkyColor = false;
+var c;
 var gameTime = 0;
 var playerStats = {zombiesKilled: 0,};
 console.log("main script loaded.");
@@ -448,7 +450,8 @@ function loop() {
 	debugDispNow["day number"] = dayNum;
 	var color1 = skyColors[ind];
 	var color2 = skyColors[ind+1];
-	var c = [mix(color1[0], color2[0], amount), mix(color1[1], color2[1], amount), mix(color1[2], color2[2], amount)];
+	c = [mix(color1[0], color2[0], amount), mix(color1[1], color2[1], amount), mix(color1[2], color2[2], amount)];
+	if (globalSkyColor) {c = globalSkyColor;}
 	gl.clearColor(c[0], c[1], c[2], 1.0);
 	var adj = m - 1 * COLORLENGTH; // bc the sun position is a bit wank
 	var sunPosition = [Math.sin(adj / DAYLENGTH * 2 * Math.PI) * 50, Math.cos(adj / DAYLENGTH * 2 * Math.PI) * 30, 0];

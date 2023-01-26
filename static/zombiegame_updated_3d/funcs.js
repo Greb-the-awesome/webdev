@@ -214,7 +214,7 @@ function randomAroundPlayer(range) { // helper for spawning upgrades
 }
 
 function spawnStuff(t) {
-	if (/*Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2*/gameTime > 100) {
+	if (/*Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2*/Math.random() > 0.9) {
 		var attemptedPos = [Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10];
 		if (Math.floor(Math.random() * 10) == 2 && numEnokers < 4 &&
 			t > 2000) { // zombies have a 1 in 10 chance of being an enoker in the last 1/3 of the day
@@ -224,7 +224,7 @@ function spawnStuff(t) {
 			new Zombie(attemptedPos, models.zombie, 1, 100);
 		}
 	}
-	if (Math.floor(Math.random() * 170) == 2 && t < 1500) {
+	if (Math.floor(Math.random() * 170) == 2 && t < 1500 && !globalSkyColor) { // spawn items if not multiplayer
 		items.push(new Item(randomAroundPlayer(20),
 			...upgrades[Math.floor(Math.random() * upgrades.length)], 0.3, 1, true, true));
 	}
@@ -293,11 +293,10 @@ function serializeChunks() {
 			    384/texW, 0.0,
 			    384/texW, 0.0,
 			    384/texW, 128/texH,
-			    256/texW, 128/texH]
+			    256/texW, 128/texH];
 	for (let c=0; c<values.length; c++) {
 		var chunk = values[c];
 		var chunkBlocks = chunk.blocks;
-		dO(chunkBlocks);
 		for (const blockPos in chunkBlocks) {
 			var block = chunkBlocks[blockPos];
 			var triang1 = block.pos1.concat(block.pos2.concat(block.pos3));

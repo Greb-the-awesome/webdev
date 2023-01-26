@@ -160,14 +160,14 @@ def join_game(name):
 	eventlet.sleep(0)
 	return {"status": "ok", "text": "Joined."}
 
-evNames = ["s_zombiedelete", "s_zombiespawn", "receiveOtherPlayers", "getOtherPlayers"]
+evNames = ["playerUpdate", "receiveOtherPlayers", "getOtherPlayers", "s_update", "playerShoot", "itemDelete"]
 
 def gen_hfunc(n):
 	def python_goofy(data):
 		emit(n, data, to=data["room"])
 		socketio.sleep(0)
 		eventlet.sleep(0)
-		print(n)
+		# print(n)
 		sys.stdout.flush()
 	return python_goofy
 

@@ -77,7 +77,8 @@ class Item {
 			this.rocketJump = false;
 		}
 		this.velocity = [0,0,0]; // manually set it if u want smth diff
-		this.id = 0;
+		this.id = Date.now();
+		this.size = size;
 	}
 	updatePos() {
 		if (this.pos[1] > getTerrain(this.pos[0], this.pos[2]) + 1) {
@@ -90,9 +91,8 @@ class Item {
 	destruct() {}
 	toJSON() {
 		return {pos: [...this.pos], type: this.type, name: this.name,
-			texCoordsCycle: this.texCoordsCycle, cycle: this.cycle,
 			specs: this.specs, texCoordStart: this.texCoordStart,
-			roundsRemaining: this.roundsRemaining, clutcher: this.clutcher,
+			clutcher: this.clutcher,
 			rocketJump: this.rocketJump, velocity: this.velocity, size: this.size, id: this.id};
 	}
 }
@@ -138,9 +138,9 @@ class MyPlayer {
 			div.after(clone);
 		}
 	}
-	// these methods are overriden if multiplayer is used
-	sendData() {}
-	sendShootEvent(a) {}
+	toJSON() {
+		return {cameraPos: [...this.cameraPos], id: PLAYERID, room: gameRoomName};
+	}
 	updatePos() {
 		glMatrix.vec3.add(this.cameraPos, this.cameraPos, this.velocity);
 		glMatrix.vec3.add(this.cameraPos, this.cameraPos, this.userInputVelocity);
@@ -148,8 +148,8 @@ class MyPlayer {
 		glMatrix.vec3.add(this.hitPos, this.hitPos, this.userInputVelocity);
 		// some other housekeeping
 		this.invSelect = this.inv[this.selected];
-		this.sendData();
 	}
+	sendShootEvent(_) {}
 	shoot() {
 		if (!this.firingDelay && !this.reloading && myPlayer.invSelect) { // a lot of code for each shot lmao
 			var toPlay = new Audio(this.invSelect.specs.fire);
@@ -244,6 +244,9 @@ class Bullet {
 			this.pos, D_ONE_POINT(), 20, 0.05, [71/texW,161/texH], 0.0, 0.1, 10, 1
 		));
 	}
+	toJSON() {
+		return {pos: [...this.pos], front: [...this.front], damage: this.damage, room: gameRoomName};
+	}
 }
 var epsilon = 1;
 function closeTo(a, b) {
@@ -271,6 +274,7 @@ class Zombie {
 	}
 	checkDestruction() {return this.health <= 0;}
 	takeDamage(a) {this.health -= a;}
+	
 	updatePos() {
 		// player speed (walking) is 0.136/frame so zombie is 0.14 (so u can only run to escape zombie)
 		// returns [moveForward, moveSideways] for udpateAngle()
@@ -303,7 +307,7 @@ class Zombie {
 		return this.angle;
 	}
 	update() {return this.updateAngle(...this.updatePos());}
-	transmitDeath() {} // host override
+	
 	dead(dayN) {
 		var zomb = this; // so i can just copy and paste code lmao
 		if (Math.random() > 0.6) {
@@ -321,7 +325,6 @@ class Zombie {
 		particles.push(new ParticleSystem(
 			this.pos, D_ONE_POINT(), 7, 1, [0, 0], 0.1, 0.1, 1000, 1
 		));
-		this.transmitDeath();
 	}
 }
 
