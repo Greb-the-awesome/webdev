@@ -37,6 +37,10 @@ function hostGame_monkey() {
 			}
 		};
 		Item = _Item;
+    let _Enoker = class {
+      constructor(a,b,c,d) {}
+    };
+    Enoker = _Enoker; // too lazy to implement multiplayer enokers
       sio.on("s_playerjoin", function(data) {
         otherPlayers.push(new OtherPlayer([0,0,0], data.id));
         console.log("player joined!");
@@ -58,12 +62,14 @@ function hostGame_monkey() {
       });
       setInterval(function() {
         var itemFinal = {};
+        var zombieFinal = {};
         for (var it of items) {itemFinal[it.id] = it;}
-        console.log(itemFinal);
+        for (var zomb of zombies) {zombieFinal[zomb.id] = zomb;}
         sio.emit("s_update", {
           content: otherPlayers,
           room: gameRoomName,
           items: itemFinal,
+          zombies: zombieFinal,
           skyCol: c
         });
       }, 100);

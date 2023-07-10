@@ -45,8 +45,6 @@ function joinGame_monkey() {
 			}
 		}
 		globalSkyColor = data.skyCol;
-		console.log("data.items: ");
-		console.log(data.items);
 		for (let i=0; i<items.length; i++) {
 			var di = data.items[items[i].id];
 			var ii = items[i];
@@ -67,16 +65,42 @@ function joinGame_monkey() {
 				console.log("push new item");
 			}
 		}
-		let _Item = class extends Item {
-			constructor(pos, name, texCoordStart, specs, size, type = 0, add = true, despawn = true) {
-				super(pos, name, texCoordStart, specs, size, type, add, despawn);
+		for (let i=0; i<zombies.length; i++) {
+			var dz = data.zombies[zombies[i].id];
+			var iz = zombies[i];
+			if (!dz) {
+				zombies.splice(i, 1); continue;
 			}
-			destruct() {
-				sio.emit("itemDelete", {room: gameRoomName, id: this.id});
+			iz.pos = dz.pos; iz.zombieType = dz.zombieType; iz.angle = dz.angle; iz.health = dz.health;
+			data.zombies[zombies[i].id].good = true;
+			if (dz.target == PLAYERID) {iz.target = myPlayer;} else {
+				if (findInOtherPlayers(dz.target) == -1) {zombies.splice(i, 1); continue;}
+				iz.target = findInOtherPlayers(dz.target);
 			}
-		};
-		Item = _Item;
+		}
+		for (var zombk in data.zombies) {
+			var zomb = data.zombies[zombk];
+			if (!zomb.good) {
+				new Zombie(zomb.pos, models.zombie, zomb.damage, zomb.health);
+				zombies[zombies.length-1].id = zomb.id;
+				if (zomb.target == PLAYERID) {zombies[zombies.length-1].target = myPlayer;} else {
+					if (findInOtherPlayers(zomb.target) != -1) {
+						zombies[zombies.length-1].target = findInOtherPlayers(zomb.target);
+					}
+				}
+				console.log("push new zombie");
+			}
+		}
 	});
+	let _Item = class extends Item {
+		constructor(pos, name, texCoordStart, specs, size, type = 0, add = true, despawn = true) {
+			super(pos, name, texCoordStart, specs, size, type, add, despawn);
+		}
+		destruct() {
+			sio.emit("itemDelete", {room: gameRoomName, id: this.id});
+		}
+	};
+	Item = _Item;
 	sio.on("playerShoot", function(data) {
 		bullets.push(new Bullet(data.pos, data.front, data.damage));
 	});

@@ -26,6 +26,14 @@ var skyColors = [ // each one lasts for around 1/8 of a day
 [0.968, 0.105, 0.278], // sunrise
 [0.529, 0.807, 0.921] // morning again
 ];
+const COLORS = {
+	red: [71/texW, 161/texH],
+	grey: [199/texW, 219/texH], gray: [199/texW, 219/texH], // to avoid typos
+	clearblue: [248/texW, 250/texH],
+	clearwhite: [239/texW, 250/texH],
+	yellow: [231/texW, 250/texW],
+	brown: [251/texW, 244/texH]
+}
 var globalSkyColor = false;
 var c;
 var gameTime = 0;
@@ -37,7 +45,8 @@ function fakePerlin(x, y) {
 	return [Math.sin((x + y) / 2)]
 }
 var normalRef = [null, ["pos2","pos4"], ["pos3","pos1"], ["pos4","pos2"], ["pos1","pos3"]];
-var hitboxes;
+var numRocketJumps = 0;
+
 class Block {
 	constructor(what, pos1, pos2, pos3, pos4) {
 		this.pos1 = pos1;
@@ -87,8 +96,11 @@ class Chunk {
 chunks = {};
 var gamestart = false;
 
-function _aList(lst, x, y, z) {
-	var res = JSON.parse(JSON.stringify(lst)); // copy it
+function _aList(lst, x, y, z, copy = true) {
+	var res;
+	if (copy) {
+		res = JSON.parse(JSON.stringify(lst));
+	} else {res = lst;}
 	for (let i=0; i<lst.length; i+=3) {
 		res[i] += x;
 		res[i+1] += y;
@@ -97,7 +109,8 @@ function _aList(lst, x, y, z) {
 	return res;
 }
 
-var a = new Audio("/static/radio.mp3");
+var a = new Audio("/static/dust.mp3");
+a.currentTime = 0;
 var playerName;
 var verticalMultiplier = 0;
 function startGame() {
@@ -110,8 +123,6 @@ function startGame() {
 		creative = true; // enable flying
 		verticalMultiplier = 0.25;
 		myPlayer.health = Infinity;
-	} else if (n.includes("ron") || n.includes("trefoil")) {
-		ded("JERRY DIED OF TRYING TO MAKE A TREFOIL REEREOISJFOAJES");
 	}
 }
 var alreadyHelped;
@@ -145,45 +156,6 @@ function pauseMenu() {
 	}
 }
 
-function multiplayerMenu(divName, s) {
-	document.getElementById(divName).style.display = "block";
-	clearInterval(ambientHandle);
-	clearInterval(mainHandle);
-	document.getElementById("monkeyScript").src = `/static/zombiegame_updated_3d/${s}?a=${Date.now()*69}`;
-}
-
-function joinGame() {
-	var name = document.getElementById("gameIDbox").value;
-	var n = document.getElementById("nameBox").value;
-	sio = io();
-	sio.emit("join_game", {room: name, playerName: n, id: PLAYERID}, (resp)=>{
-		if (resp.status != "ok" && !DEBUGMODE) {
-			document.getElementById("joinMessage").innerHTML = resp.status + ": " + resp.text;
-		} else {
-			startGame();
-			gamestart = true;
-			gameRoomName = name;
-			joinGame_monkey();
-		}
-	});
-}
-
-function hostGame() {
-	var name = document.getElementById("hostIDbox").value;
-	var n = document.getElementById("nameBox").value;
-	sio = io();
-	sio.emit("host_game", {room: name, playerName: n, id: PLAYERID}, (resp)=>{
-		if (resp.status != "ok" && !DEBUGMODE) {
-			document.getElementById("hostMessage").innerHTML = resp.status + ": " + resp.text;
-		} else {
-			startGame();
-			gamestart = true;
-			gameRoomName = name;
-			hostGame_monkey();
-		}
-	});
-}
-
 function toggleVolume() {
 	useSound = !useSound;
 	if (useSound) {document.getElementById('volumeButton').src = "/static/zombiegame_updated_3d/volume on.png";}
@@ -191,7 +163,8 @@ function toggleVolume() {
 }
 
 function getTerrain(x, z) {
-	if (x > WORLDEND * 10 || x < WORLDSTART * 10 || z > WORLDEND * 10 || z < WORLDSTART * 10) { // out of bounds
+	if (x > WORLDEND * 10+0.01 || x < WORLDSTART * 10-0.01 ||
+		z > WORLDEND * 10+0.01 || z < WORLDSTART * 10-0.01) { // out of bounds
 		return -Infinity;
 	}
 	function clamp(val, low, high) {return Math.min(Math.max(val, low), high);}
@@ -313,7 +286,7 @@ function divisionOnLoad(gl) {
 	dO("chunks initialized.");
 	serializeChunks();
 	dO("chunks serialized.");
-	// genClouds();
+	genClouds();
 	dO("clouds skipped for debugging.");
 	refreshBillbs();
 	dO("billboards refreshed.");
@@ -323,7 +296,7 @@ function divisionOnLoad(gl) {
 	bindTexture(loadTexture("/static/zombiegame_updated_3d/grass.png"), 0);
 	dO("webGL texture bound.");
 	oTex = new Image();
-	oTex.src = "/static/zombiegame_updated_3d/grass.png";
+	oTex.src = "/static/zombiegame_updated_3d/grass.png?e="+Date.now();
 	dO("oTex started loading.");
 
 	// addPositions([-100, 0, -100,
@@ -351,13 +324,16 @@ function divisionOnLoad(gl) {
 	canvas.addEventListener("mouseup", ()=>{mouseDown = false;});
 	canvas.addEventListener("wheel", e=>{
 		if (e.deltaY > 0) {
-			if (myPlayer.selected == 3) {myPlayer.selected = 0;} else {myPlayer.selected += 1;}
+			if (myPlayer.selected == 3) {myPlayer.selected = 0;}
+			else if (myPlayer.inv[myPlayer.selected + 1]) {myPlayer.selected += 1;}
 		}
 		if (e.deltaY < 0) {
-			if (myPlayer.selected == 0) {myPlayer.selected = 3;} else {myPlayer.selected -= 1;}
+			if (myPlayer.selected == 0) {myPlayer.selected = 3;}
+			else if (myPlayer.inv[myPlayer.selected - 1]) {myPlayer.selected -= 1;}
 		}
 	});
 	setInterval(debugRefresh, 20);
+	convertRBArrayBuffer("shaderProgram", 0);
 }
 var billbOffsets = [-2,-0.7,-2];
 
@@ -375,7 +351,6 @@ function ded(reason) {
 	window.clearInterval(mainHandle);
 	oCtx.font = "40px Open Sans";
 	oCtx.fillText("you died lmao", overlay.width * 0.3, overlay.height * 0.4);
-	a.currentTime = 18;
 	a.play();
 	document.getElementById("deadDiv").style.display = "block";
 	document.getElementById("deadReason").innerHTML = reason;
@@ -455,9 +430,20 @@ function loop() {
 	gl.clearColor(c[0], c[1], c[2], 1.0);
 	var adj = m - 1 * COLORLENGTH; // bc the sun position is a bit wank
 	var sunPosition = [Math.sin(adj / DAYLENGTH * 2 * Math.PI) * 50, Math.cos(adj / DAYLENGTH * 2 * Math.PI) * 30, 0];
+	lightingInfo[3] = c[0]; lightingInfo[4] = c[1]; lightingInfo[5] = c[2];
+	var normalizedSunPosition = glMatrix.vec3.create();
+	glMatrix.vec3.normalize(normalizedSunPosition, sunPosition);
+	glMatrix.vec3.multiply(normalizedSunPosition, normalizedSunPosition, [1.3, 1.3, 1.3]);
+	lightingInfo[0] = normalizedSunPosition[0]; lightingInfo[1] = normalizedSunPosition[1]; lightingInfo[2] = normalizedSunPosition[2];
 
 
-	if (mouseDown || divisDownKeys["KeyE"]) {myPlayer.shoot();}
+	if (mouseDown || divisDownKeys["KeyE"]) {
+		if (myPlayer.invSelect.specs.shotgun) {
+			myPlayer.shoot(myPlayer.invSelect.specs.shotgunrounds);
+		} else {
+			myPlayer.shoot(1);
+		}
+	}
 	if(divisDownKeys["KeyA"]) { // a or <
 		var crossed = glMatrix.vec3.create();
 		var normalized = glMatrix.vec3.create();
@@ -518,8 +504,9 @@ function loop() {
 		zombiesUpdate();
 		multiplayerUpdate();
 		// sun
-		buffer.aVertexPosition = buffer.aVertexPosition.concat(sunPosition);
-		buffer.aTexCoord = buffer.aTexCoord.concat([231/texW, 250/texH]);
+		// buffer.aVertexPosition = buffer.aVertexPosition.concat(sunPosition);
+		// buffer.aTexCoord = buffer.aTexCoord.concat(COLORS.yellow);
+		// for (var prop in buffer) {buffer[prop] = new Float32Array(buffer[[prop]]);}
 		spawnStuff(m);
 
 		if (myPlayer.health < 0) { // oof

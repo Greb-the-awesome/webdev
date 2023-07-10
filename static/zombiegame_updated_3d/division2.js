@@ -16,7 +16,7 @@ glMatrix.mat4.perspective(projectionMatrix,
 	150.0 // zFar
 );
 var bModelViewMatrix = glMatrix.mat4.create();
-var lightingInfo = [0, 1, 0, 1, 1, 1, 0.5, 0.5, 0.5];
+var lightingInfo = [0, 1, 1.3, 1, 1, 1, 0.5, 0.5, 0.5];
 var renderBuffers = {"shaderProgram":[], "objShader":[]};
 var cube = [-1.0, -1.0, 1.0,  1.0, -1.0, 1.0,  1.0, 1.0, 1.0,  -1.0, -1.0, 1.0,  1.0, 1.0, 1.0,  -1.0,  1.0,  1.0,
 			 -1.0, -1.0, -1.0,  -1.0, 1.0, -1.0,  1.0, 1.0, -1.0,  -1.0, -1.0, -1.0,  1.0, 1.0, -1.0,  1.0, -1.0, -1.0,
@@ -75,7 +75,7 @@ function compileShaders(vertex, frag) {
 
 function setBufferData(buf, data) {
 	gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-	gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
 }
 
 function processShader(shader) {
@@ -159,6 +159,8 @@ function bindTexture(tex, unit = 0) {
 	gl.bindTexture(gl.TEXTURE_2D, tex);
 }
 
+// render to texture stuff
+
 function addPositions(pos, tex, index = [], normal = []) { // backwards compatible with Division 1.0
 	if (pos.length != normal.length) {
 		console.warn("addPositions: recieved less normals than positions");
@@ -169,6 +171,9 @@ function addPositions(pos, tex, index = [], normal = []) { // backwards compatib
 function shaderAddData(datas, shader) { // add data to any shader
 	// this way i dont have to write the same thing for every shader
 	var d = buffers_d[shader].data;
+	if (buffers_d[shader].arrayBuffered) {
+		console.warn("shaderAddData: cannot expand arraybuffer");return;
+	}
 	for (var prop in d) {
 		d[prop] = d[prop].concat(datas[prop]);
 	}
@@ -177,14 +182,16 @@ function shaderAddData(datas, shader) { // add data to any shader
 function clearShaderData(shader) {
 	var d = buffers_d[shader].data;
 	for (var prop in d) {
-		d[prop] = [];
+		d[prop] = buffers_d[shader].arrayBuffered?new Float32Array() : [];
 	}
 }
 
 function flush(shaderName) {
 	var info = buffers_d[shaderName];
 	for (var property in info.data) {
-		setBufferData(info.buffer[property][0], new Float32Array(info.data[property]));
+		var data = buffers_d[shaderName]; // .something idk
+		setBufferData(info.buffer[property][0], buffers_d[shaderName].arrayBuffered?
+			info.data[property] : new Float32Array(info.data[property]));
 	}
 }
 
@@ -248,7 +255,7 @@ function useRenderBuffer(loc, program) {
 function flushRB(loc, program) {
 	var toUse = renderBuffers[program][loc];
 	for (attrib in toUse.buffers) {
-		setBufferData(toUse.buffers[attrib], new Float32Array(toUse.data[attrib]));
+		setBufferData(toUse.buffers[attrib], toUse.arrayBuffered?toUse.data[attrib]:new Float32Array(toUse.data[attrib]));
 	}
 }
 
@@ -268,7 +275,7 @@ const D_PLANE = function(w, l) {
 
 class ParticleSystem { // yet another jimmy-rigged contraption
 	constructor(position, emitter, startVelocity, lifetime, texCoordStart, texCoordDimension, size,
-			timer = Infinity, numCycles = 2147483647) {
+			timer = Infinity, numCycles = 10) {
 		this.position = position;
 		this.emitFunc = emitter;
 		this.startVelocity = startVelocity;
@@ -359,6 +366,20 @@ function mList(list, n) {
 	var res = [];
 	for (let i=0; i<n; i++) {res=res.concat(list);}
 	return res;
+}
+
+function convertToArrayBuffer(shaderName) {
+	buffers_d[shaderName].arrayBuffered = true;
+	for (var prop in buffers_d[shaderName].data) {
+		buffers_d[shaderName].data[prop] = new Float32Array(buffers_d[shaderName].data[prop]);
+	}
+}
+
+function convertRBArrayBuffer(shaderName, id) {
+	renderBuffers[shaderName][id].arrayBuffered = true;
+	for (var prop in renderBuffers[shaderName][id].data) {
+		renderBuffers[shaderName][id].data[prop] = new Float32Array(renderBuffers[shaderName][id].data[prop])
+	}
 }
 
 function initGL(canvName) {

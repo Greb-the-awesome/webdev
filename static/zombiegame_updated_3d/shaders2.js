@@ -82,9 +82,10 @@ void main() {
 		fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.05 - 1.0;
 	}*/
 	fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.05 - 1.0;
-	highp vec4 transformedNormal = vec4(aVertexNormal, 1.0);
-	highp float directional = max(dot(transformedNormal.xyz, uLightingInfo[0]), 0.0);
+	highp float directional = max(dot(aVertexNormal, uLightingInfo[0]), 0.0);
 	vLighting = uLightingInfo[2] + (uLightingInfo[1] * directional * 0.65);
+	float as = dot(aVertexNormal.xyz, vec3(1.0,0.0,0.0));
+	// vLighting = vec3(as, as, as);
 	gl_PointSize = 100.0;
 }
 `;

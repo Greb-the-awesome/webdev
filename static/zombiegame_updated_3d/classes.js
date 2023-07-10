@@ -1,7 +1,9 @@
+// TODO: copy the replit code to freeze multiplayer updates
+
 console.log("classes.js loaded.");
 var bullets = [];
-var texW = 512;
-var texH = 512;
+var texW = 1024;
+var texH = 1024;
 var items = [];
 // generate the zombie stuffs
 var zombieBarTexCoord = [1, 1,
@@ -134,7 +136,10 @@ class MyPlayer {
 			clone.id = "upgradeItem-" + myPlayer.upgradeInv.length;
 			clone.querySelector("#upHeading").innerHTML = u.name; // they all have identical ids
 			clone.querySelector("#upDesc").innerHTML = u.specs.desc;
-			clone.querySelector("#upButton").onclick = ()=>{u.specs.action();clone.remove();};
+			clone.querySelector("#upButton").onclick = ()=>{
+				u.specs.action();clone.remove();
+				if (u.name == "Jump!!!") {numRocketJumps--;}
+			};
 			div.after(clone);
 		}
 	}
@@ -150,7 +155,19 @@ class MyPlayer {
 		this.invSelect = this.inv[this.selected];
 	}
 	sendShootEvent(_) {}
-	shoot() {
+	shoot(numBullets) {
+		if (this.invSelect.specs.fartGun) {
+			if (this.invSelect.roundsRemaining <= 0) {return;}
+			var p = glMatrix.vec3.create();
+			var multipliedFront = glMatrix.vec3.create();
+			var temp = this.invSelect.roundsRemaining * 1.5 + 3;
+			glMatrix.vec3.mul(multipliedFront, myPlayer.cameraFront, [temp,temp,temp]);
+			glMatrix.vec3.add(p, myPlayer.cameraPos, multipliedFront);
+			new Bullet(p, [0,0,0], 0.5, COLORS.clearblue, 0, true, this.invSelect.roundsRemaining, 280); // lifetime=7s
+			bullets[bullets.length-1].fart = true;
+			this.invSelect.roundsRemaining = 0;
+			return;
+		}
 		if (!this.firingDelay && !this.reloading && myPlayer.invSelect) { // a lot of code for each shot lmao
 			var toPlay = new Audio(this.invSelect.specs.fire);
 			// rocket jump
@@ -167,23 +184,29 @@ class MyPlayer {
 			this.invSelect.roundsRemaining--;
 
 			// front vector calcs
-			var distanceFromPlayer = 2;
-			var sp = this.invSelect.specs.speed;
-			var vel = glMatrix.vec3.create();
-			var pos = glMatrix.vec3.create();
-			var adjYaw = this.yaw + (Math.random() * 2 - 1) * this.invSelect.specs.spread;
-			var adjPitch = this.pitch + (Math.random() * 2 - 1) * this.invSelect.specs.spread;
-			vel[0] = Math.cos(glMatrix.glMatrix.toRadian(adjYaw)) * Math.cos(glMatrix.glMatrix.toRadian(adjPitch));
-			vel[1] = Math.sin(glMatrix.glMatrix.toRadian(adjPitch));
-			vel[2] = Math.sin(glMatrix.glMatrix.toRadian(adjYaw)) * Math.cos(glMatrix.glMatrix.toRadian(adjPitch));
-			glMatrix.vec3.normalize(vel, vel);
-
-			var multipliedFront = glMatrix.vec3.fromValues(
-				this.cameraFront[0]*distanceFromPlayer, this.cameraFront[1]*distanceFromPlayer, this.cameraFront[2]*distanceFromPlayer);
-			glMatrix.vec3.add(pos, this.cameraPos, multipliedFront);
-
-			var bul = new Bullet(pos, vel, this.invSelect.specs.damage);
-			this.sendShootEvent(bul);
+			for (let i=0; i<numBullets; i++) {
+				var distanceFromPlayer = 2;
+				var vel = glMatrix.vec3.create();
+				var pos = glMatrix.vec3.create();
+				var adjYaw = this.yaw + (Math.random() * 2 - 1) * this.invSelect.specs.spread;
+				var adjPitch = this.pitch + (Math.random() * 2 - 1) * this.invSelect.specs.spread;
+				vel[0] = Math.cos(glMatrix.glMatrix.toRadian(adjYaw)) * Math.cos(glMatrix.glMatrix.toRadian(adjPitch));
+				vel[1] = Math.sin(glMatrix.glMatrix.toRadian(adjPitch));
+				vel[2] = Math.sin(glMatrix.glMatrix.toRadian(adjYaw)) * Math.cos(glMatrix.glMatrix.toRadian(adjPitch));
+				glMatrix.vec3.normalize(vel, vel);
+	
+				var multipliedFront = glMatrix.vec3.fromValues(
+					this.cameraFront[0]*distanceFromPlayer, this.cameraFront[1]*distanceFromPlayer, this.cameraFront[2]*distanceFromPlayer);
+				glMatrix.vec3.add(pos, this.cameraPos, multipliedFront);
+				
+				var tc = COLORS.red, tcdim = 0;
+				if (this.invSelect.specs.bulletTc) {
+					tc = this.invSelect.specs.bulletTc;
+					tcdim = this.invSelect.specs.bulletTcDimension;
+				}
+				var bul = new Bullet(pos, vel, this.invSelect.specs.damage, tc, tcdim, true);
+				this.sendShootEvent(bul);
+			}
 
 			this.firingDelay = true;
 
@@ -192,6 +215,13 @@ class MyPlayer {
 			setTimeout(()=>billbOffsets[2]-=0.3, this.invSelect.specs.delay/2)
 			setTimeout(()=>{myPlayer.firingDelay = false;}, this.invSelect.specs.delay);
 
+			// beans
+			if (this.invSelect.specs.beanWeapon) {
+				for (var x of this.inv) {
+					if (x.name == "Fart Gun") {x.roundsRemaining++;}
+				}
+			}
+			
 			// reload
 			if (this.invSelect.roundsRemaining <= 0) {
 				if (this.invSelect.clutcher && this.health < 25) {
@@ -219,29 +249,52 @@ class OtherPlayer {
 
 
 class Bullet {
-	constructor(pos, front, damage, add = true) {
+	constructor(pos, front, damage, texCoordStart = COLORS.red, texCoordDimension = 0, add = true, size = 1, timer = 800) {
 		this.front = glMatrix.vec3.fromValues(front[0], front[1], front[2]);
 		this.pos = glMatrix.vec3.fromValues(pos[0], pos[1], pos[2]);
+		this.size = size;
+		this.posCycle = new Array(cube.length);
+		for (let i=0; i<cube.length; i++) {
+			this.posCycle[i] = cube[i] * size;
+		}
 		this.location = buffers_d.shaderProgram.data.aVertexPosition.length;
 		this.damage = damage;
-		var buffer = getRBdata(0, "shaderProgram");
+		this.texCoordsCycle = [1, 1,
+							  0, 1,
+							  0, 0,
+							  1, 1,
+							  0, 0,
+							  1, 0];
+		// offset the texture coordinates
+		for (let a=0; a<this.texCoordsCycle.length; a+=2) {
+			this.texCoordsCycle[a] *= texCoordDimension;
+			this.texCoordsCycle[a+1] *= texCoordDimension;
+			this.texCoordsCycle[a] += texCoordStart[0];
+			this.texCoordsCycle[a+1]+=  texCoordStart[1];
+		}
+		var buffer = getRBdata(0, "shaderProgram");/*
 		buffer.aVertexPosition = buffer.aVertexPosition.concat(_aList(cube, pos[0], pos[1], pos[2]));
 		buffer.aTexCoord = buffer.aTexCoord.concat(mList([0,0], 72));
 		buffer.aVertexNormal = buffer.aVertexNormal.concat(mList([0, 1, 0], 108));
-		flushRB(0, "shaderProgram");
+		flushRB(0, "shaderProgram");*/
+		this.timer = timer;
 		if (add) {bullets.push(this)};
 	}
 	updatePos() {
 		glMatrix.vec3.add(this.pos, this.pos, this.front);
-		return _aList(cube, this.pos[0], this.pos[1], this.pos[2]);
+		this.timer--;
+		return _aList(this.posCycle, this.pos[0], this.pos[1], this.pos[2]);
 	}
 	checkDestruction() {
+		if (this.timer < 0) {
+			return true;
+		}
 		return this.pos[0] > 50 || this.pos[0] < -50 || this.pos[2] > 50 || this.pos[2] < -50 ||
 			this.pos[1] < getTerrain(this.pos[0], this.pos[2]) || this.pos[1] > 50;
 	}
 	destruct() {
 		particles.push(new ParticleSystem(
-			this.pos, D_ONE_POINT(), 20, 0.05, [71/texW,161/texH], 0.0, 0.1, 10, 1
+			this.pos, D_ONE_POINT(), 20, 0.05, COLORS.red, 0.0, 0.1, 10, 1
 		));
 	}
 	toJSON() {
@@ -270,11 +323,15 @@ class Zombie {
 		this.damage = damage;
 		this.zombieType = "base";
 		this.target = myPlayer;
+		this.id = Date.now();
 		zombies.push(this);
 	}
 	checkDestruction() {return this.health <= 0;}
 	takeDamage(a) {this.health -= a;}
-	
+	toJSON() {
+		return {pos: this.pos, angle: this.angle, type: this.zombieType, id: this.id, target: this.target.id, health: this.health, damage: this.damage,
+			room: gameRoomName};
+	}
 	updatePos() {
 		// player speed (walking) is 0.136/frame so zombie is 0.14 (so u can only run to escape zombie)
 		// returns [moveForward, moveSideways] for udpateAngle()
@@ -314,16 +371,17 @@ class Zombie {
 			var toDrop = dropItems(dayN < 2);
 			items.push(new Item([zomb.pos[0], zomb.pos[1]+1, zomb.pos[2]], toDrop.name, toDrop.texCoordStart, toDrop.specs, 1));
 			transmitItem(items[items.length-1]);
-			if (Math.random() > 0.9) {
+			if (Math.random() > 0.9 && numRocketJumps < 3) {
 				var toPush = new Item([zomb.pos[0], zomb.pos[1] + 2, zomb.pos[2]],
 					...jumpBoostUpgrade, 0.3, 1, true, true);
 				items.push(toPush);
 				toPush.velocity = [Math.random() * 0.1, 0.5 * Math.random(), Math.random() * 0.1];
+				numRocketJumps++;
 				transmitItem(toPush);
 			}
 		}
 		particles.push(new ParticleSystem(
-			this.pos, D_ONE_POINT(), 7, 1, [0, 0], 0.1, 0.1, 1000, 1
+			this.pos, D_ONE_POINT(), 7, 10, COLORS.grey, 0, 0.3, 5, 3
 		));
 	}
 }
@@ -385,7 +443,7 @@ class Vax extends Zombie {
 			var front = glMatrix.vec3.create();
 			glMatrix.vec3.sub(front, myPlayer.cameraPos, this.pos);
 			glMatrix.vec3.normalize(front, front);
-			vaxBullets.push(new Bullet(this.pos, front, 5, 0, false)); // vax bullets are non-piercing so higher damage
+			vaxBullets.push(new Bullet(this.pos, front, 5, COLORS.yellow, 0, false)); // vax bullets are non-piercing so higher damage
 		}
 		return this.updateAngle(...this.updatePos());
 	}

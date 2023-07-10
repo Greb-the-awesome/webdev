@@ -86,15 +86,17 @@ So just play with this invisible map (and bugged GUI) for now, and hopefully the
 }
 
 function bulletsUpdate(buffer, dayN) {
-	var finalBullet = [];
+	buffer.aVertexPosition = new Float32Array(bullets.length * cube.length + vaxBullets.length * cube.length + 3);
+	buffer.aTexCoord = new Float32Array(bullets.length * cube.length * 4 + vaxBullets.length * cube.length * 4 + 2);
+	var texCoordHead = 0, posHead = 0;
 	// check zombies colliding bullets + update bullets
 	var bulletNum = 0;
 	for (bullet of bullets) {
 		var zombNum = 0;
 		for (zomb of zombies) { // check if the bullets are colliding the zombies
-			if (checkCollision([zomb.pos[0],zomb.pos[1]+3,zomb.pos[2]], bullet.pos, [2,4,2], [1,1,1])) {
+			// TODO: change hitboxes (last argument of checkCollision)
+			if (checkCollision([zomb.pos[0],zomb.pos[1]+3,zomb.pos[2]], bullet.pos, [2,4,2], [bullet.size*2, bullet.size*2, bullet.size*2])) {
 				zomb.takeDamage(bullet.damage);
-
 				if (zomb.checkDestruction()) { // drop items
 					zomb.dead(dayN);
 					zombies.splice(zombNum, 1);
@@ -103,11 +105,25 @@ function bulletsUpdate(buffer, dayN) {
 			}
 			zombNum++;
 		}
+		if (checkCollision(myPlayer.cameraPos, bullet.pos, [0,0,0], [bullet.size*2, bullet.size*2, bullet.size*2]) &&
+			bullet.fart) {
+			myPlayer.health--;
+		}
 		if (bullet.checkDestruction()) {
 			bullet.destruct();
 			bullets.splice(bulletNum, 1);
 		} else {
-			finalBullet = finalBullet.concat(bullet.updatePos());
+			var poses = bullet.updatePos();
+			for (let i=0; i<poses.length; i++) {
+				buffer.aVertexPosition[posHead] = poses[i];
+				posHead++;
+			}
+			for (let i=0; i<6; i++) {
+				for (let j=0; j<bullet.texCoordsCycle.length; j++) {
+					buffer.aTexCoord[texCoordHead] = bullet.texCoordsCycle[j];
+					texCoordHead++;
+				}
+			}
 		}
 		bulletNum += 1;
 	}
@@ -125,13 +141,26 @@ function bulletsUpdate(buffer, dayN) {
 			bullet.destruct();
 			vaxBullets.splice(bulletNum, 1);
 		} else {
-			finalBullet = finalBullet.concat(bullet.updatePos());
+			var poses = bullet.updatePos();
+			for (let i=0; i<poses.length; i++) {
+				buffer.aVertexPosition[posHead] = poses[i];
+				posHead++;
+			}
+			for (let i=0; i<6; i++) {
+				for (let j=0; j<bullet.texCoordsCycle.length; j++) {
+					buffer.aTexCoord[texCoordHead] = bullet.texCoordsCycle[j];
+					texCoordHead++;
+				}
+			}
 		}
 		bulletNum++;
 	}
-	buffer.aVertexPosition = finalBullet;
-	buffer.aTexCoord = mList([71/texW,161/texH], buffer.aVertexPosition.length*2/3);
-	buffer.aVertexNormal = mList([0, 1, 0], buffer.aVertexPosition.length+1); // +1 because the sun needs normals too
+	buffer.aVertexNormal = new Float32Array(buffer.aVertexPosition.length+3); // +3 because the sun needs normals too
+	for (let i=0; i<buffer.aVertexPosition.length/3+1; i++) {
+		buffer.aVertexNormal[i*3] = 0;
+		buffer.aVertexNormal[i*3+1] = 1;
+		buffer.aVertexNormal[i*3+2] = 0;
+	}
 }
 
 function itemsUpdate() {
@@ -141,7 +170,10 @@ function itemsUpdate() {
 	for (var item of items) {
 		item.timer--;
 		item.updatePos();
-		if (item.timer <= 0) {items.splice(itemNum, 1);continue;} // despawn
+		if (item.timer <= 0) {
+			if (item.name == "Jump!!!") {numRocketJumps--;}
+			items.splice(itemNum, 1);continue;
+		} // despawn
 		if (checkCollision(item.pos, myPlayer.hitPos, [2,2,2], [2,2,2])) {
 			if (item.type == 0) {
 				for (var i=0; i<myPlayer.inv.length; i++) {
@@ -208,16 +240,14 @@ function zombiesUpdate() {
 	}
 }
 
-
 function randomAroundPlayer(range) { // helper for spawning upgrades
 	return [Math.random() * range + myPlayer.cameraPos[0], 2, Math.random() * range + myPlayer.cameraPos[2]];
 }
 
 function spawnStuff(t) {
-	if (/*Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2*/Math.random() > 0.9) {
+	if (Math.floor(Math.random() * 60 * getDifficulty(gameTime / DAYLENGTH)) == 2) {
 		var attemptedPos = [Math.random() * worldwidth - WORLDEND * 10, 0, Math.random() * worldwidth - WORLDEND * 10];
-		if (Math.floor(Math.random() * 10) == 2 && numEnokers < 4 &&
-			t > 2000) { // zombies have a 1 in 10 chance of being an enoker in the last 1/3 of the day
+		if (Math.floor(Math.random() * 20) == 2 && numEnokers < 2 && t > 2000) { // zombies have a 1 in 10 chance of being an enoker in the last 1/3 of the day
 			new Enoker(attemptedPos, models.boss, 1, 100);
 			numEnokers++;
 		} else {
@@ -276,6 +306,14 @@ function renderGUI(pickUp, dayN) {
 	if (pickUp) {oCtx.fillText("q to pick up", overlay.width * 0.4, overlay.height * 0.5)}
 	oCtx.fillStyle = "rgb(200, 150, 0)";
 	oCtx.fillRect(overlay.width * 0.3, overlay.height * 0.75, overlay.width * 0.4 * myPlayer.stamina/100, overlay.height * 0.03);
+	if (myPlayer.invSelect.specs.desc) {
+		oCtx.fillStyle = "rgb(0,0,0)";
+		oCtx.globalAlpha = 0.5;
+		oCtx.fillRect(overlay.width * 0.4-15, overlay.height * 0.1-45, overlay.width * 0.4+30, 60);
+		oCtx.globalAlpha = 1;
+		oCtx.fillStyle = "#22AA22";
+		oCtx.fillText(myPlayer.invSelect.specs.desc, overlay.width * 0.4, overlay.height * 0.1, overlay.width * 0.4);
+	}
 	oCtx.fillText("Day #: " + dayN, overlay.width * 0.85, overlay.height * 0.1);
 	oCtx.fillText("Zombies Killed: "+playerStats.zombiesKilled, overlay.width * 0.8, overlay.height * 0.2);
 }
@@ -297,6 +335,8 @@ function serializeChunks() {
 	for (let c=0; c<values.length; c++) {
 		var chunk = values[c];
 		var chunkBlocks = chunk.blocks;
+		//console.log(buffers_d.shaderProgram.data.aVertexNormal);
+		console.log(chunk, chunkBlocks);
 		for (const blockPos in chunkBlocks) {
 			var block = chunkBlocks[blockPos];
 			var triang1 = block.pos1.concat(block.pos2.concat(block.pos3));
@@ -306,9 +346,10 @@ function serializeChunks() {
 			var tex;
 			tex = regularTex;
 			addPositions(triang1.concat(triang2),
-			   tex, [], n1.concat(n2));
+			   tex, "e", n1.concat(n2));
 		}
 	}
+	console.log(buffers_d.shaderProgram.data.aVertexNormal);
 }
 
 function genClouds() {

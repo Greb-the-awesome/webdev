@@ -4,7 +4,7 @@ from flask import Flask, render_template, request
 import json, time, sys
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import threading
-# from replit import db
+from replit import db
 from functools import cmp_to_key
 global scores, gameRooms
 scores = {}
@@ -115,6 +115,14 @@ def zombiewars():
 @app.route("/zombiewars3d")
 def zombiewars3d():
 	return render_template("zombiewars3d.html", rand_num = time.time())
+
+@app.route("/zombiewars4d")
+def zombiewars4d():
+	return render_template("zombiewars4.html", rand_num = time.time())
+
+@app.route("/zwmultiplayer")
+def zombiewarsm():
+	return render_template("zombiewars3dm.html")
 
 @app.route("/plat")
 def plat():
