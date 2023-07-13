@@ -62,20 +62,33 @@ void main() {
 const lightVS = `
 attribute vec4 aVertexPosition;
 attribute vec3 aVertexNormal;
-attribute vec2 aTexCoord;
+attribute vec2 aTexCoord1;
+attribute vec2 aTexCoord2;
+attribute vec2 aTexCoord3;
+attribute vec2 aTexCoord4;
+attribute vec4 aMixFactor;
 
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform vec3 uCameraPos;
 uniform mat3 uLightingInfo; // 1st row is light direction, 2nd is color, 3rd is ambient light
 
-varying highp vec2 texCoord;
+varying highp vec2 texCoord1;
+varying highp vec2 texCoord2;
+varying highp vec2 texCoord3;
+varying highp vec2 texCoord4;
+varying highp vec4 mixFactor;
 varying mediump float fogAmount;
 varying highp vec3 vLighting;
 
 void main() {
 	gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-	texCoord = aTexCoord;/*
+	texCoord1 = aTexCoord1;
+	texCoord2 = aTexCoord2;
+	texCoord3 = aTexCoord3;
+	texCoord4 = aTexCoord4;
+	mixFactor = aMixFactor;
+	/*
 	if (uCameraPos.y < 0.0) {
 		fogAmount = -(uModelViewMatrix * aVertexPosition).z * 0.08;
 	} else {
@@ -159,6 +172,38 @@ varying mediump float fogAmount;
 void main() {
 	//if (gl_FragCoord.z < 0.0) {discard;}
 	lowp vec4 col = texture2D(uSampler, texCoord);
+	col = vec4(col.rgb * vLighting, col.a);
+	col = mix(col, uFogColor, clamp(fogAmount, 0.0, 1.0)); // use uFogColor later when water physics actually make sense
+	if (col.a == 0.0) {
+		discard;
+	} else {
+		gl_FragColor = col;
+	}
+}
+`
+
+const textureFS_t4 = `
+precision mediump float;
+varying highp vec2 texCoord1;
+varying highp vec2 texCoord2;
+varying highp vec2 texCoord3;
+varying highp vec2 texCoord4;
+varying highp vec4 mixFactor;
+varying highp vec3 vLighting;
+uniform sampler2D uSampler1;
+uniform sampler2D uSampler2;
+uniform sampler2D uSampler3;
+uniform sampler2D uSampler4;
+uniform vec4 uFogColor;
+varying mediump float fogAmount;
+
+void main() {
+	//if (gl_FragCoord.z < 0.0) {discard;}
+	lowp vec4 col = vec4(mix(
+		mix(texture2D(uSampler1, texCoord1).rgb, texture2D(uSampler2, texCoord2).rgb, mixFactor.y),
+		mix(texture2D(uSampler3, texCoord3).rgb, texture2D(uSampler4, texCoord4).rgb, (mixFactor.z+mixFactor.w)/4.0),
+		0.5
+	), 1.0);
 	col = vec4(col.rgb * vLighting, col.a);
 	col = mix(col, uFogColor, clamp(fogAmount, 0.0, 1.0)); // use uFogColor later when water physics actually make sense
 	if (col.a == 0.0) {

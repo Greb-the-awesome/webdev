@@ -174,8 +174,17 @@ function shaderAddData(datas, shader) { // add data to any shader
 	if (buffers_d[shader].arrayBuffered) {
 		console.warn("shaderAddData: cannot expand arraybuffer");return;
 	}
+	var dKey;
+	for (var prop in datas) {dKey = prop; break;}
+	console.log(dKey);
 	for (var prop in d) {
-		d[prop] = d[prop].concat(datas[prop]);
+		if (prop in datas) {
+			d[prop] = d[prop].concat(datas[prop]);
+		} else {
+			// console.warn("shaderAddData: " + prop + " was not specified. Filling buffer with 0.");
+			d[prop] = d[prop].concat(mList([0], buffers_d[shader].buffer[prop][1] *
+				datas[dKey].length / (buffers_d[shader].buffer[dKey].length==2?3:buffers_d[shader].buffer[dKey][1])));
+		}
 	}
 }
 
@@ -392,18 +401,20 @@ function initGL(canvName) {
 	buffers_d = {
 		shaderProgram: {
 			vSource: lightVS,
-			fSource: textureFS,
+			fSource: textureFS_t4,
 			compiled: false,
 			buffer: {
 				aVertexPosition: [],
 				aVertexNormal: [],
-				aTexCoord: [2, gl.FLOAT, false, 0, 0]
+				aTexCoord1: [2, gl.FLOAT, false, 0, 0], aTexCoord3: [2, gl.FLOAT, false, 0, 0],
+				aTexCoord2: [2, gl.FLOAT, false, 0, 0], aTexCoord4: [2, gl.FLOAT, false, 0, 0],
+				aMixFactor: [4, gl.FLOAT, false, 0, 0]
 			},
 			uniform: {},
 			data: { // TODO: autogenerate this
 				aVertexPosition: [],
 				aVertexNormal: [],
-				aTexCoord: []
+				aTexCoord1: [], aTexCoord2: [], aTexCoord3: [], aTexCoord4: [], aMixFactor: []
 			}
 		},
 		objShader: {
@@ -668,6 +679,10 @@ function parseMTL(text) { // I wrote this mtl parser myself but it kinda sux
 			currentMtl.diffuseColor = [parseFloat(args[1]), parseFloat(args[2]), parseFloat(args[3])];
 		}
 		else if (line.startsWith("Ka")) {
+			var args = line.split(" ");
+			currentMtl.ambientColor = [parseFloat(args[1]), parseFloat(args[2]), parseFloat(args[3])];
+		}
+		else if (line.startsWith("map_Kd")) {
 			var args = line.split(" ");
 			currentMtl.ambientColor = [parseFloat(args[1]), parseFloat(args[2]), parseFloat(args[3])];
 		}

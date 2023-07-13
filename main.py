@@ -116,7 +116,7 @@ def zombiewars():
 def zombiewars3d():
 	return render_template("zombiewars3d.html", rand_num = time.time())
 
-@app.route("/zombiewars4d")
+@app.route("/zombiewars4de")
 def zombiewars4d():
 	return render_template("zombiewars4.html", rand_num = time.time())
 
