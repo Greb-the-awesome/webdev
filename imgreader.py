@@ -53,7 +53,7 @@ def getKeys(d):
 
 def processImg(img):
 	im = PIL.Image.open(img) # Can be many different formats.
-	pixs = im.load()
+	pixs = im.getdata()
 	width = im.size[0]
 	height = im.size[1]
 	numOfPixs = width * height
@@ -67,10 +67,10 @@ def processImg(img):
 
 	for pix in range(0, numOfPixs):
 		currentPos = [pix % width, math.floor(pix / height)]
-		currentColor = pixs[currentPos[0], currentPos[1]]
+		currentColor = pixs[pix]
 
 
-		if currentColor[3] != 0: # so it's not transparent
+		if (len(currentColor) == 4 and currentColor[3] != 0) or currentColor[0] != 255 and currentColor[1] != 255 and currentColor[2] != 255: # so it's not transparent
 			advancedLogs.append(
 				f"[ADVANCEDLOGS]: non-transparent pixel found. coords: {currentPos}, color: {currentColor}\n")
 

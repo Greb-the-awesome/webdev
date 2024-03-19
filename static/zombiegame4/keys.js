@@ -15,27 +15,8 @@ function onKeyDown(event) {
 				document.exitPointerLock();
 			}
 		}
-		if (keyCode == "KeyC") {
-			if (myPlayer.invSelect.specs.swapInto) {
-				var count = 0;
-				for (let i=0; i<4; i++) {
-					if (myPlayer.inv[i].name == myPlayer.invSelect.name) {
-						count++;
-					}
-				}
-				if (count >= myPlayer.invSelect.specs.swapNum) {
-					var last = 0;
-					for (let i=0; i<4; i++) {
-						if (myPlayer.inv[i].name == myPlayer.invSelect.name) {
-							myPlayer.inv[i] = false;
-							last = i;
-						}
-					}
-					var info = myPlayer.invSelect.specs.swapInto;
-					myPlayer.inv[last] = new Item([0,0,0], info.name, info.texCoordStart, info.specs, 1);
-					myPlayer.selected = last;
-				}
-			}
+		if (keyCode == "KeyB") {
+			debugDispNow["hitboxes shown"] = !debugDispNow["hitboxes shown"];
 		}
 		if (keyCode.startsWith("Digit")) {
 			if (keyCode == "Digit5") {  
